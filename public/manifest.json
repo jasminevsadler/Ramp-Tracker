@@ -21,8 +21,6 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
-    }
-  ]
 }
   "description": "This app will store data on IEP, special education, and therapy goals and objectives."
 }
