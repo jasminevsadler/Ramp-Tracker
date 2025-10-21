@@ -1,3 +1,37 @@
+import InstallPWAButton from "./InstallPWAButton";
+
+export default function App() {
+  return (
+    <div className="min-h-screen bg-slate-50">
+      <header className="sticky top-0 z-10 bg-white/80 backdrop-blur border-b">
+        <div className="mx-auto max-w-6xl px-4 py-3 flex items-center gap-4">
+          <div className="flex flex-col">
+            <h1 className="text-xl font-bold">RaMP it Up! Data Tracker</h1>
+            <p className="text-sm text-slate-500">
+              Log behavior/skill data fast. Export, print, and share.
+            </p>
+          </div>
+
+          {/* spacer */}
+          <div className="flex-1" />
+
+          {/* 👉 Install button shows only when installable */}
+          <InstallPWAButton />
+
+          {/* existing header actions */}
+          <nav className="ml-3 flex items-center gap-2">
+            {/* your Log / Dashboard / Setup buttons here */}
+          </nav>
+        </div>
+      </header>
+
+      {/* ...rest of your app */}
+    </div>
+  );
+}
+
+
+
 import React, { useEffect, useMemo, useState } from "react";
 import { Download, Plus, Trash2, Edit3, BarChart3, Database, Settings2, Filter, Printer } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
