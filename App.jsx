@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Download, Plus, Trash2, Edit3, BarChart3, Database, Settings2, Filter, Printer } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
-// === Minimal UI Primitives (Tailwind classes) ===
+// === Minimal UI Primitives (Tailwind classes via CDN in index.html) ===
 const Button = ({ className = "", ...props }) => (
   <button className={`px-3 py-2 rounded-2xl shadow-sm border text-sm hover:shadow transition ${className}`} {...props} />
 );
@@ -20,9 +20,8 @@ const Badge = ({ children }) => (
   <span className="inline-block px-2 py-1 text-xs rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700">{children}</span>
 );
 
-// === Local Storage Helpers ===
-// New key so your preview starts clean with the new defaults
-const STORAGE_KEY = "ramp-it-up-tracker-v4";
+// === Local Storage ===
+const STORAGE_KEY = "ramp-it-up-tracker-v5";
 const defaultData = {
   students: [
     { id: "s1", name: "Jasmine" },
@@ -30,24 +29,29 @@ const defaultData = {
     { id: "s3", name: "Abby" },
     { id: "s4", name: "Donovan" },
   ],
+  // short = what you see in dropdown/table; label = full goal text kept for records/CSV
   skills: [
     {
       id: "k1",
+      short: "Start & Sustain Work",
       label:
         "When given a task or assignment, STUDENT will begin the task/assignment within 1 minute and continue for a minimum of 10 minutes with no more than 2 prompts on 8 out of 10 opportunities, as measured by staff data and observation.",
     },
     {
       id: "k2",
+      short: "No Physical Aggression",
       label:
         "During each segment of the school day, STUDENT will refrain from physical aggression (i.e. kicking, hitting, pushing, tripping) with all adults and children on 8 out of 10 opportunities, as measured by staff data and observation.",
     },
     {
       id: "k3",
+      short: "Cooperative Play",
       label:
-        "During unstructured time, STUDENT will cooperatively play (participate, share, follow directions, take turns) with on 8 out of 10 opportunities, as measured by staff data and observation.",
+        "During unstructured time, STUDENT will cooperatively play (participate, share, follow directions, take turns) on 8 out of 10 opportunities, as measured by staff data and observation.",
     },
     {
       id: "k4",
+      short: "Follow Directions",
       label:
         "When given a direction, STUDENT will respond appropriately (\"yes, okay\") and initiate the direction without arguing on 8 out of 10 opportunities, as measured by staff data and observation.",
     },
@@ -83,9 +87,20 @@ function saveState(state) {
 // === CSV Export ===
 function toCSV(rows) {
   const headers = [
-    "id","timestamp","date","time","student","student_id","skill","skill_id","rating","duration_min","prompt_level","reinforcer","reinforcer_other","setting","function","tokens","delivered","antecedent","behavior_event","consequence","goal_baseline","goal_target","goal_mastery","notes",
+    "id","timestamp","date","time",
+    "student","student_id",
+    "skill_short","skill_full","skill_id",
+    "rating","prompt_details",
+    "duration_min",
+    "prompt_level",
+    "reinforcer","reinforcer_other",
+    "setting","function",
+    "tokens","delivered",
+    "antecedent","behavior_event","consequence",
+    "goal_baseline","goal_target","goal_mastery",
+    "notes",
   ];
-  const escape = (v) => `"${String(v ?? "").replaceAll('"', '""').replaceAll("\n", " ").replaceAll("\r", " ")}"`;
+  const escape = (v) => `"${String(v ?? "").replaceAll('"','""').replaceAll("\n"," ").replaceAll("\r"," ")}"`;
   const lines = [headers.join(",")];
   for (const r of rows) {
     const d = new Date(r.timestamp);
@@ -98,9 +113,11 @@ function toCSV(rows) {
       time,
       r.studentName,
       r.studentId,
+      r.skillShort,
       r.skillLabel,
       r.skillId,
       r.rating,
+      r.promptDetails ?? "",
       r.durationMin ?? "",
       r.promptLevel ?? "",
       r.reinforcer ?? "",
@@ -130,19 +147,7 @@ export default function App() {
 
   useEffect(() => saveState(state), [state]);
 
-  // Lightweight self-tests in console (helps catch CSV issues)
-  useEffect(() => {
-    try {
-      const csv = toCSV([{
-        id: "t1", timestamp: Date.now(), studentName: "Test", studentId: "s1", skillLabel: "K1", skillId: "k1",
-        rating: 2, durationMin: 3, promptLevel: "Verbal", reinforcer: "r1", reinforcerOther: "",
-        setting: "Classroom", func: "Attention", tokens: 1, delivered: true, abcA: "A", abcB: "B", abcC: "C",
-        goalBaseline: "", goalTarget: "", goalMastery: "", notes: "He said \"hi\"\nthen left",
-      }]);
-      if (!csv.includes('""hi""')) console.warn("CSV escaping test might have failed");
-    } catch (e) { console.warn("Self-test failed", e); }
-  }, []);
-
+  // Derived filtered entries
   const filteredEntries = useMemo(() => {
     return state.entries
       .filter((e) => (filter.studentId ? e.studentId === filter.studentId : true))
@@ -155,17 +160,22 @@ export default function App() {
         return t >= from && t <= to;
       })
       .sort((a, b) => b.timestamp - a.timestamp)
-      .map((e) => ({
-        ...e,
-        studentName: state.students.find((s) => s.id === e.studentId)?.name ?? "",
-        skillLabel: state.skills.find((k) => k.id === e.skillId)?.label ?? "",
-      }));
+      .map((e) => {
+        const skillObj = state.skills.find((k) => k.id === e.skillId);
+        return {
+          ...e,
+          studentName: state.students.find((s) => s.id === e.studentId)?.name ?? "",
+          skillLabel: skillObj?.label ?? "",
+          skillShort: skillObj?.short ?? skillObj?.label ?? "",
+        };
+      });
   }, [state.entries, state.students, state.skills, filter]);
 
+  // Chart data: average rating per skill (0–2)
   const chartData = useMemo(() => {
     const grouped = {};
     for (const e of filteredEntries) {
-      if (!grouped[e.skillId]) grouped[e.skillId] = { skill: e.skillLabel, total: 0, count: 0 };
+      if (!grouped[e.skillId]) grouped[e.skillId] = { skill: e.skillShort || e.skillLabel, total: 0, count: 0 };
       grouped[e.skillId].total += Number(e.rating || 0);
       grouped[e.skillId].count += 1;
     }
@@ -179,7 +189,7 @@ export default function App() {
           <div className="w-9 h-9 rounded-2xl bg-indigo-600 text-white grid place-items-center font-bold">R</div>
           <div>
             <h1 className="text-lg font-semibold leading-tight">RaMP it Up! Data Tracker</h1>
-            <p className="text-xs text-slate-500 -mt-0.5">Log behavior/skill data fast. Export, print, and share.</p>
+            <p className="text-xs text-slate-500 -mt-0.5">0–2 rating, prompt details when needed, export & print.</p>
           </div>
           <div className="ml-auto flex gap-2">
             <Button onClick={() => setTab("log")} className={tab === "log" ? "bg-indigo-600 text-white" : "bg-white"}>
@@ -212,7 +222,7 @@ export default function App() {
       </main>
 
       <footer className="max-w-6xl mx-auto p-4 text-xs text-slate-500">
-        Built for fast classroom data: 0–3 rating, duration, prompts, ABC, function, tokens, and notes. Stores locally.
+        Built for fast classroom data: 0–2 rating, duration, prompts, ABC, function, tokens, and notes. Stores locally.
       </footer>
     </div>
   );
@@ -268,7 +278,7 @@ function DashboardTab({ entries, state, chartData, filter, setFilter }) {
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
           <Stat title="Entries" value={entries.length} />
-          <Stat title="Avg Rating" value={avg(entries.map((e) => Number(e.rating || 0))).toFixed(2)} />
+          <Stat title="Avg Rating (0–2)" value={avg(entries.map((e) => Number(e.rating || 0))).toFixed(2)} />
           <Stat title="Students" value={state.students.length} />
           <Stat title="Tokens Earned" value={totalTokens} />
         </div>
@@ -281,7 +291,7 @@ function DashboardTab({ entries, state, chartData, filter, setFilter }) {
             <BarChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="skill" interval={0} angle={-10} textAnchor="end" height={60} />
-              <YAxis domain={[0, 3]} />
+              <YAxis domain={[0, 2]} />
               <Tooltip />
               <Bar dataKey="avg" />
             </BarChart>
@@ -299,7 +309,8 @@ function DashboardTab({ entries, state, chartData, filter, setFilter }) {
 
 function SetupTab({ state, setState }) {
   const [studentName, setStudentName] = useState("");
-  const [skillLabel, setSkillLabel] = useState("");
+  const [skillShort, setSkillShort] = useState("");
+  const [skillFull, setSkillFull] = useState("");
   const [reinforcerLabel, setReinforcerLabel] = useState("");
 
   return (
@@ -336,26 +347,33 @@ function SetupTab({ state, setState }) {
 
       <Card className="lg:col-span-1">
         <h2 className="font-semibold mb-3">Skills / Goals</h2>
-        <div className="flex gap-2 mb-3">
-          <Input placeholder="Add skill/goal label" value={skillLabel} onChange={(e) => setSkillLabel(e.target.value)} />
-          <Button
-            className="bg-indigo-600 text-white"
-            onClick={() => {
-              if (!skillLabel.trim()) return;
-              setState((prev) => ({
-                ...prev,
-                skills: [...prev.skills, { id: `k${crypto.randomUUID()}`, label: skillLabel.trim() }],
-              }));
-              setSkillLabel("");
-            }}
-          >
-            <Plus className="inline-block w-4 h-4 mr-1" /> Add
-          </Button>
+        <div className="grid grid-cols-1 gap-2 mb-3">
+          <Input placeholder="Short name (e.g., Follow Directions)" value={skillShort} onChange={(e) => setSkillShort(e.target.value)} />
+          <Textarea rows={3} placeholder="Full goal text (optional but recommended for records/CSV)" value={skillFull} onChange={(e) => setSkillFull(e.target.value)} />
+          <div className="flex gap-2">
+            <Button
+              className="bg-indigo-600 text-white"
+              onClick={() => {
+                if (!skillShort.trim()) return;
+                setState((prev) => ({
+                  ...prev,
+                  skills: [...prev.skills, { id: `k${crypto.randomUUID()}`, short: skillShort.trim(), label: skillFull.trim() || skillShort.trim() }],
+                }));
+                setSkillShort("");
+                setSkillFull("");
+              }}
+            >
+              <Plus className="inline-block w-4 h-4 mr-1" /> Add
+            </Button>
+          </div>
         </div>
         <ul className="space-y-2">
           {state.skills.map((k) => (
             <li key={k.id} className="flex items-center justify-between border rounded-xl px-3 py-2">
-              <span>{k.label}</span>
+              <div className="min-w-0">
+                <div className="font-medium">{k.short || k.label}</div>
+                {k.label && k.label !== k.short && <div className="text-xs text-slate-500 truncate" title={k.label}>{k.label}</div>}
+              </div>
               <Button className="bg-white" onClick={() => setState((prev) => ({ ...prev, skills: prev.skills.filter((x) => x.id !== k.id) }))}>
                 <Trash2 className="w-4 h-4" />
               </Button>
@@ -410,7 +428,7 @@ function SetupTab({ state, setState }) {
             <Input placeholder="Optional – paste endpoint to receive CSV rows" value={state.org.sheetsWebhook} onChange={(e) => setState((p) => ({ ...p, org: { ...p.org, sheetsWebhook: e.target.value } }))} />
           </div>
         </div>
-        <p className="text-xs text-slate-500 mt-2">Note: This starter stores data locally. Sheets sync and multi-user require a backend endpoint – we added a field to prepare for that.</p>
+        <p className="text-xs text-slate-500 mt-2">Note: This starter stores data locally. Sheets sync and multi-user require a backend endpoint – this field prepares for that.</p>
       </Card>
     </div>
   );
@@ -422,7 +440,11 @@ function EntryForm({ state, onSave, initial }) {
   const [skillId, setSkillId] = useState(initial?.skillId || (state.skills[0]?.id ?? ""));
   const [date, setDate] = useState(initial ? toDateInput(initial.timestamp) : toDateInput(Date.now()));
   const [time, setTime] = useState(initial ? toTimeInput(initial.timestamp) : toTimeInput(Date.now()));
+
+  // 0–2 rating per request
   const [rating, setRating] = useState(initial?.rating ?? 0);
+  const [promptDetails, setPromptDetails] = useState(initial?.promptDetails ?? ""); // required when rating === 1
+
   const [durationMin, setDurationMin] = useState(initial?.durationMin ?? "");
   const [promptLevel, setPromptLevel] = useState(initial?.promptLevel ?? "Independent");
   const [reinforcer, setReinforcer] = useState(initial?.reinforcer ?? state.reinforcers[0]?.id ?? "");
@@ -453,6 +475,7 @@ function EntryForm({ state, onSave, initial }) {
     setDate(toDateInput(initial.timestamp));
     setTime(toTimeInput(initial.timestamp));
     setRating(initial.rating);
+    setPromptDetails(initial.promptDetails ?? "");
     setDurationMin(initial.durationMin ?? "");
     setPromptLevel(initial.promptLevel ?? "");
     setReinforcer(initial.reinforcer ?? state.reinforcers[0]?.id ?? "");
@@ -473,13 +496,18 @@ function EntryForm({ state, onSave, initial }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (Number(rating) === 1 && !promptDetails.trim()) {
+      alert("Please describe the specific prompt(s) used for rating 1 (Requires Prompts).");
+      return;
+    }
     const timestamp = new Date(`${date}T${time}`)?.getTime?.() ?? Date.now();
     const entry = {
       id: initial?.id ?? crypto.randomUUID(),
       timestamp,
       studentId,
       skillId,
-      rating: Number(rating),
+      rating: Number(rating),                // 0–2
+      promptDetails: rating === 1 || Number(rating) === 1 ? promptDetails.trim() : "",
       durationMin: durationMin === "" ? null : Number(durationMin),
       promptLevel,
       reinforcer,
@@ -497,8 +525,10 @@ function EntryForm({ state, onSave, initial }) {
       goalMastery: includeGoal ? goalMastery : "",
     };
     onSave(entry);
+    // reset if creating new
     if (!initial) {
       setRating(0);
+      setPromptDetails("");
       setDurationMin("");
       setReinforcer(state.reinforcers[0]?.id ?? "");
       setReinforcerOther("");
@@ -516,8 +546,8 @@ function EntryForm({ state, onSave, initial }) {
     }
   };
 
-  const settingOptions = ["Classroom", "Hallway", "Lunchroom", "Bathroom", "Recess", "PE", "Playground", "Home"];
-  const functionOptions = ["Attention", "Escape", "Tangible", "Sensory/Automatic"];
+  const settingOptions = ["Classroom","Hallway","Lunchroom","Bathroom","Recess","PE","Playground","Home"];
+  const functionOptions = ["Attention","Escape","Tangible","Sensory/Automatic"];
 
   return (
     <form className="space-y-3" onSubmit={handleSubmit}>
@@ -534,7 +564,7 @@ function EntryForm({ state, onSave, initial }) {
           <label className="text-xs text-slate-500">Skill / Goal</label>
           <Select value={skillId} onChange={(e) => setSkillId(e.target.value)}>
             {state.skills.map((k) => (
-              <option key={k.id} value={k.id}>{k.label}</option>
+              <option key={k.id} value={k.id} title={k.label}>{k.short || k.label}</option>
             ))}
           </Select>
         </div>
@@ -553,12 +583,11 @@ function EntryForm({ state, onSave, initial }) {
 
       <div className="grid grid-cols-3 gap-2 items-end">
         <div>
-          <label className="text-xs text-slate-500">Rating (0–3)</label>
-          <Select value={rating} onChange={(e) => setRating(e.target.value)}>
-            <option value={0}>0 – Not Demonstrated</option>
-            <option value={1}>1 – Emerging</option>
-            <option value={2}>2 – Needs Prompts</option>
-            <option value={3}>3 – Independent</option>
+          <label className="text-xs text-slate-500">Rating (0–2)</label>
+          <Select value={rating} onChange={(e) => setRating(Number(e.target.value))}>
+            <option value={0}>0 – Not Demonstrating</option>
+            <option value={1}>1 – Requires Prompts</option>
+            <option value={2}>2 – Independent</option>
           </Select>
         </div>
         <div>
@@ -577,6 +606,18 @@ function EntryForm({ state, onSave, initial }) {
           </Select>
         </div>
       </div>
+
+      {Number(rating) === 1 && (
+        <div>
+          <label className="text-xs text-slate-500">Prompt details (required when rating = 1)</label>
+          <Textarea
+            rows={2}
+            placeholder="e.g., Verbal prompt to start; Model prompt during steps 2–3"
+            value={promptDetails}
+            onChange={(e) => setPromptDetails(e.target.value)}
+          />
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-2">
         <div>
@@ -619,7 +660,7 @@ function EntryForm({ state, onSave, initial }) {
           <div>
             <label className="text-xs text-slate-500">Function (hypothesized)</label>
             <Select value={func} onChange={(e) => setFunc(e.target.value)}>
-              {functionOptions.map((f) => (
+              {["Attention","Escape","Tangible","Sensory/Automatic"].map((f) => (
                 <option key={f} value={f}>{f}</option>
               ))}
             </Select>
@@ -684,6 +725,7 @@ function EntriesTable({ rows, onEdit, onDelete }) {
             <Th>Student</Th>
             <Th>Skill</Th>
             <Th>Rating</Th>
+            <Th>Prompt Details</Th>
             <Th>Duration</Th>
             <Th>Prompt</Th>
             <Th>Reinforcer</Th>
@@ -699,8 +741,9 @@ function EntriesTable({ rows, onEdit, onDelete }) {
             <tr key={r.id} className="border-t">
               <Td>{new Date(r.timestamp).toLocaleString()}</Td>
               <Td>{r.studentName}</Td>
-              <Td>{r.skillLabel}</Td>
+              <Td title={r.skillLabel}>{r.skillShort || r.skillLabel}</Td>
               <Td>{r.rating}</Td>
+              <Td className="max-w-[30ch] truncate" title={r.promptDetails}>{r.promptDetails}</Td>
               <Td>{r.durationMin ?? ""}</Td>
               <Td>{r.promptLevel ?? ""}</Td>
               <Td>{labelForReinforcer(r.reinforcer)}</Td>
@@ -756,7 +799,7 @@ function FilterControls({ state, filter, setFilter }) {
         <Select value={filter.skillId} onChange={(e) => setFilter((f) => ({ ...f, skillId: e.target.value }))}>
           <option value="">All</option>
           {state.skills.map((k) => (
-            <option key={k.id} value={k.id}>{k.label}</option>
+            <option key={k.id} value={k.id}>{k.short || k.label}</option>
           ))}
         </Select>
       </div>
@@ -811,31 +854,14 @@ function Stat({ title, value }) {
   );
 }
 
-function avg(arr) {
-  if (!arr.length) return 0;
-  return arr.reduce((a, b) => a + b, 0) / arr.length;
-}
-function toDateInput(ts) {
-  const d = new Date(ts);
-  return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, "0"), String(d.getDate()).padStart(2, "0")].join("-");
-}
-function toTimeInput(ts) {
-  const d = new Date(ts);
-  return [String(d.getHours()).padStart(2, "0"), String(d.getMinutes()).padStart(2, "0")].join(":");
-}
+function avg(arr) { if (!arr.length) return 0; return arr.reduce((a, b) => a + b, 0) / arr.length; }
+function toDateInput(ts) { const d = new Date(ts); return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, "0"), String(d.getDate()).padStart(2, "0")].join("-"); }
+function toTimeInput(ts) { const d = new Date(ts); return [String(d.getHours()).padStart(2, "0"), String(d.getMinutes()).padStart(2, "0")].join(":"); }
 function labelForReinforcer(id) {
   if (!id) return "";
   const defaults = {
-    r1: "PBIS point",
-    r2: "Break",
-    r3: "Praise",
-    r4: "Sticker",
-    r5: "Snack",
-    r6: "Computer time",
-    r7: "Sensory break",
-    r8: "Call home (positive)",
-    r9: "Tangible",
-    r_other: "Other",
+    r1: "PBIS point", r2: "Break", r3: "Praise", r4: "Sticker", r5: "Snack",
+    r6: "Computer time", r7: "Sensory break", r8: "Call home (positive)", r9: "Tangible", r_other: "Other",
   };
   return defaults[id] || id;
 }
