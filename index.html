@@ -15,32 +15,6 @@
     <body>
     <div id="root"></div>
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script type="module" crossorigin src="/assets/index-BzvB4JK-.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-Dtn62Xmo.css">
-      <button id="installBtn" style="display:none;position:fixed;right:16px;bottom:16px;padding:10px 14px;border-radius:12px;border:0;font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,.15);">
-  Install RaMP
-</button>
-      <script>
-let deferredPrompt;
-
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  const btn = document.getElementById('installBtn');
-  if (btn) btn.style.display = 'block';
-});
-
-document.getElementById('installBtn')?.addEventListener('click', async () => {
-  if (!deferredPrompt) return;
-  const btn = document.getElementById('installBtn');
-  btn.disabled = true;
-  deferredPrompt.prompt();
-  await deferredPrompt.userChoice; // { outcome: 'accepted'|'dismissed' }
-  deferredPrompt = null;
-  btn.style.display = 'none';
-});
-</script>
 
     <!-- Service worker registration -->
     <script>
