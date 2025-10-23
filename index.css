@@ -66,13 +66,14 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
-/* Kill accidental horizontal scroll / white gutter on mobile */
-html, body, #root {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: hidden;
-}
+/* Kill accidental horizontal scroll / white gutter */
+html, body, #root { width:100%; max-width:100%; overflow-x:hidden; }
+* { box-sizing:border-box; }
+img, svg, canvas, video { max-width:100%; height:auto; }
 
-* { box-sizing: border-box; }
-img, svg, canvas, video { max-width: 100%; height: auto; }
+/* So common culprits don't force horizontal scroll on small screens */
+@media (max-width: 480px) {
+  .w-screen { width:100% !important; }     /* Tailwind override if used */
+  [class*="min-w-"] { min-width:0 !important; }
+}
 
