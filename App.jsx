@@ -903,3 +903,11 @@ function labelForReinforcer(id) {
   };
   return defaults[id] || id;
 }
+          RaMP: 0–2 rating; require prompt details for 1; short goal names; CSV+dashboard updates
+          - Change rating scale to 0–2 (0=Not Demonstrating, 1=Requires Prompts, 2=Independent)
+- When rating=1, require Prompt details
+- Add short goal names (UI) while keeping full text (CSV)
+- CSV: add skill_short and prompt_details columns
+- Dashboard Y-axis 0–2
+- Storage key bump to v5
+
