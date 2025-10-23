@@ -1,45 +1,9 @@
-import InstallPWAButton from "./InstallPWAButton";
-
-export default function App() {
-  return (
-    <div className="min-h-screen bg-slate-50 overflow-x-hidden">
-  {/* rest of app */}
-</div>
-">
-      <header className="sticky top-0 z-10 bg-white/80 backdrop-blur border-b">
-        <div className="mx-auto max-w-6xl px-4 py-3 flex items-center gap-4">
-          <div className="flex flex-col">
-            <h1 className="text-xl font-bold">RaMP it Up! Data Tracker</h1>
-            <p className="text-sm text-slate-500">
-              Log behavior/skill data fast. Export, print, and share.
-            </p>
-          </div>
-
-          {/* spacer */}
-          <div className="flex-1" />
-
-          {/* 👉 Install button shows only when installable */}
-          <InstallPWAButton />
-
-          {/* existing header actions */}
-          <nav className="ml-3 flex items-center gap-2">
-            {/* your Log / Dashboard / Setup buttons here */}
-          </nav>
-        </div>
-      </header>
-
-      {/* ...rest of your app */}
-    </div>
-  );
-}
-
-
-
 import React, { useEffect, useMemo, useState } from "react";
+import InstallPWAButton from "./InstallPWAButton";
 import { Download, Plus, Trash2, Edit3, BarChart3, Database, Settings2, Filter, Printer } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
-// === Minimal UI Primitives (Tailwind classes via CDN in index.html) ===
+// === Minimal UI Primitives (Tailwind via CDN in index.html) ===
 const Button = ({ className = "", ...props }) => (
   <button className={`px-3 py-2 rounded-2xl shadow-sm border text-sm hover:shadow transition ${className}`} {...props} />
 );
@@ -66,7 +30,7 @@ const defaultData = {
     { id: "s3", name: "Abby" },
     { id: "s4", name: "Donovan" },
   ],
-  // short = what you see in dropdown/table; label = full goal text kept for records/CSV
+  // short = what you see in UI; label = full goal text for records/CSV
   skills: [
     {
       id: "k1",
@@ -220,15 +184,21 @@ export default function App() {
   }, [filteredEntries]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-white text-slate-800">
-      <header className="sticky top-0 z-10 backdrop-blur bg-white/70 border-b">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-2xl bg-indigo-600 text-white grid place-items-center font-bold">R</div>
-          <div>
-            <h1 className="text-lg font-semibold leading-tight">RaMP it Up! Data Tracker</h1>
-            <p className="text-xs text-slate-500 -mt-0.5">0–2 rating, prompt details when needed, export & print.</p>
+    <div className="min-h-screen bg-slate-50 overflow-x-hidden">
+      <header className="sticky top-0 z-10 bg-white/80 backdrop-blur border-b">
+        <div className="mx-auto max-w-6xl px-4 py-3 flex items-center gap-4">
+          <div className="flex flex-col">
+            <h1 className="text-xl font-bold">RaMP it Up! Data Tracker</h1>
+            <p className="text-sm text-slate-500">0–2 rating, prompt details when needed, export & print.</p>
           </div>
-          <div className="ml-auto flex gap-2">
+
+          <div className="flex-1" />
+
+          {/* PWA Install button (only shows when installable) */}
+          <InstallPWAButton />
+
+          {/* Nav */}
+          <nav className="ml-3 flex items-center gap-2">
             <Button onClick={() => setTab("log")} className={tab === "log" ? "bg-indigo-600 text-white" : "bg-white"}>
               <Database className="inline-block w-4 h-4 mr-1" /> Log
             </Button>
@@ -238,7 +208,7 @@ export default function App() {
             <Button onClick={() => setTab("setup")} className={tab === "setup" ? "bg-indigo-600 text-white" : "bg-white"}>
               <Settings2 className="inline-block w-4 h-4 mr-1" /> Setup
             </Button>
-          </div>
+          </nav>
         </div>
       </header>
 
@@ -328,7 +298,6 @@ function DashboardTab({ entries, state, chartData, filter, setFilter }) {
             <BarChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="skill" interval={0} angle={-10} textAnchor="end" height={60} />
-              <div id="install-spot" className="m-0 p-0 inline-flex" />
               <YAxis domain={[0, 2]} />
               <Tooltip />
               <Bar dataKey="avg" />
@@ -585,7 +554,6 @@ function EntryForm({ state, onSave, initial }) {
   };
 
   const settingOptions = ["Classroom","Hallway","Lunchroom","Bathroom","Recess","PE","Playground","Home"];
-  const functionOptions = ["Attention","Escape","Tangible","Sensory/Automatic"];
 
   return (
     <form className="space-y-3" onSubmit={handleSubmit}>
@@ -903,11 +871,3 @@ function labelForReinforcer(id) {
   };
   return defaults[id] || id;
 }
-          RaMP: 0–2 rating; require prompt details for 1; short goal names; CSV+dashboard updates
-          - Change rating scale to 0–2 (0=Not Demonstrating, 1=Requires Prompts, 2=Independent)
-- When rating=1, require Prompt details
-- Add short goal names (UI) while keeping full text (CSV)
-- CSV: add skill_short and prompt_details columns
-- Dashboard Y-axis 0–2
-- Storage key bump to v5
-
