@@ -328,6 +328,7 @@ function DashboardTab({ entries, state, chartData, filter, setFilter }) {
             <BarChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="skill" interval={0} angle={-10} textAnchor="end" height={60} />
+              <div id="install-spot" className="m-0 p-0 inline-flex" />
               <YAxis domain={[0, 2]} />
               <Tooltip />
               <Bar dataKey="avg" />
