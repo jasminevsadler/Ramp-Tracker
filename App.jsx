@@ -2,7 +2,10 @@ import InstallPWAButton from "./InstallPWAButton";
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 overflow-x-hidden">
+  {/* rest of app */}
+</div>
+">
       <header className="sticky top-0 z-10 bg-white/80 backdrop-blur border-b">
         <div className="mx-auto max-w-6xl px-4 py-3 flex items-center gap-4">
           <div className="flex flex-col">
