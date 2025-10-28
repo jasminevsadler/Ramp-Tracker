@@ -575,6 +575,10 @@ function EntryForm({ state, onSave, initial }) {
           </Select>
         </div>
       </div>
+      
+      <p className="text-xs text-slate-500 -mt-0.5">
+  0–2 rating, prompt details when needed, export & print.
+</p>
 
       <div className="grid grid-cols-2 gap-2">
         <div>
