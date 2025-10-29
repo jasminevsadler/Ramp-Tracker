@@ -266,3 +266,6 @@ export default function App() {
     </div>
   );
 }
+<p className="text-center text-xs text-slate-500 mt-4">
+  Build v7 — tracker.rampitupsolutions.com
+</p>
