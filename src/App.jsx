@@ -160,19 +160,16 @@ export default function App() {
             </div>
           </div>
 
-          {/* Rating / Duration / Prompt Level */}
-          <div className="grid grid-cols-3 gap-2 items-end mt-3">
-            <div>
-              <label className="text-xs text-slate-500">Rating (0–2)</label>
-              <Select
-                value={rating}
-                onChange={(e) => setRating(Number(e.target.value))}
-              >
-                <option value={0}>0 – Not Demonstrating</option>
-                <option value={1}>1 – Requires Prompts</option>
-                <option value={2}>2 – Independent</option>
-              </Select>
-            </div>
+ {/* Rating (0–2) */}
+<div>
+  <label className="text-xs text-slate-500">Rating (0–2)</label>
+  <Select value={rating} onChange={(e) => setRating(Number(e.target.value))}>
+    <option value={0}>0 – Not Demonstrating</option>
+    <option value={1}>1 – Requires Prompts</option>
+    <option value={2}>2 – Independent</option>
+  </Select>
+</div>
+
 
             <div>
               <label className="text-xs text-slate-500">Duration (min)</label>
@@ -266,6 +263,7 @@ export default function App() {
     </div>
   );
 }
-<p className="text-center text-xs text-slate-500 mt-4">
-  Build v7 — tracker.rampitupsolutions.com
+<p className="text-xs text-slate-500 -mt-0.5">
+  0–2 build v6
 </p>
+
