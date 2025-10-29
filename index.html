@@ -1,132 +1,14 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <!-- PWA -->
-    <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#1e3a8a" />
-    <link rel="apple-touch-icon" href="/icon-192x192.png" />
-
-    <!-- Basics -->
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ramp-tracker</title>
-
-    <!-- Tailwind (fine for now; can switch to PostCSS build later) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Built CSS (use your current hashed filename) -->
-    <link rel="stylesheet" crossorigin href="/assets/index-Dtn62Xmo.css" />
+    <title>RaMP it Up! Data Tracker</title>
   </head>
-
   <body>
     <div id="root"></div>
-
-    <!-- Built JS (use your current hashed filename) -->
-    <script type="module" crossorigin src="/assets/index-BzvB4JK-.js"></script>
-
-    <!-- Install button injector (puts the button in the header, right side) -->
-    <script>
-      (function () {
-        let deferredPrompt = null;
-
-        // 1) Listen for Chrome's installability event
-        window.addEventListener('beforeinstallprompt', (e) => {
-          e.preventDefault();
-          deferredPrompt = e;
-          showInstallButton();
-        });
-
-        // 2) Create/insert the button into your header row
-        function showInstallButton() {
-          // If we've already placed it, just enable it
-          let btn = document.getElementById('ramp-install-btn');
-          if (!btn) {
-            btn = document.createElement('button');
-            btn.id = 'ramp-install-btn';
-            btn.textContent = 'Install app';
-            btn.className =
-              'inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 ' +
-              'text-white font-semibold shadow hover:bg-blue-700 active:scale-[.99] transition ' +
-              'ml-4 flex-shrink-0';
-            btn.style.display = 'none'; // becomes visible after we place it
-            btn.addEventListener('click', onInstallClick);
-          }
-
-          // Find the header row that contains the title text
-          const titleEl = Array.from(document.querySelectorAll('h1, [data-app-title]'))
-            .find(el => /RaMP\s*it\s*Up!\s*Data\s*Tracker/i.test(el.textContent || ''));
-
-          if (!titleEl) {
-            // App might not be rendered yet; try again shortly
-            setTimeout(showInstallButton, 300);
-            return;
-          }
-
-          // Use the nearest flex row as the header container
-          let row = titleEl.closest('.flex');
-          if (!row) row = titleEl.parentElement;
-
-          // Ensure row is flex so the button aligns right
-          const computed = window.getComputedStyle(row);
-          if (computed.display !== 'flex') row.style.display = 'flex';
-          row.style.alignItems = 'center';
-          row.style.gap = row.style.gap || '12px';
-
-          // Add a spacer so the button sits on the far right
-          let spacer = row.querySelector('#ramp-install-spacer');
-          if (!spacer) {
-            spacer = document.createElement('div');
-            spacer.id = 'ramp-install-spacer';
-            spacer.style.flex = '1 1 auto';
-            row.appendChild(spacer);
-          }
-
-          // Append (or re-append) the button
-          row.appendChild(btn);
-          btn.style.display = 'inline-flex';
-        }
-
-        // 3) Button click: show the native prompt (or give fallback help)
-        async function onInstallClick() {
-          if (!deferredPrompt) {
-            alert(
-              "How to install:\n\n• Desktop Chrome/Edge: menu → Install (or Save & share → Install page as app)\n• Android Chrome: menu → Install app\n• iPhone Safari: Share → Add to Home Screen"
-            );
-            return;
-          }
-          deferredPrompt.prompt();
-          try {
-            await deferredPrompt.userChoice; // { outcome: 'accepted'|'dismissed' }
-          } finally {
-            deferredPrompt = null;
-            // Hide after the prompt to prevent duplicate prompts
-            const btn = document.getElementById('ramp-install-btn');
-            if (btn) btn.style.display = 'none';
-          }
-        }
-
-        // 4) Also hide the button if the app gets installed by any means
-        window.addEventListener('appinstalled', () => {
-          const btn = document.getElementById('ramp-install-btn');
-          if (btn) btn.style.display = 'none';
-        });
-
-        // Try to place the button once the app UI renders (in case BIP fired earlier)
-        document.addEventListener('DOMContentLoaded', () => setTimeout(showInstallButton, 300));
-      })();
-    </script>
-
-    <!-- Service worker registration (keep at end of body) -->
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function () {
-          navigator.serviceWorker
-            .register('/service-worker.js')
-            .then(function (reg) { console.log('SW registered', reg); })
-            .catch(function (err) { console.error('SW registration failed', err); });
-        });
-      }
-    </script>
+    <!-- IMPORTANT: use /src/main.jsx -->
+    <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
+
