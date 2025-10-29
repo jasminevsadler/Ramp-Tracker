@@ -6,6 +6,6 @@ import App from "./App.jsx";
 const root = createRoot(document.getElementById("root"));
 root.render(<App />);
 
-// Ensure NO service worker is registered
-// (Leave it commented or remove the file entirely if you had one)
+// Make sure **no service worker** is registered
+// (Leave this commented out or remove the file entirely if you had one)
 // serviceWorkerRegistration.register();
