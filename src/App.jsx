@@ -267,3 +267,47 @@ export default function App() {
   0–2 build v6
 </p>
 
+import React, { useState } from "react";
+
+export default function App() {
+  const [rating, setRating] = useState(0);
+
+  return (
+    <div style={{ fontFamily: "system-ui, sans-serif", padding: 16 }}>
+      <h1>RaMP it Up! Data Tracker</h1>
+      <p style={{ color: "#64748b" }}>0–2 build v7</p>
+
+      <div style={{ maxWidth: 480, border: "1px solid #e2e8f0", borderRadius: 12, padding: 16 }}>
+        <label style={{ display: "block", fontSize: 12, color: "#64748b", marginBottom: 6 }}>
+          Rating (0–2)
+        </label>
+        <select
+          value={rating}
+          onChange={(e) => setRating(Number(e.target.value))}
+          style={{ width: "100%", padding: 8, borderRadius: 8, border: "1px solid #cbd5e1" }}
+        >
+          <option value={0}>0 – Not Demonstrating</option>
+          <option value={1}>1 – Requires Prompts</option>
+          <option value={2}>2 – Independent</option>
+        </select>
+
+        {rating === 1 && (
+          <div style={{ marginTop: 12 }}>
+            <label style={{ display: "block", fontSize: 12, color: "#64748b", marginBottom: 6 }}>
+              Prompt details (required when rating = 1)
+            </label>
+            <textarea
+              rows={2}
+              placeholder="e.g., Verbal prompt to start; Model prompt during steps 2–3"
+              style={{ width: "100%", padding: 8, borderRadius: 8, border: "1px solid #cbd5e1" }}
+            />
+          </div>
+        )}
+
+        <div style={{ marginTop: 16, color: "#0f172a" }}>
+          Current rating: <strong>{rating}</strong>
+        </div>
+      </div>
+    </div>
+  );
+}
