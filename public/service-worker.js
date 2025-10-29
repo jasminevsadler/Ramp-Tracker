@@ -1,62 +1,50 @@
 // public/service-worker.js
+// Bump this string any time you want to FORCE an update:
+const CACHE_VERSION = "v7";                       // ← change to v8, v9… next time
+const CACHE_NAME = `ramp-tracker-cache-${CACHE_VERSION}`;
 
-// Bump this when you deploy to force a new cache
-const CACHE_NAME = 'ramp-tracker-cache-v3';
+// Precache only the shell; let the network load the fresh app chunks
+const ASSETS = ["/", "/index.html"];
 
-// Static assets to cache (NOT index.html – we handle HTML with network-first)
-const ASSETS = [
-  '/vite.svg',
-  '/manifest.json',
-  // Add other truly-static files if you want, e.g. icons under /public
-];
-
-// Install: precache static assets
-self.addEventListener('install', (event) => {
+self.addEventListener("install", (event) => {
+  // take control immediately on install
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
   );
-  // Make the new SW take control ASAP
-  self.skipWaiting();
 });
 
-// Activate: remove old caches
-self.addEventListener('activate', (event) => {
+self.addEventListener("activate", (event) => {
+  // delete ALL old ramp-tracker caches, then take control of pages
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.map((k) => (k === CACHE_NAME ? null : caches.delete(k))))
-    )
+      Promise.all(
+        keys
+          .filter((k) => k.startsWith("ramp-tracker-cache-") && k !== CACHE_NAME)
+          .map((k) => caches.delete(k))
+      )
+    ).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
-// Fetch:
-// - For navigations (HTML), use NETWORK-FIRST so new deployments show up.
-// - For everything else, use CACHE-FIRST with network fallback.
-self.addEventListener('fetch', (event) => {
-  const req = event.request;
-
-  // Handle SPA navigations (document requests)
-  if (req.mode === 'navigate') {
+self.addEventListener("fetch", (event) => {
+  // Cache-first only for our shell; everything else hits the network (so you see new builds)
+  const url = new URL(event.request.url);
+  if (ASSETS.includes(url.pathname)) {
     event.respondWith(
-      fetch(req)
-        .then((res) => res) // always prefer network
-        .catch(() => caches.match('/index.html')) // offline fallback if you ever cache it
+      caches.match(event.request, { ignoreSearch: true }).then((cached) => {
+        return (
+          cached ||
+          fetch(event.request).then((resp) => {
+            // refresh shell cache silently
+            caches.open(CACHE_NAME).then((c) => c.put(event.request, resp.clone()));
+            return resp;
+          })
+        );
+      })
     );
     return;
   }
-
-  // For other requests: cache-first
-  event.respondWith(
-    caches.match(req).then((cached) => {
-      if (cached) return cached;
-      return fetch(req).then((res) => {
-        // Optionally cache GET responses
-        if (req.method === 'GET' && res && res.ok) {
-          const copy = res.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
-        }
-        return res;
-      });
-    })
-  );
+  // default: go to network (no stale bundle!)
+  event.respondWith(fetch(event.request).catch(() => caches.match(event.request)));
 });
