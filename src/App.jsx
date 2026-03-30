@@ -3,8 +3,32 @@ import { useMemo, useState } from "react";
 const rampOptions = ["Reinforcement", "Modeling", "Prompting"];
 const statusOptions = ["Met", "Partially Met", "Not Met"];
 
+const goalTemplates = [
+  {
+    name: "Following Directions",
+    text: "When given a verbal reminder, the student will follow directions within 30 seconds in 4 out of 5 opportunities.",
+  },
+  {
+    name: "On Task",
+    text: "The student will remain on task for 10 consecutive minutes with no more than 1 prompt.",
+  },
+  {
+    name: "Transitions",
+    text: "The student will transition between activities within 1 minute with no more than one prompt.",
+  },
+  {
+    name: "Work Completion",
+    text: "Given a classroom assignment, the student will begin work within 1 minute and complete the task with no more than 2 prompts in 4 out of 5 opportunities.",
+  },
+  {
+    name: "Appropriate Responses",
+    text: "When frustrated or corrected, the student will respond appropriately by using respectful words and actions in 4 out of 5 opportunities.",
+  },
+];
+
 export default function App() {
   const [student, setStudent] = useState("");
+  const [shortName, setShortName] = useState("");
   const [goal, setGoal] = useState("");
   const [rampType, setRampType] = useState("Reinforcement");
   const [status, setStatus] = useState("Met");
@@ -12,11 +36,12 @@ export default function App() {
   const [entries, setEntries] = useState([
     {
       id: 1,
-      student: "Example Student",
-      goal: "Staying on task",
-      rampType: "Reinforcement",
+      student: "Johnny",
+      shortName: "Following Directions",
+      goal: "When given a verbal reminder, Johnny will follow directions within 30 seconds in 4 out of 5 opportunities.",
+      rampType: "Prompting",
       status: "Met",
-      notes: "Used verbal praise and a short break.",
+      notes: "Responded after one verbal reminder.",
       date: new Date().toLocaleDateString(),
     },
   ]);
@@ -31,14 +56,15 @@ export default function App() {
   const handleAddEntry = (e) => {
     e.preventDefault();
 
-    if (!student.trim() || !goal.trim()) {
-      alert("Please enter a student name and goal.");
+    if (!student.trim() || !shortName.trim() || !goal.trim()) {
+      alert("Please enter a student name, short name, and full goal.");
       return;
     }
 
     const newEntry = {
       id: Date.now(),
       student: student.trim(),
+      shortName: shortName.trim(),
       goal: goal.trim(),
       rampType,
       status,
@@ -48,6 +74,7 @@ export default function App() {
 
     setEntries([newEntry, ...entries]);
     setStudent("");
+    setShortName("");
     setGoal("");
     setRampType("Reinforcement");
     setStatus("Met");
@@ -143,7 +170,7 @@ export default function App() {
           >
             <h2 style={{ marginTop: 0 }}>Add New Entry</h2>
             <p style={{ color: "#625b70", marginTop: 0 }}>
-              Track student support and outcomes in one place.
+              Track student support, goals, and outcomes in one place.
             </p>
 
             <form onSubmit={handleAddEntry}>
@@ -156,13 +183,53 @@ export default function App() {
                 style={inputStyle}
               />
 
-              <FormLabel label="Goal" />
+              <FormLabel label="Short Name (Quick Label)" />
               <input
                 type="text"
+                value={shortName}
+                onChange={(e) => setShortName(e.target.value)}
+                placeholder="Example: Following Directions"
+                style={inputStyle}
+              />
+
+              <FormLabel label="Goal" />
+
+              <div
+                style={{
+                  display: "flex",
+                  gap: "8px",
+                  flexWrap: "wrap",
+                  marginBottom: "10px",
+                }}
+              >
+                {goalTemplates.map((template) => (
+                  <button
+                    key={template.name}
+                    type="button"
+                    onClick={() => {
+                      setShortName(template.name);
+                      setGoal(template.text);
+                    }}
+                    style={{
+                      padding: "6px 10px",
+                      borderRadius: "999px",
+                      border: "1px solid #d6cffa",
+                      background: "white",
+                      cursor: "pointer",
+                      fontSize: "0.85rem",
+                    }}
+                  >
+                    {template.name}
+                  </button>
+                ))}
+              </div>
+
+              <textarea
                 value={goal}
                 onChange={(e) => setGoal(e.target.value)}
-                placeholder="Example: Completing work independently"
-                style={inputStyle}
+                placeholder="Enter full IEP-style goal"
+                rows={4}
+                style={{ ...inputStyle, resize: "vertical" }}
               />
 
               <FormLabel label="RaMP Type" />
@@ -191,11 +258,11 @@ export default function App() {
                 ))}
               </select>
 
-              <FormLabel label="Notes" />
+              <FormLabel label="Notes / Examples" />
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Add what strategy was used, what happened, and any follow-up notes."
+                placeholder="Example: Followed direction after one verbal reminder and completed task independently."
                 rows={4}
                 style={{ ...inputStyle, resize: "vertical" }}
               />
@@ -285,6 +352,9 @@ export default function App() {
                       </span>
                     </div>
 
+                    <div style={{ marginBottom: "6px" }}>
+                      <strong>Skill:</strong> {entry.shortName || "—"}
+                    </div>
                     <div style={{ marginBottom: "8px" }}>
                       <strong>Goal:</strong> {entry.goal}
                     </div>
