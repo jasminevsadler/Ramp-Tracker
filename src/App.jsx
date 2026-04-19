@@ -47,6 +47,14 @@ const PROMPT_OPTIONS = [
   "Full Physical",
 ];
 
+const TAB_OPTIONS = [
+  "Dashboard",
+  "Students",
+  "Goals",
+  "Session Data",
+  "History",
+];
+
 const DEFAULT_STUDENTS = [
   {
     id: "student-johnny",
@@ -128,6 +136,10 @@ function App() {
     loadFromStorage("ramp_session_data", {})
   );
 
+  const [activeTab, setActiveTab] = useState(
+    () => loadFromStorage("ramp_active_tab", "Dashboard") || "Dashboard"
+  );
+
   const [studentForm, setStudentForm] = useState({
     name: "",
     grade: "",
@@ -150,10 +162,24 @@ function App() {
     );
   }, [selectedStudentId]);
 
+  useEffect(() => {
+    localStorage.setItem("ramp_active_tab", JSON.stringify(activeTab));
+  }, [activeTab]);
+
   const selectedStudent = useMemo(
     () => students.find((student) => student.id === selectedStudentId),
     [students, selectedStudentId]
   );
+
+  const allHistory = loadFromStorage("ramp_session_history", []);
+  const savedHistory = allHistory.filter(
+    (entry) => entry.studentId === selectedStudentId
+  );
+
+  const selectedStudentGoalCount = selectedStudent?.goals?.length || 0;
+  const selectedStudentEntryCount = savedHistory.length;
+  const totalStudents = students.length;
+  const totalSavedEntries = allHistory.length;
 
   const handleStudentFormChange = (e) => {
     const { name, value, options } = e.target;
@@ -192,6 +218,7 @@ function App() {
 
     setStudents((prev) => [...prev, newStudent]);
     setSelectedStudentId(safeId);
+    setActiveTab("Goals");
 
     setStudentForm({
       name: "",
@@ -199,6 +226,25 @@ function App() {
       caseManager: "",
       disabilities: [],
     });
+  };
+
+  const deleteStudent = (studentId) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this student?"
+    );
+    if (!confirmed) return;
+
+    const updatedStudents = students.filter((student) => student.id !== studentId);
+    setStudents(updatedStudents);
+
+    const remainingHistory = allHistory.filter(
+      (entry) => entry.studentId !== studentId
+    );
+    localStorage.setItem("ramp_session_history", JSON.stringify(remainingHistory));
+
+    if (selectedStudentId === studentId) {
+      setSelectedStudentId(updatedStudents[0]?.id || "");
+    }
   };
 
   const addGoalToStudent = () => {
@@ -396,10 +442,6 @@ function App() {
     alert("All saved session history has been cleared.");
   };
 
-  const savedHistory = loadFromStorage("ramp_session_history", []).filter(
-    (entry) => entry.studentId === selectedStudentId
-  );
-
   const styles = {
     page: {
       minHeight: "100vh",
@@ -420,7 +462,7 @@ function App() {
       borderRadius: "24px",
       padding: "28px",
       boxShadow: "0 20px 50px rgba(37, 99, 235, 0.20)",
-      marginBottom: "24px",
+      marginBottom: "20px",
     },
     heroTitle: {
       fontSize: "34px",
@@ -433,6 +475,33 @@ function App() {
       fontSize: "16px",
       opacity: 0.95,
       lineHeight: 1.5,
+    },
+    tabRow: {
+      display: "flex",
+      flexWrap: "wrap",
+      gap: "10px",
+      marginBottom: "20px",
+    },
+    tab: {
+      border: "1px solid #bfdbfe",
+      background: "#ffffff",
+      color: "#1d4ed8",
+      borderRadius: "14px",
+      padding: "10px 16px",
+      fontSize: "14px",
+      fontWeight: 700,
+      cursor: "pointer",
+    },
+    activeTab: {
+      border: "1px solid #1d4ed8",
+      background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+      color: "#ffffff",
+      borderRadius: "14px",
+      padding: "10px 16px",
+      fontSize: "14px",
+      fontWeight: 700,
+      cursor: "pointer",
+      boxShadow: "0 10px 18px rgba(37, 99, 235, 0.18)",
     },
     grid: {
       display: "grid",
@@ -635,410 +704,281 @@ function App() {
       cursor: "pointer",
       alignSelf: "flex-start",
     },
+    metricGrid: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+      gap: "16px",
+    },
+    metricCard: {
+      background: "linear-gradient(180deg, #eff6ff 0%, #ffffff 100%)",
+      border: "1px solid #bfdbfe",
+      borderRadius: "20px",
+      padding: "18px",
+    },
+    metricValue: {
+      fontSize: "30px",
+      fontWeight: 800,
+      color: "#1d4ed8",
+      marginBottom: "6px",
+    },
+    metricLabel: {
+      fontSize: "14px",
+      color: "#475569",
+      fontWeight: 600,
+    },
+    studentListItem: {
+      border: "1px solid #dbeafe",
+      borderRadius: "18px",
+      padding: "16px",
+      background: "#ffffff",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "flex-start",
+      gap: "14px",
+      marginBottom: "14px",
+      flexWrap: "wrap",
+    },
   };
 
-  return (
-    <div style={styles.page}>
-      <style>{`
-        * { box-sizing: border-box; }
-        body { margin: 0; }
-        input, select, textarea, button { font: inherit; }
-        input:focus, select:focus, textarea:focus {
-          border-color: #3b82f6 !important;
-          box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
-        }
-        button:hover { filter: brightness(0.98); }
-        @media (max-width: 1100px) {
-          .ramp-grid {
-            grid-template-columns: 1fr !important;
-          }
-        }
-        @media (max-width: 700px) {
-          .ramp-two-col {
-            grid-template-columns: 1fr !important;
-          }
-        }
-      `}</style>
+  const renderSidebar = () => (
+    <div style={styles.sidebar}>
+      <div style={styles.card}>
+        <h2 style={styles.cardTitle}>Select Student</h2>
 
-      <div style={styles.container}>
-        <div style={styles.hero}>
-          <h1 style={styles.heroTitle}>RaMP Tracker</h1>
-          <div style={styles.heroText}>
-            Track student goals with clean visuals, simple data collection, prompt levels,
-            examples, and exportable records.
+        <select
+          value={selectedStudentId}
+          onChange={(e) => setSelectedStudentId(e.target.value)}
+          style={styles.input}
+        >
+          {students.map((student) => (
+            <option key={student.id} value={student.id}>
+              {student.name}
+            </option>
+          ))}
+        </select>
+
+        {selectedStudent && (
+          <div style={styles.studentSummary}>
+            <div><strong>Name:</strong> {selectedStudent.name}</div>
+            <div><strong>Grade:</strong> {selectedStudent.grade || "-"}</div>
+            <div><strong>Case Manager:</strong> {selectedStudent.caseManager || "-"}</div>
+            <div>
+              <strong>Disability / Eligibility:</strong>{" "}
+              {selectedStudent.disabilities?.length
+                ? selectedStudent.disabilities.join(", ")
+                : "-"}
+            </div>
+            <div><strong>Goals:</strong> {selectedStudent.goals?.length || 0}</div>
+            <div><strong>Saved Entries:</strong> {savedHistory.length}</div>
           </div>
-        </div>
+        )}
+      </div>
 
-        <div className="ramp-grid" style={styles.grid}>
-          <div style={styles.sidebar}>
-            <div style={styles.card}>
-              <h2 style={styles.cardTitle}>Add Student</h2>
+      <div style={styles.card}>
+        <h2 style={styles.cardTitle}>Data Options</h2>
 
-              <form onSubmit={addStudent}>
-                <div style={{ marginBottom: "14px" }}>
-                  <label style={styles.label}>Student Name</label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={studentForm.name}
-                    onChange={handleStudentFormChange}
-                    style={styles.input}
-                    placeholder="Enter student name"
-                  />
-                </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <button onClick={exportCSV} style={styles.buttonGreen}>
+            Export CSV
+          </button>
 
-                <div style={{ marginBottom: "14px" }}>
-                  <label style={styles.label}>Grade</label>
-                  <select
-                    name="grade"
-                    value={studentForm.grade}
-                    onChange={handleStudentFormChange}
-                    style={styles.input}
-                  >
-                    <option value="">Select grade</option>
-                    {GRADE_OPTIONS.map((grade) => (
-                      <option key={grade} value={grade}>
-                        {grade}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div style={{ marginBottom: "14px" }}>
-                  <label style={styles.label}>Case Manager</label>
-                  <input
-                    type="text"
-                    name="caseManager"
-                    value={studentForm.caseManager}
-                    onChange={handleStudentFormChange}
-                    style={styles.input}
-                    placeholder="Enter case manager"
-                  />
-                </div>
-
-                <div style={{ marginBottom: "16px" }}>
-                  <label style={styles.label}>Disability / Eligibility</label>
-                  <select
-                    name="disabilities"
-                    multiple
-                    value={studentForm.disabilities}
-                    onChange={handleStudentFormChange}
-                    style={styles.multiSelect}
-                  >
-                    {DISABILITY_OPTIONS.map((item) => (
-                      <option key={item} value={item}>
-                        {item}
-                      </option>
-                    ))}
-                  </select>
-                  <div style={styles.smallText}>
-                    Hold Ctrl (Windows) or Command (Mac) to select more than one.
-                  </div>
-                </div>
-
-                <button type="submit" style={styles.buttonPrimary}>
-                  Add Student
-                </button>
-              </form>
-            </div>
-
-            <div style={styles.card}>
-              <h2 style={styles.cardTitle}>Select Student</h2>
-
-              <select
-                value={selectedStudentId}
-                onChange={(e) => setSelectedStudentId(e.target.value)}
-                style={styles.input}
-              >
-                {students.map((student) => (
-                  <option key={student.id} value={student.id}>
-                    {student.name}
-                  </option>
-                ))}
-              </select>
-
-              {selectedStudent && (
-                <div style={styles.studentSummary}>
-                  <div><strong>Name:</strong> {selectedStudent.name}</div>
-                  <div><strong>Grade:</strong> {selectedStudent.grade || "-"}</div>
-                  <div><strong>Case Manager:</strong> {selectedStudent.caseManager || "-"}</div>
-                  <div>
-                    <strong>Disability / Eligibility:</strong>{" "}
-                    {selectedStudent.disabilities?.length
-                      ? selectedStudent.disabilities.join(", ")
-                      : "-"}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div style={styles.card}>
-              <h2 style={styles.cardTitle}>Data Options</h2>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                <button onClick={exportCSV} style={styles.buttonGreen}>
-                  Export CSV
-                </button>
-
-                <button onClick={clearAllSavedSessions} style={styles.buttonRed}>
-                  Clear Saved Session History
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-            <div style={styles.card}>
-              <div style={styles.topBar}>
-                <h2 style={styles.sectionTitle}>Goals & Objectives</h2>
-                <button onClick={addGoalToStudent} style={styles.buttonSecondary}>
-                  Add Goal
-                </button>
-              </div>
-
-              {!selectedStudent ? (
-                <div>No student selected.</div>
-              ) : selectedStudent.goals.length === 0 ? (
-                <div>No goals added for this student yet.</div>
-              ) : (
-                <div>
-                  {selectedStudent.goals.map((goal) => {
-                    const key = getGoalSessionKey(selectedStudent.id, goal.id);
-                    const currentSession = sessionData[key] || {
-                      date: new Date().toISOString().slice(0, 10),
-                      score: "",
-                      promptLevel: "",
-                      notes: "",
-                    };
-
-                    return (
-                      <div key={goal.id} style={styles.goalCard}>
-                        <div
-                          className="ramp-two-col"
-                          style={{
-                            display: "grid",
-                            gridTemplateColumns: "1fr auto",
-                            gap: "14px",
-                            alignItems: "start",
-                          }}
-                        >
-                          <div>
-                            <div style={{ marginBottom: "12px" }}>
-                              <label style={styles.label}>Goal Title</label>
-                              <input
-                                type="text"
-                                value={goal.title}
-                                onChange={(e) =>
-                                  updateGoalField(goal.id, "title", e.target.value)
-                                }
-                                style={styles.input}
-                              />
-                            </div>
-
-                            <div style={{ marginBottom: "12px" }}>
-                              <label style={styles.label}>Short Name</label>
-                              <input
-                                type="text"
-                                value={goal.shortName || ""}
-                                onChange={(e) =>
-                                  updateGoalField(goal.id, "shortName", e.target.value)
-                                }
-                                style={styles.input}
-                              />
-                            </div>
-
-                            <div style={{ marginBottom: "12px" }}>
-                              <label style={styles.label}>Objective</label>
-                              <textarea
-                                value={goal.objective || ""}
-                                onChange={(e) =>
-                                  updateGoalField(goal.id, "objective", e.target.value)
-                                }
-                                style={{ ...styles.textarea, minHeight: "110px" }}
-                              />
-                            </div>
-
-                            <div style={{ marginBottom: "12px" }}>
-                              <label style={styles.label}>Examples</label>
-                              <textarea
-                                value={goal.example || ""}
-                                onChange={(e) =>
-                                  updateGoalField(goal.id, "example", e.target.value)
-                                }
-                                style={{ ...styles.textarea, minHeight: "90px" }}
-                              />
-                            </div>
-
-                            <div className="ramp-two-col" style={styles.twoCol}>
-                              <div>
-                                <label style={styles.label}>Baseline</label>
-                                <input
-                                  type="text"
-                                  value={goal.baseline || ""}
-                                  onChange={(e) =>
-                                    updateGoalField(goal.id, "baseline", e.target.value)
-                                  }
-                                  style={styles.input}
-                                />
-                              </div>
-
-                              <div>
-                                <label style={styles.label}>Mastery</label>
-                                <input
-                                  type="text"
-                                  value={goal.mastery || ""}
-                                  onChange={(e) =>
-                                    updateGoalField(goal.id, "mastery", e.target.value)
-                                  }
-                                  style={styles.input}
-                                />
-                              </div>
-                            </div>
-                          </div>
-
-                          <button
-                            onClick={() => removeGoal(goal.id)}
-                            style={styles.deleteButton}
-                          >
-                            Delete Goal
-                          </button>
-                        </div>
-
-                        <div style={styles.sessionBox}>
-                          <div
-                            style={{
-                              fontWeight: 700,
-                              marginBottom: "12px",
-                              color: "#1e3a8a",
-                              fontSize: "17px",
-                            }}
-                          >
-                            Record Session Data
-                          </div>
-
-                          <div style={styles.sessionGrid}>
-                            <div>
-                              <label style={styles.label}>Date</label>
-                              <input
-                                type="date"
-                                value={currentSession.date}
-                                onChange={(e) =>
-                                  handleSessionChange(goal.id, "date", e.target.value)
-                                }
-                                style={styles.input}
-                              />
-                            </div>
-
-                            <div>
-                              <label style={styles.label}>Score</label>
-                              <select
-                                value={currentSession.score}
-                                onChange={(e) =>
-                                  handleSessionChange(goal.id, "score", e.target.value)
-                                }
-                                style={styles.input}
-                              >
-                                <option value="">Select score</option>
-                                <option value="0">0 = Not demonstrating</option>
-                                <option value="1">1 = With prompts</option>
-                                <option value="2">2 = Independent</option>
-                              </select>
-                            </div>
-
-                            {currentSession.score === "1" && (
-                              <div>
-                                <label style={styles.label}>Prompt Level</label>
-                                <select
-                                  value={currentSession.promptLevel}
-                                  onChange={(e) =>
-                                    handleSessionChange(
-                                      goal.id,
-                                      "promptLevel",
-                                      e.target.value
-                                    )
-                                  }
-                                  style={styles.input}
-                                >
-                                  <option value="">Select prompt</option>
-                                  {PROMPT_OPTIONS.map((prompt) => (
-                                    <option key={prompt} value={prompt}>
-                                      {prompt}
-                                    </option>
-                                  ))}
-                                </select>
-                              </div>
-                            )}
-                          </div>
-
-                          <div style={{ marginBottom: "12px" }}>
-                            <label style={styles.label}>Notes</label>
-                            <textarea
-                              value={currentSession.notes}
-                              onChange={(e) =>
-                                handleSessionChange(goal.id, "notes", e.target.value)
-                              }
-                              style={styles.textarea}
-                              placeholder="Add notes about the session..."
-                            />
-                          </div>
-
-                          <button
-                            onClick={() => saveSessionEntry(goal)}
-                            style={{
-                              ...styles.buttonPrimary,
-                              width: "auto",
-                              padding: "12px 18px",
-                            }}
-                          >
-                            Save Session
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            <div style={styles.card}>
-              <h2 style={styles.sectionTitle}>Saved History</h2>
-
-              {!savedHistory.length ? (
-                <div>No saved entries yet for this student.</div>
-              ) : (
-                <div style={styles.tableWrap}>
-                  <table style={styles.table}>
-                    <thead>
-                      <tr>
-                        <th style={styles.th}>Date</th>
-                        <th style={styles.th}>Goal</th>
-                        <th style={styles.th}>Short Name</th>
-                        <th style={styles.th}>Score</th>
-                        <th style={styles.th}>Prompt</th>
-                        <th style={styles.th}>Notes</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {[...savedHistory].reverse().map((entry) => (
-                        <tr key={entry.id}>
-                          <td style={styles.td}>{entry.date}</td>
-                          <td style={styles.td}>{entry.goalTitle}</td>
-                          <td style={styles.td}>{entry.shortName}</td>
-                          <td style={styles.td}>{entry.score}</td>
-                          <td style={styles.td}>{entry.promptLevel || "-"}</td>
-                          <td style={styles.td}>{entry.notes || "-"}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          </div>
+          <button onClick={clearAllSavedSessions} style={styles.buttonRed}>
+            Clear Saved Session History
+          </button>
         </div>
       </div>
     </div>
   );
-}
 
-export default App;
+  const renderDashboard = () => (
+    <div style={styles.card}>
+      <h2 style={styles.sectionTitle}>Dashboard</h2>
+
+      <div style={styles.metricGrid}>
+        <div style={styles.metricCard}>
+          <div style={styles.metricValue}>{totalStudents}</div>
+          <div style={styles.metricLabel}>Total Students</div>
+        </div>
+
+        <div style={styles.metricCard}>
+          <div style={styles.metricValue}>{selectedStudentGoalCount}</div>
+          <div style={styles.metricLabel}>Goals for Selected Student</div>
+        </div>
+
+        <div style={styles.metricCard}>
+          <div style={styles.metricValue}>{selectedStudentEntryCount}</div>
+          <div style={styles.metricLabel}>Saved Entries for Selected Student</div>
+        </div>
+
+        <div style={styles.metricCard}>
+          <div style={styles.metricValue}>{totalSavedEntries}</div>
+          <div style={styles.metricLabel}>All Saved Entries</div>
+        </div>
+      </div>
+
+      {selectedStudent && (
+        <div style={{ marginTop: "24px" }}>
+          <h3 style={{ ...styles.cardTitle, marginBottom: "12px" }}>
+            Current Student Snapshot
+          </h3>
+          <div style={styles.studentSummary}>
+            <div><strong>Name:</strong> {selectedStudent.name}</div>
+            <div><strong>Grade:</strong> {selectedStudent.grade || "-"}</div>
+            <div><strong>Case Manager:</strong> {selectedStudent.caseManager || "-"}</div>
+            <div>
+              <strong>Disability / Eligibility:</strong>{" "}
+              {selectedStudent.disabilities?.length
+                ? selectedStudent.disabilities.join(", ")
+                : "-"}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderStudents = () => (
+    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+      <div style={styles.card}>
+        <h2 style={styles.sectionTitle}>Add Student</h2>
+
+        <form onSubmit={addStudent}>
+          <div style={{ marginBottom: "14px" }}>
+            <label style={styles.label}>Student Name</label>
+            <input
+              type="text"
+              name="name"
+              value={studentForm.name}
+              onChange={handleStudentFormChange}
+              style={styles.input}
+              placeholder="Enter student name"
+            />
+          </div>
+
+          <div style={{ marginBottom: "14px" }}>
+            <label style={styles.label}>Grade</label>
+            <select
+              name="grade"
+              value={studentForm.grade}
+              onChange={handleStudentFormChange}
+              style={styles.input}
+            >
+              <option value="">Select grade</option>
+              {GRADE_OPTIONS.map((grade) => (
+                <option key={grade} value={grade}>
+                  {grade}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div style={{ marginBottom: "14px" }}>
+            <label style={styles.label}>Case Manager</label>
+            <input
+              type="text"
+              name="caseManager"
+              value={studentForm.caseManager}
+              onChange={handleStudentFormChange}
+              style={styles.input}
+              placeholder="Enter case manager"
+            />
+          </div>
+
+          <div style={{ marginBottom: "16px" }}>
+            <label style={styles.label}>Disability / Eligibility</label>
+            <select
+              name="disabilities"
+              multiple
+              value={studentForm.disabilities}
+              onChange={handleStudentFormChange}
+              style={styles.multiSelect}
+            >
+              {DISABILITY_OPTIONS.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </select>
+            <div style={styles.smallText}>
+              Hold Ctrl (Windows) or Command (Mac) to select more than one.
+            </div>
+          </div>
+
+          <button type="submit" style={styles.buttonPrimary}>
+            Add Student
+          </button>
+        </form>
+      </div>
+
+      <div style={styles.card}>
+        <h2 style={styles.sectionTitle}>Student List</h2>
+
+        {students.length === 0 ? (
+          <div>No students yet.</div>
+        ) : (
+          students.map((student) => (
+            <div key={student.id} style={styles.studentListItem}>
+              <div style={{ flex: 1, minWidth: "220px" }}>
+                <div style={{ fontSize: "18px", fontWeight: 700, color: "#1e3a8a" }}>
+                  {student.name}
+                </div>
+                <div style={{ marginTop: "6px", lineHeight: 1.7, fontSize: "14px" }}>
+                  <div><strong>Grade:</strong> {student.grade || "-"}</div>
+                  <div><strong>Case Manager:</strong> {student.caseManager || "-"}</div>
+                  <div>
+                    <strong>Disability / Eligibility:</strong>{" "}
+                    {student.disabilities?.length
+                      ? student.disabilities.join(", ")
+                      : "-"}
+                  </div>
+                  <div><strong>Goals:</strong> {student.goals?.length || 0}</div>
+                </div>
+              </div>
+
+              <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                <button
+                  onClick={() => {
+                    setSelectedStudentId(student.id);
+                    setActiveTab("Dashboard");
+                  }}
+                  style={styles.buttonSecondary}
+                >
+                  Select
+                </button>
+
+                <button
+                  onClick={() => deleteStudent(student.id)}
+                  style={styles.deleteButton}
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+
+  const renderGoals = () => (
+    <div style={styles.card}>
+      <div style={styles.topBar}>
+        <h2 style={styles.sectionTitle}>Goals & Objectives</h2>
+        <button onClick={addGoalToStudent} style={styles.buttonSecondary}>
+          Add Goal
+        </button>
+      </div>
+
+      {!selectedStudent ? (
+        <div>No student selected.</div>
+      ) : selectedStudent.goals.length === 0 ? (
+        <div>No goals added for this student yet.</div>
+      ) : (
+        <div>
+          {selectedStudent.goals.map((goal) => (
+            <div key={goal.id} style={styles.goalCard}>
+              <div
+                className="ramp-two-col"
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1
