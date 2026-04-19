@@ -48,22 +48,29 @@ const PROMPT_OPTIONS = [
 ];
 
 const COLLECTION_METHODS = ["rating", "interval"];
-const INTERVAL_TYPES = ["Whole Interval", "Partial Interval", "Momentary Time Sampling"];
+const INTERVAL_TYPES = [
+  "Whole Interval",
+  "Partial Interval",
+  "Momentary Time Sampling",
+];
+
+const SETTING_OPTIONS = ["School", "Home", "Therapy", "Community", "Other"];
 
 const DEFAULT_STUDENTS = [
   {
     id: "student-johnny",
     name: "Johnny",
     grade: "3",
-    caseManager: "Ms. Williams",
+    supportPerson: "Ms. Williams",
     disabilities: ["Autism", "ADHD"],
+    setting: "School",
     goals: [
       {
         id: "goal-following-directions",
         title: "Following Directions",
         shortName: "Directions",
         objective:
-          "When given a verbal reminder, Johnny will follow directions within 30 seconds by saying 'okay,' beginning the task, or moving to the expected location.",
+          "When given a reminder, Johnny will follow directions within 30 seconds by saying 'okay,' beginning the task, or moving to the expected location across settings.",
         example:
           "Examples: starts work after teacher says 'Please begin,' lines up when directed, puts materials away after one reminder.",
         baseline: "0/5 opportunities independently",
@@ -317,8 +324,9 @@ function App() {
   const [studentForm, setStudentForm] = useState({
     name: "",
     grade: "",
-    caseManager: "",
+    supportPerson: "",
     disabilities: [],
+    setting: "",
   });
 
   useEffect(() => {
@@ -403,8 +411,9 @@ function App() {
       id: safeId,
       name: studentForm.name.trim(),
       grade: studentForm.grade,
-      caseManager: studentForm.caseManager.trim(),
+      supportPerson: studentForm.supportPerson.trim(),
       disabilities: studentForm.disabilities || [],
+      setting: studentForm.setting || "",
       goals: [],
     };
 
@@ -415,8 +424,9 @@ function App() {
     setStudentForm({
       name: "",
       grade: "",
-      caseManager: "",
+      supportPerson: "",
       disabilities: [],
+      setting: "",
     });
   };
 
@@ -511,7 +521,7 @@ function App() {
 
   const getGoalSessionKey = (studentId, goalId) => `${studentId}__${goalId}`;
 
-  const getDefaultSessionForGoal = (goal) => ({
+  const getDefaultSessionForGoal = () => ({
     date: new Date().toISOString().slice(0, 10),
     score: "",
     promptLevel: "",
@@ -541,7 +551,7 @@ function App() {
     const key = getGoalSessionKey(selectedStudent.id, goal.id);
 
     setSessionData((prev) => {
-      const current = prev[key] || getDefaultSessionForGoal(goal);
+      const current = prev[key] || getDefaultSessionForGoal();
 
       const updated = {
         ...current,
@@ -578,7 +588,7 @@ function App() {
     const key = getGoalSessionKey(selectedStudent.id, goal.id);
 
     setSessionData((prev) => {
-      const current = prev[key] || getDefaultSessionForGoal(goal);
+      const current = prev[key] || getDefaultSessionForGoal();
       const nextResults = [...(current.intervalResults || [])];
       nextResults[index] = value;
 
@@ -596,7 +606,7 @@ function App() {
     if (!selectedStudent) return;
 
     const key = getGoalSessionKey(selectedStudent.id, goal.id);
-    const entry = sessionData[key] || getDefaultSessionForGoal(goal);
+    const entry = sessionData[key] || getDefaultSessionForGoal();
 
     const historyKey = "ramp_session_history";
     const existingHistory = loadFromStorage(historyKey, []);
@@ -627,8 +637,9 @@ function App() {
         studentId: selectedStudent.id,
         studentName: selectedStudent.name,
         grade: selectedStudent.grade || "",
-        caseManager: selectedStudent.caseManager || "",
+        supportPerson: selectedStudent.supportPerson || "",
         disabilities: (selectedStudent.disabilities || []).join(", "),
+        setting: selectedStudent.setting || "",
         goalId: goal.id,
         goalTitle: goal.title,
         shortName: goal.shortName || "",
@@ -661,8 +672,9 @@ function App() {
       studentId: selectedStudent.id,
       studentName: selectedStudent.name,
       grade: selectedStudent.grade || "",
-      caseManager: selectedStudent.caseManager || "",
+      supportPerson: selectedStudent.supportPerson || "",
       disabilities: (selectedStudent.disabilities || []).join(", "),
+      setting: selectedStudent.setting || "",
       goalId: goal.id,
       goalTitle: goal.title,
       shortName: goal.shortName || "",
@@ -691,8 +703,9 @@ function App() {
     const headers = [
       "Student Name",
       "Grade",
-      "Case Manager",
+      "Support Person",
       "Disabilities",
+      "Setting",
       "Goal Title",
       "Short Name",
       "Objective",
@@ -712,8 +725,9 @@ function App() {
     const rows = history.map((item) => [
       item.studentName,
       item.grade,
-      item.caseManager,
+      item.supportPerson,
       item.disabilities,
+      item.setting,
       item.goalTitle,
       item.shortName,
       item.objective,
@@ -1033,6 +1047,43 @@ function App() {
 
   const renderDashboard = () => (
     <>
+      <div
+        style={{
+          background: "linear-gradient(135deg, #16a34a, #22c55e)",
+          color: "white",
+          borderRadius: "20px",
+          padding: "18px",
+          marginBottom: "20px",
+          boxShadow: "0 10px 25px rgba(34,197,94,0.25)",
+        }}
+      >
+        <div style={{ fontSize: "20px", fontWeight: 800, marginBottom: "6px" }}>
+          🎉 Founding Member Pricing
+        </div>
+
+        <div style={{ fontSize: "14px", marginBottom: "10px", opacity: 0.95 }}>
+          Get full access to RaMP Tracker for <strong>$5/month</strong>. Lock in
+          your price for life.
+        </div>
+
+        <button
+          style={{
+            background: "white",
+            color: "#16a34a",
+            border: "none",
+            borderRadius: "10px",
+            padding: "8px 14px",
+            fontWeight: 700,
+            cursor: "pointer",
+          }}
+          onClick={() =>
+            alert("Payment integration coming next. You’ll be able to subscribe soon!")
+          }
+        >
+          Upgrade Now
+        </button>
+      </div>
+
       <div style={styles.card}>
         <h2 style={styles.cardTitle}>Dashboard</h2>
         <div style={styles.summaryGrid}>
@@ -1065,7 +1116,8 @@ function App() {
           <div style={styles.studentCard}>
             <div><strong>Name:</strong> {selectedStudent.name}</div>
             <div><strong>Grade:</strong> {selectedStudent.grade || "-"}</div>
-            <div><strong>Case Manager:</strong> {selectedStudent.caseManager || "-"}</div>
+            <div><strong>Support Person:</strong> {selectedStudent.supportPerson || "-"}</div>
+            <div><strong>Setting:</strong> {selectedStudent.setting || "-"}</div>
             <div>
               <strong>Disability / Eligibility:</strong>{" "}
               {selectedStudent.disabilities?.length
@@ -1100,7 +1152,13 @@ function App() {
       <div style={styles.card}>
         <h2 style={styles.cardTitle}>Add Student</h2>
         <form onSubmit={addStudent}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "14px" }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+              gap: "14px",
+            }}
+          >
             <div>
               <label style={styles.label}>Student Name</label>
               <input
@@ -1131,15 +1189,32 @@ function App() {
             </div>
 
             <div>
-              <label style={styles.label}>Case Manager</label>
+              <label style={styles.label}>Support Person</label>
               <input
                 type="text"
-                name="caseManager"
-                value={studentForm.caseManager}
+                name="supportPerson"
+                value={studentForm.supportPerson}
                 onChange={handleStudentFormChange}
                 style={styles.input}
-                placeholder="Enter case manager"
+                placeholder="Teacher, parent, therapist, etc."
               />
+            </div>
+
+            <div>
+              <label style={styles.label}>Primary Setting</label>
+              <select
+                name="setting"
+                value={studentForm.setting}
+                onChange={handleStudentFormChange}
+                style={styles.input}
+              >
+                <option value="">Select setting</option>
+                {SETTING_OPTIONS.map((setting) => (
+                  <option key={setting} value={setting}>
+                    {setting}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -1191,11 +1266,19 @@ function App() {
         <div style={styles.studentGrid}>
           {students.map((student) => (
             <div key={student.id} style={styles.studentCard}>
-              <div style={{ fontWeight: 800, fontSize: "18px", color: "#1e3a8a", marginBottom: "10px" }}>
+              <div
+                style={{
+                  fontWeight: 800,
+                  fontSize: "18px",
+                  color: "#1e3a8a",
+                  marginBottom: "10px",
+                }}
+              >
                 {student.name}
               </div>
               <div><strong>Grade:</strong> {student.grade || "-"}</div>
-              <div><strong>Case Manager:</strong> {student.caseManager || "-"}</div>
+              <div><strong>Support Person:</strong> {student.supportPerson || "-"}</div>
+              <div><strong>Setting:</strong> {student.setting || "-"}</div>
               <div>
                 <strong>Disability / Eligibility:</strong>{" "}
                 {student.disabilities?.length ? student.disabilities.join(", ") : "-"}
@@ -1228,7 +1311,7 @@ function App() {
 
   const renderGoalSessionInputs = (goal) => {
     const key = getGoalSessionKey(selectedStudent.id, goal.id);
-    const currentSession = sessionData[key] || getDefaultSessionForGoal(goal);
+    const currentSession = sessionData[key] || getDefaultSessionForGoal();
 
     if (goal.collectionMethod === "interval") {
       const intervalResults = syncIntervalArray(
@@ -1664,6 +1747,13 @@ function App() {
             Export CSV
           </button>
 
+          <button
+            onClick={() => alert("Printable reports coming next!")}
+            style={styles.buttonPrimary}
+          >
+            Print Progress Report
+          </button>
+
           <button onClick={clearAllSavedSessions} style={styles.buttonRed}>
             Clear Saved Session History
           </button>
@@ -1748,8 +1838,8 @@ function App() {
         <div style={styles.hero}>
           <h1 style={styles.heroTitle}>RaMP Tracker</h1>
           <div style={styles.heroText}>
-            Track student goals with rating scales, interval data, saved history,
-            and progress graphs.
+            Track progress. Build skills. Support growth across school, home,
+            and therapy using clear prompt-level and interval data.
           </div>
         </div>
 
