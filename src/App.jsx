@@ -41,6 +41,38 @@ const DISABILITY_OPTIONS = [
 
 const SETTING_OPTIONS = ["School", "Home", "Therapy", "Community", "Other"];
 
+const SESSION_LOCATION_OPTIONS = [
+  "Classroom",
+  "Cafeteria",
+  "Gym",
+  "Hallway",
+  "Bathroom",
+  "Playground",
+  "Bus",
+  "Therapy Room",
+  "Resource Room",
+  "Small Group",
+  "Specials",
+  "Home",
+  "Community",
+  "Other",
+];
+
+const COLLECTED_BY_OPTIONS = [
+  "Teacher",
+  "Parent/Caregiver",
+  "Paraprofessional",
+  "Behavior Specialist",
+  "BCBA",
+  "SLP",
+  "OT",
+  "PT",
+  "Counselor",
+  "Administrator",
+  "Student",
+  "Other",
+];
+
 const PROMPT_OPTIONS = [
   "Gestural",
   "Verbal",
@@ -416,7 +448,7 @@ function App() {
 
     setStudents((prev) => [...prev, newStudent]);
     setSelectedStudentId(safeId);
-    setActiveTab("students");
+    setActiveTab("dashboard");
 
     setStudentForm({
       name: "",
@@ -518,6 +550,8 @@ function App() {
 
   const getDefaultSessionForGoal = () => ({
     date: new Date().toISOString().slice(0, 10),
+    location: "Classroom",
+    collectedBy: "Teacher",
     score: "",
     promptLevel: "",
     notes: "",
@@ -640,6 +674,8 @@ function App() {
         shortName: goal.shortName || "",
         objective: goal.objective || "",
         date: entry.date || "",
+        location: entry.location || "",
+        collectedBy: entry.collectedBy || "",
         collectionMethod: "interval",
         intervalType: entry.intervalType || "Whole Interval",
         sessionLength,
@@ -677,6 +713,8 @@ function App() {
       shortName: goal.shortName || "",
       objective: goal.objective || "",
       date: entry.date || "",
+      location: entry.location || "",
+      collectedBy: entry.collectedBy || "",
       collectionMethod: "rating",
       score: entry.score || "",
       promptLevel: entry.score === "1" ? entry.promptLevel || "" : "",
@@ -703,11 +741,13 @@ function App() {
       "Grade",
       "Support Person",
       "Disabilities",
-      "Setting",
+      "Primary Setting",
       "Goal Title",
       "Short Name",
       "Objective",
       "Date",
+      "Location",
+      "Collected By",
       "Collection Method",
       "Score",
       "Prompt Level",
@@ -730,6 +770,8 @@ function App() {
       item.shortName,
       item.objective,
       item.date,
+      item.location ?? "",
+      item.collectedBy ?? "",
       item.collectionMethod || "rating",
       item.score ?? "",
       item.promptLevel ?? "",
@@ -1455,6 +1497,40 @@ function App() {
                         </div>
 
                         <div>
+                          <label style={styles.label}>Location</label>
+                          <select
+                            value={currentSession.location}
+                            onChange={(e) =>
+                              handleSessionChange(goal, "location", e.target.value)
+                            }
+                            style={styles.input}
+                          >
+                            {SESSION_LOCATION_OPTIONS.map((location) => (
+                              <option key={location} value={location}>
+                                {location}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label style={styles.label}>Collected By</label>
+                          <select
+                            value={currentSession.collectedBy}
+                            onChange={(e) =>
+                              handleSessionChange(goal, "collectedBy", e.target.value)
+                            }
+                            style={styles.input}
+                          >
+                            {COLLECTED_BY_OPTIONS.map((person) => (
+                              <option key={person} value={person}>
+                                {person}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
                           <label style={styles.label}>Interval Type</label>
                           <select
                             value={currentSession.intervalType}
@@ -1627,6 +1703,40 @@ function App() {
                         </div>
 
                         <div>
+                          <label style={styles.label}>Location</label>
+                          <select
+                            value={currentSession.location}
+                            onChange={(e) =>
+                              handleSessionChange(goal, "location", e.target.value)
+                            }
+                            style={styles.input}
+                          >
+                            {SESSION_LOCATION_OPTIONS.map((location) => (
+                              <option key={location} value={location}>
+                                {location}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label style={styles.label}>Collected By</label>
+                          <select
+                            value={currentSession.collectedBy}
+                            onChange={(e) =>
+                              handleSessionChange(goal, "collectedBy", e.target.value)
+                            }
+                            style={styles.input}
+                          >
+                            {COLLECTED_BY_OPTIONS.map((person) => (
+                              <option key={person} value={person}>
+                                {person}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
                           <label style={styles.label}>Score</label>
                           <select
                             value={currentSession.score}
@@ -1725,6 +1835,8 @@ function App() {
                   <tr>
                     <th style={styles.th}>Date</th>
                     <th style={styles.th}>Goal</th>
+                    <th style={styles.th}>Location</th>
+                    <th style={styles.th}>Collected By</th>
                     <th style={styles.th}>Method</th>
                     <th style={styles.th}>Score / %</th>
                     <th style={styles.th}>Prompt / Interval</th>
@@ -1736,6 +1848,8 @@ function App() {
                     <tr key={entry.id}>
                       <td style={styles.td}>{entry.date}</td>
                       <td style={styles.td}>{entry.goalTitle}</td>
+                      <td style={styles.td}>{entry.location || "-"}</td>
+                      <td style={styles.td}>{entry.collectedBy || "-"}</td>
                       <td style={styles.td}>
                         {entry.collectionMethod === "interval"
                           ? "Interval"
