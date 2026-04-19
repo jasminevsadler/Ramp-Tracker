@@ -47,6 +47,9 @@ const PROMPT_OPTIONS = [
   "Full Physical",
 ];
 
+const COLLECTION_METHODS = ["rating", "interval"];
+const INTERVAL_TYPES = ["Whole Interval", "Partial Interval", "Momentary Time Sampling"];
+
 const DEFAULT_STUDENTS = [
   {
     id: "student-johnny",
@@ -65,6 +68,7 @@ const DEFAULT_STUDENTS = [
           "Examples: starts work after teacher says 'Please begin,' lines up when directed, puts materials away after one reminder.",
         baseline: "0/5 opportunities independently",
         mastery: "4/5 opportunities across 3 consecutive sessions",
+        collectionMethod: "rating",
       },
       {
         id: "goal-calm-frustration",
@@ -76,6 +80,7 @@ const DEFAULT_STUDENTS = [
           "Examples: asks for help when confused, takes a breathing break, says 'I need a minute,' uses calm words instead of arguing.",
         baseline: "1/5 opportunities",
         mastery: "4/5 opportunities across 3 consecutive sessions",
+        collectionMethod: "rating",
       },
       {
         id: "goal-peer-interactions",
@@ -87,6 +92,7 @@ const DEFAULT_STUDENTS = [
           "Examples: says hello, asks to play, shares supplies, takes turns in a game, uses kind responses with classmates.",
         baseline: "2/5 opportunities",
         mastery: "4/5 opportunities across 3 consecutive sessions",
+        collectionMethod: "rating",
       },
       {
         id: "goal-staying-focused",
@@ -97,7 +103,8 @@ const DEFAULT_STUDENTS = [
         example:
           "Examples: keeps working during independent work, finishes a class assignment, returns to task after distraction, completes steps of an activity.",
         baseline: "1/5 opportunities",
-        mastery: "4/5 opportunities across 3 consecutive sessions",
+        mastery: "80% across 3 consecutive sessions",
+        collectionMethod: "interval",
       },
     ],
   },
@@ -112,7 +119,7 @@ function loadFromStorage(key, fallback) {
   }
 }
 
-function GraphCard({ title, points }) {
+function GraphCard({ title, points, mode }) {
   const width = 700;
   const height = 240;
   const padLeft = 50;
@@ -150,24 +157,27 @@ function GraphCard({ title, points }) {
   }
 
   const sorted = [...points].sort((a, b) => a.date.localeCompare(b.date));
+  const maxY = mode === "interval" ? 100 : 2;
 
   const xForIndex = (index) => {
     if (sorted.length === 1) return padLeft + chartWidth / 2;
     return padLeft + (index / (sorted.length - 1)) * chartWidth;
   };
 
-  const yForScore = (score) => {
-    const normalized = Number(score) / 2;
+  const yForValue = (value) => {
+    const normalized = Number(value) / maxY;
     return padTop + chartHeight - normalized * chartHeight;
   };
 
   const pathD = sorted
     .map((point, index) => {
       const x = xForIndex(index);
-      const y = yForScore(point.score);
+      const y = yForValue(point.value);
       return `${index === 0 ? "M" : "L"} ${x} ${y}`;
     })
     .join(" ");
+
+  const ticks = mode === "interval" ? [0, 25, 50, 75, 100] : [0, 1, 2];
 
   return (
     <div
@@ -213,8 +223,8 @@ function GraphCard({ title, points }) {
             strokeWidth="1.5"
           />
 
-          {[0, 1, 2].map((tick) => {
-            const y = yForScore(tick);
+          {ticks.map((tick) => {
+            const y = yForValue(tick);
             return (
               <g key={tick}>
                 <line
@@ -232,7 +242,7 @@ function GraphCard({ title, points }) {
                   textAnchor="end"
                   fill="#475569"
                 >
-                  {tick}
+                  {mode === "interval" ? `${tick}%` : tick}
                 </text>
               </g>
             );
@@ -249,7 +259,7 @@ function GraphCard({ title, points }) {
 
           {sorted.map((point, index) => {
             const x = xForIndex(index);
-            const y = yForScore(point.score);
+            const y = yForValue(point.value);
             return (
               <g key={`${point.date}-${index}`}>
                 <circle cx={x} cy={y} r="5.5" fill="#1d4ed8" />
@@ -276,8 +286,9 @@ function GraphCard({ title, points }) {
           lineHeight: 1.5,
         }}
       >
-        0 = Not demonstrating &nbsp; • &nbsp; 1 = With prompts &nbsp; • &nbsp; 2
-        = Independent
+        {mode === "interval"
+          ? "Graph shows percent of intervals scored yes."
+          : "0 = Not demonstrating • 1 = With prompts • 2 = Independent"}
       </div>
     </div>
   );
@@ -347,13 +358,17 @@ function App() {
         .filter((entry) => entry.goalId === goal.id)
         .map((entry) => ({
           date: entry.date,
-          score: Number(entry.score),
+          value:
+            entry.collectionMethod === "interval"
+              ? Number(entry.percent || 0)
+              : Number(entry.score || 0),
         }));
 
       return {
         goalId: goal.id,
         title: goal.title,
         points: matching,
+        mode: goal.collectionMethod === "interval" ? "interval" : "rating",
       };
     });
   }, [selectedStudent, savedHistory]);
@@ -432,6 +447,15 @@ function App() {
     const example = window.prompt("Enter examples:");
     const baseline = window.prompt("Enter baseline data:");
     const mastery = window.prompt("Enter mastery criteria:");
+    const methodPrompt = window.prompt(
+      "Enter collection method: rating or interval",
+      "rating"
+    );
+
+    const collectionMethod =
+      methodPrompt && methodPrompt.toLowerCase() === "interval"
+        ? "interval"
+        : "rating";
 
     const newGoal = {
       id: `goal-${Date.now()}`,
@@ -441,6 +465,7 @@ function App() {
       example: example || "",
       baseline: baseline || "",
       mastery: mastery || "",
+      collectionMethod,
     };
 
     setStudents((prev) =>
@@ -486,18 +511,37 @@ function App() {
 
   const getGoalSessionKey = (studentId, goalId) => `${studentId}__${goalId}`;
 
-  const handleSessionChange = (goalId, field, value) => {
+  const getDefaultSessionForGoal = (goal) => ({
+    date: new Date().toISOString().slice(0, 10),
+    score: "",
+    promptLevel: "",
+    notes: "",
+    intervalType: "Whole Interval",
+    sessionLength: 10,
+    intervalLength: 1,
+    intervalResults: Array(10).fill(""),
+  });
+
+  const syncIntervalArray = (existing, sessionLength, intervalLength) => {
+    const totalIntervals = Math.max(
+      1,
+      Math.floor(Number(sessionLength || 0) / Number(intervalLength || 1))
+    );
+    const current = Array.isArray(existing) ? existing : [];
+    if (current.length === totalIntervals) return current;
+    if (current.length < totalIntervals) {
+      return [...current, ...Array(totalIntervals - current.length).fill("")];
+    }
+    return current.slice(0, totalIntervals);
+  };
+
+  const handleSessionChange = (goal, field, value) => {
     if (!selectedStudent) return;
 
-    const key = getGoalSessionKey(selectedStudent.id, goalId);
+    const key = getGoalSessionKey(selectedStudent.id, goal.id);
 
     setSessionData((prev) => {
-      const current = prev[key] || {
-        date: new Date().toISOString().slice(0, 10),
-        score: "",
-        promptLevel: "",
-        notes: "",
-      };
+      const current = prev[key] || getDefaultSessionForGoal(goal);
 
       const updated = {
         ...current,
@@ -508,9 +552,42 @@ function App() {
         updated.promptLevel = "";
       }
 
+      if (field === "sessionLength" || field === "intervalLength") {
+        const sessionLength =
+          field === "sessionLength" ? Number(value) : Number(updated.sessionLength);
+        const intervalLength =
+          field === "intervalLength" ? Number(value) : Number(updated.intervalLength);
+
+        updated.intervalResults = syncIntervalArray(
+          updated.intervalResults,
+          sessionLength,
+          intervalLength
+        );
+      }
+
       return {
         ...prev,
         [key]: updated,
+      };
+    });
+  };
+
+  const handleIntervalResultChange = (goal, index, value) => {
+    if (!selectedStudent) return;
+
+    const key = getGoalSessionKey(selectedStudent.id, goal.id);
+
+    setSessionData((prev) => {
+      const current = prev[key] || getDefaultSessionForGoal(goal);
+      const nextResults = [...(current.intervalResults || [])];
+      nextResults[index] = value;
+
+      return {
+        ...prev,
+        [key]: {
+          ...current,
+          intervalResults: nextResults,
+        },
       };
     });
   };
@@ -519,15 +596,65 @@ function App() {
     if (!selectedStudent) return;
 
     const key = getGoalSessionKey(selectedStudent.id, goal.id);
-    const entry = sessionData[key];
-
-    if (!entry || entry.score === "") {
-      alert("Please select a score before saving.");
-      return;
-    }
+    const entry = sessionData[key] || getDefaultSessionForGoal(goal);
 
     const historyKey = "ramp_session_history";
     const existingHistory = loadFromStorage(historyKey, []);
+
+    if (goal.collectionMethod === "interval") {
+      const sessionLength = Number(entry.sessionLength || 0);
+      const intervalLength = Number(entry.intervalLength || 0);
+
+      if (!sessionLength || !intervalLength) {
+        alert("Please enter session length and interval length.");
+        return;
+      }
+
+      const intervalResults = syncIntervalArray(
+        entry.intervalResults,
+        sessionLength,
+        intervalLength
+      );
+
+      const totalIntervals = intervalResults.length;
+      const yesCount = intervalResults.filter((x) => x === "yes").length;
+      const percent = totalIntervals
+        ? Math.round((yesCount / totalIntervals) * 100)
+        : 0;
+
+      const record = {
+        id: `entry-${Date.now()}`,
+        studentId: selectedStudent.id,
+        studentName: selectedStudent.name,
+        grade: selectedStudent.grade || "",
+        caseManager: selectedStudent.caseManager || "",
+        disabilities: (selectedStudent.disabilities || []).join(", "),
+        goalId: goal.id,
+        goalTitle: goal.title,
+        shortName: goal.shortName || "",
+        objective: goal.objective || "",
+        date: entry.date || "",
+        collectionMethod: "interval",
+        intervalType: entry.intervalType || "Whole Interval",
+        sessionLength,
+        intervalLength,
+        totalIntervals,
+        intervalResults,
+        yesCount,
+        percent,
+        notes: entry.notes || "",
+      };
+
+      const updatedHistory = [...existingHistory, record];
+      localStorage.setItem(historyKey, JSON.stringify(updatedHistory));
+      alert(`Saved interval data for ${goal.title}: ${percent}%`);
+      return;
+    }
+
+    if (entry.score === "") {
+      alert("Please select a score before saving.");
+      return;
+    }
 
     const record = {
       id: `entry-${Date.now()}`,
@@ -541,6 +668,7 @@ function App() {
       shortName: goal.shortName || "",
       objective: goal.objective || "",
       date: entry.date || "",
+      collectionMethod: "rating",
       score: entry.score || "",
       promptLevel: entry.score === "1" ? entry.promptLevel || "" : "",
       notes: entry.notes || "",
@@ -569,8 +697,15 @@ function App() {
       "Short Name",
       "Objective",
       "Date",
+      "Collection Method",
       "Score",
       "Prompt Level",
+      "Interval Type",
+      "Session Length",
+      "Interval Length",
+      "Total Intervals",
+      "Yes Count",
+      "Percent",
       "Notes",
     ];
 
@@ -583,9 +718,16 @@ function App() {
       item.shortName,
       item.objective,
       item.date,
-      item.score,
-      item.promptLevel,
-      item.notes,
+      item.collectionMethod || "rating",
+      item.score ?? "",
+      item.promptLevel ?? "",
+      item.intervalType ?? "",
+      item.sessionLength ?? "",
+      item.intervalLength ?? "",
+      item.totalIntervals ?? "",
+      item.yesCount ?? "",
+      item.percent ?? "",
+      item.notes ?? "",
     ]);
 
     const csvContent = [headers, ...rows]
@@ -877,6 +1019,16 @@ function App() {
       marginTop: "6px",
       lineHeight: 1.4,
     },
+    intervalButton: (selected) => ({
+      minWidth: "44px",
+      padding: "10px 12px",
+      borderRadius: "12px",
+      border: selected ? "1px solid #2563eb" : "1px solid #cbd5e1",
+      background: selected ? "#dbeafe" : "white",
+      color: selected ? "#1d4ed8" : "#334155",
+      fontWeight: 700,
+      cursor: "pointer",
+    }),
   };
 
   const renderDashboard = () => (
@@ -935,24 +1087,10 @@ function App() {
               key={group.goalId}
               title={group.title}
               points={group.points}
+              mode={group.mode}
             />
           ))
         )}
-      </div>
-
-      <div style={styles.card}>
-        <h3 style={styles.subTitle}>Quick Actions</h3>
-        <div style={styles.rowGap}>
-          <button style={styles.buttonPrimary} onClick={() => setActiveTab("students")}>
-            Go to Students
-          </button>
-          <button style={styles.buttonSecondary} onClick={() => setActiveTab("goals")}>
-            Go to Goals & Data
-          </button>
-          <button style={styles.buttonGreen} onClick={() => setActiveTab("history")}>
-            Go to History
-          </button>
-        </div>
       </div>
     </>
   );
@@ -1088,6 +1226,277 @@ function App() {
     </>
   );
 
+  const renderGoalSessionInputs = (goal) => {
+    const key = getGoalSessionKey(selectedStudent.id, goal.id);
+    const currentSession = sessionData[key] || getDefaultSessionForGoal(goal);
+
+    if (goal.collectionMethod === "interval") {
+      const intervalResults = syncIntervalArray(
+        currentSession.intervalResults,
+        currentSession.sessionLength,
+        currentSession.intervalLength
+      );
+
+      const totalIntervals = intervalResults.length;
+      const yesCount = intervalResults.filter((x) => x === "yes").length;
+      const percent = totalIntervals
+        ? Math.round((yesCount / totalIntervals) * 100)
+        : 0;
+
+      return (
+        <div style={styles.sessionBox}>
+          <div
+            style={{
+              fontWeight: 700,
+              marginBottom: "12px",
+              color: "#1e3a8a",
+              fontSize: "17px",
+            }}
+          >
+            Record Interval Data
+          </div>
+
+          <div style={styles.sessionGrid}>
+            <div>
+              <label style={styles.label}>Date</label>
+              <input
+                type="date"
+                value={currentSession.date}
+                onChange={(e) =>
+                  handleSessionChange(goal, "date", e.target.value)
+                }
+                style={styles.input}
+              />
+            </div>
+
+            <div>
+              <label style={styles.label}>Interval Type</label>
+              <select
+                value={currentSession.intervalType}
+                onChange={(e) =>
+                  handleSessionChange(goal, "intervalType", e.target.value)
+                }
+                style={styles.input}
+              >
+                {INTERVAL_TYPES.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label style={styles.label}>Session Length (minutes)</label>
+              <input
+                type="number"
+                min="1"
+                value={currentSession.sessionLength}
+                onChange={(e) =>
+                  handleSessionChange(goal, "sessionLength", e.target.value)
+                }
+                style={styles.input}
+              />
+            </div>
+
+            <div>
+              <label style={styles.label}>Interval Length (minutes)</label>
+              <input
+                type="number"
+                min="1"
+                value={currentSession.intervalLength}
+                onChange={(e) =>
+                  handleSessionChange(goal, "intervalLength", e.target.value)
+                }
+                style={styles.input}
+              />
+            </div>
+          </div>
+
+          <div style={{ marginBottom: "12px" }}>
+            <div style={styles.label}>Intervals</div>
+            <div style={styles.smallText}>
+              Score each interval yes or no. Total intervals: {totalIntervals}
+            </div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
+                gap: "10px",
+                marginTop: "12px",
+              }}
+            >
+              {intervalResults.map((result, index) => (
+                <div
+                  key={index}
+                  style={{
+                    border: "1px solid #dbeafe",
+                    borderRadius: "12px",
+                    padding: "10px",
+                    background: "white",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: "13px",
+                      fontWeight: 700,
+                      color: "#1e3a8a",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    Interval {index + 1}
+                  </div>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <button
+                      type="button"
+                      style={styles.intervalButton(result === "yes")}
+                      onClick={() =>
+                        handleIntervalResultChange(goal, index, "yes")
+                      }
+                    >
+                      Yes
+                    </button>
+                    <button
+                      type="button"
+                      style={styles.intervalButton(result === "no")}
+                      onClick={() =>
+                        handleIntervalResultChange(goal, index, "no")
+                      }
+                    >
+                      No
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+              gap: "12px",
+              marginBottom: "12px",
+            }}
+          >
+            <div style={styles.studentCard}>
+              <div><strong>Yes Count:</strong> {yesCount}</div>
+            </div>
+            <div style={styles.studentCard}>
+              <div><strong>Total Intervals:</strong> {totalIntervals}</div>
+            </div>
+            <div style={styles.studentCard}>
+              <div><strong>Percent:</strong> {percent}%</div>
+            </div>
+          </div>
+
+          <div style={{ marginBottom: "12px" }}>
+            <label style={styles.label}>Notes</label>
+            <textarea
+              value={currentSession.notes}
+              onChange={(e) =>
+                handleSessionChange(goal, "notes", e.target.value)
+              }
+              style={styles.textarea}
+              placeholder="Add notes about the session..."
+            />
+          </div>
+
+          <button
+            onClick={() => saveSessionEntry(goal)}
+            style={styles.buttonPrimary}
+          >
+            Save Interval Session
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <div style={styles.sessionBox}>
+        <div
+          style={{
+            fontWeight: 700,
+            marginBottom: "12px",
+            color: "#1e3a8a",
+            fontSize: "17px",
+          }}
+        >
+          Record Rating Scale Data
+        </div>
+
+        <div style={styles.sessionGrid}>
+          <div>
+            <label style={styles.label}>Date</label>
+            <input
+              type="date"
+              value={currentSession.date}
+              onChange={(e) =>
+                handleSessionChange(goal, "date", e.target.value)
+              }
+              style={styles.input}
+            />
+          </div>
+
+          <div>
+            <label style={styles.label}>Score</label>
+            <select
+              value={currentSession.score}
+              onChange={(e) =>
+                handleSessionChange(goal, "score", e.target.value)
+              }
+              style={styles.input}
+            >
+              <option value="">Select score</option>
+              <option value="0">0 = Not demonstrating</option>
+              <option value="1">1 = With prompts</option>
+              <option value="2">2 = Independent</option>
+            </select>
+          </div>
+
+          {currentSession.score === "1" && (
+            <div>
+              <label style={styles.label}>Prompt Level</label>
+              <select
+                value={currentSession.promptLevel}
+                onChange={(e) =>
+                  handleSessionChange(goal, "promptLevel", e.target.value)
+                }
+                style={styles.input}
+              >
+                <option value="">Select prompt</option>
+                {PROMPT_OPTIONS.map((prompt) => (
+                  <option key={prompt} value={prompt}>
+                    {prompt}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
+
+        <div style={{ marginBottom: "12px" }}>
+          <label style={styles.label}>Notes</label>
+          <textarea
+            value={currentSession.notes}
+            onChange={(e) =>
+              handleSessionChange(goal, "notes", e.target.value)
+            }
+            style={styles.textarea}
+            placeholder="Add notes about the session..."
+          />
+        </div>
+
+        <button
+          onClick={() => saveSessionEntry(goal)}
+          style={styles.buttonPrimary}
+        >
+          Save Session
+        </button>
+      </div>
+    );
+  };
+
   const renderGoals = () => (
     <div style={styles.card}>
       <div style={{ ...styles.rowGap, justifyContent: "space-between", marginBottom: "16px" }}>
@@ -1117,190 +1526,117 @@ function App() {
         <div>No goals added for this student yet.</div>
       ) : (
         <div>
-          {selectedStudent.goals.map((goal) => {
-            const key = getGoalSessionKey(selectedStudent.id, goal.id);
-            const currentSession = sessionData[key] || {
-              date: new Date().toISOString().slice(0, 10),
-              score: "",
-              promptLevel: "",
-              notes: "",
-            };
-
-            return (
-              <div key={goal.id} style={styles.goalCard}>
-                <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", flexWrap: "wrap", marginBottom: "12px" }}>
-                  <div style={{ flex: 1, minWidth: "280px" }}>
-                    <div style={{ marginBottom: "12px" }}>
-                      <label style={styles.label}>Goal Title</label>
-                      <input
-                        type="text"
-                        value={goal.title}
-                        onChange={(e) =>
-                          updateGoalField(goal.id, "title", e.target.value)
-                        }
-                        style={styles.input}
-                      />
-                    </div>
-
-                    <div style={{ marginBottom: "12px" }}>
-                      <label style={styles.label}>Short Name</label>
-                      <input
-                        type="text"
-                        value={goal.shortName || ""}
-                        onChange={(e) =>
-                          updateGoalField(goal.id, "shortName", e.target.value)
-                        }
-                        style={styles.input}
-                      />
-                    </div>
-
-                    <div style={{ marginBottom: "12px" }}>
-                      <label style={styles.label}>Objective</label>
-                      <textarea
-                        value={goal.objective || ""}
-                        onChange={(e) =>
-                          updateGoalField(goal.id, "objective", e.target.value)
-                        }
-                        style={{ ...styles.textarea, minHeight: "110px" }}
-                      />
-                    </div>
-
-                    <div style={{ marginBottom: "12px" }}>
-                      <label style={styles.label}>Examples</label>
-                      <textarea
-                        value={goal.example || ""}
-                        onChange={(e) =>
-                          updateGoalField(goal.id, "example", e.target.value)
-                        }
-                        style={styles.textarea}
-                      />
-                    </div>
-
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "12px" }}>
-                      <div>
-                        <label style={styles.label}>Baseline</label>
-                        <input
-                          type="text"
-                          value={goal.baseline || ""}
-                          onChange={(e) =>
-                            updateGoalField(goal.id, "baseline", e.target.value)
-                          }
-                          style={styles.input}
-                        />
-                      </div>
-
-                      <div>
-                        <label style={styles.label}>Mastery</label>
-                        <input
-                          type="text"
-                          value={goal.mastery || ""}
-                          onChange={(e) =>
-                            updateGoalField(goal.id, "mastery", e.target.value)
-                          }
-                          style={styles.input}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <button
-                      onClick={() => removeGoal(goal.id)}
-                      style={styles.buttonRed}
-                    >
-                      Delete Goal
-                    </button>
-                  </div>
-                </div>
-
-                <div style={styles.sessionBox}>
-                  <div
-                    style={{
-                      fontWeight: 700,
-                      marginBottom: "12px",
-                      color: "#1e3a8a",
-                      fontSize: "17px",
-                    }}
-                  >
-                    Record Session Data
-                  </div>
-
-                  <div style={styles.sessionGrid}>
-                    <div>
-                      <label style={styles.label}>Date</label>
-                      <input
-                        type="date"
-                        value={currentSession.date}
-                        onChange={(e) =>
-                          handleSessionChange(goal.id, "date", e.target.value)
-                        }
-                        style={styles.input}
-                      />
-                    </div>
-
-                    <div>
-                      <label style={styles.label}>Score</label>
-                      <select
-                        value={currentSession.score}
-                        onChange={(e) =>
-                          handleSessionChange(goal.id, "score", e.target.value)
-                        }
-                        style={styles.input}
-                      >
-                        <option value="">Select score</option>
-                        <option value="0">0 = Not demonstrating</option>
-                        <option value="1">1 = With prompts</option>
-                        <option value="2">2 = Independent</option>
-                      </select>
-                    </div>
-
-                    {currentSession.score === "1" && (
-                      <div>
-                        <label style={styles.label}>Prompt Level</label>
-                        <select
-                          value={currentSession.promptLevel}
-                          onChange={(e) =>
-                            handleSessionChange(
-                              goal.id,
-                              "promptLevel",
-                              e.target.value
-                            )
-                          }
-                          style={styles.input}
-                        >
-                          <option value="">Select prompt</option>
-                          {PROMPT_OPTIONS.map((prompt) => (
-                            <option key={prompt} value={prompt}>
-                              {prompt}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
-                  </div>
-
+          {selectedStudent.goals.map((goal) => (
+            <div key={goal.id} style={styles.goalCard}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", flexWrap: "wrap", marginBottom: "12px" }}>
+                <div style={{ flex: 1, minWidth: "280px" }}>
                   <div style={{ marginBottom: "12px" }}>
-                    <label style={styles.label}>Notes</label>
-                    <textarea
-                      value={currentSession.notes}
+                    <label style={styles.label}>Goal Title</label>
+                    <input
+                      type="text"
+                      value={goal.title}
                       onChange={(e) =>
-                        handleSessionChange(goal.id, "notes", e.target.value)
+                        updateGoalField(goal.id, "title", e.target.value)
                       }
-                      style={styles.textarea}
-                      placeholder="Add notes about the session..."
+                      style={styles.input}
                     />
                   </div>
 
+                  <div style={{ marginBottom: "12px" }}>
+                    <label style={styles.label}>Short Name</label>
+                    <input
+                      type="text"
+                      value={goal.shortName || ""}
+                      onChange={(e) =>
+                        updateGoalField(goal.id, "shortName", e.target.value)
+                      }
+                      style={styles.input}
+                    />
+                  </div>
+
+                  <div style={{ marginBottom: "12px" }}>
+                    <label style={styles.label}>Collection Method</label>
+                    <select
+                      value={goal.collectionMethod || "rating"}
+                      onChange={(e) =>
+                        updateGoalField(
+                          goal.id,
+                          "collectionMethod",
+                          e.target.value
+                        )
+                      }
+                      style={styles.input}
+                    >
+                      {COLLECTION_METHODS.map((method) => (
+                        <option key={method} value={method}>
+                          {method === "rating" ? "Rating Scale" : "Interval Data"}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div style={{ marginBottom: "12px" }}>
+                    <label style={styles.label}>Objective</label>
+                    <textarea
+                      value={goal.objective || ""}
+                      onChange={(e) =>
+                        updateGoalField(goal.id, "objective", e.target.value)
+                      }
+                      style={{ ...styles.textarea, minHeight: "110px" }}
+                    />
+                  </div>
+
+                  <div style={{ marginBottom: "12px" }}>
+                    <label style={styles.label}>Examples</label>
+                    <textarea
+                      value={goal.example || ""}
+                      onChange={(e) =>
+                        updateGoalField(goal.id, "example", e.target.value)
+                      }
+                      style={styles.textarea}
+                    />
+                  </div>
+
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "12px" }}>
+                    <div>
+                      <label style={styles.label}>Baseline</label>
+                      <input
+                        type="text"
+                        value={goal.baseline || ""}
+                        onChange={(e) =>
+                          updateGoalField(goal.id, "baseline", e.target.value)
+                        }
+                        style={styles.input}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={styles.label}>Mastery</label>
+                      <input
+                        type="text"
+                        value={goal.mastery || ""}
+                        onChange={(e) =>
+                          updateGoalField(goal.id, "mastery", e.target.value)
+                        }
+                        style={styles.input}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
                   <button
-                    onClick={() => saveSessionEntry(goal)}
-                    style={styles.buttonPrimary}
+                    onClick={() => removeGoal(goal.id)}
+                    style={styles.buttonRed}
                   >
-                    Save Session
+                    Delete Goal
                   </button>
                 </div>
               </div>
-            );
-          })}
+
+              {renderGoalSessionInputs(goal)}
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -1342,6 +1678,7 @@ function App() {
               key={group.goalId}
               title={group.title}
               points={group.points}
+              mode={group.mode}
             />
           ))
         )}
@@ -1357,9 +1694,9 @@ function App() {
                 <tr>
                   <th style={styles.th}>Date</th>
                   <th style={styles.th}>Goal</th>
-                  <th style={styles.th}>Short Name</th>
-                  <th style={styles.th}>Score</th>
-                  <th style={styles.th}>Prompt</th>
+                  <th style={styles.th}>Method</th>
+                  <th style={styles.th}>Score / %</th>
+                  <th style={styles.th}>Prompt / Interval</th>
                   <th style={styles.th}>Notes</th>
                 </tr>
               </thead>
@@ -1368,9 +1705,21 @@ function App() {
                   <tr key={entry.id}>
                     <td style={styles.td}>{entry.date}</td>
                     <td style={styles.td}>{entry.goalTitle}</td>
-                    <td style={styles.td}>{entry.shortName}</td>
-                    <td style={styles.td}>{entry.score}</td>
-                    <td style={styles.td}>{entry.promptLevel || "-"}</td>
+                    <td style={styles.td}>
+                      {entry.collectionMethod === "interval"
+                        ? "Interval"
+                        : "Rating"}
+                    </td>
+                    <td style={styles.td}>
+                      {entry.collectionMethod === "interval"
+                        ? `${entry.percent ?? 0}%`
+                        : entry.score}
+                    </td>
+                    <td style={styles.td}>
+                      {entry.collectionMethod === "interval"
+                        ? `${entry.intervalType || "-"} (${entry.yesCount ?? 0}/${entry.totalIntervals ?? 0})`
+                        : entry.promptLevel || "-"}
+                    </td>
                     <td style={styles.td}>{entry.notes || "-"}</td>
                   </tr>
                 ))}
@@ -1399,8 +1748,8 @@ function App() {
         <div style={styles.hero}>
           <h1 style={styles.heroTitle}>RaMP Tracker</h1>
           <div style={styles.heroText}>
-            Track student goals with structured data, prompt levels, examples,
-            saved history, and progress graphs.
+            Track student goals with rating scales, interval data, saved history,
+            and progress graphs.
           </div>
         </div>
 
