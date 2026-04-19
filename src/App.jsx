@@ -60,7 +60,7 @@ const DEFAULT_STUDENTS = [
         title: "Following Directions",
         shortName: "Directions",
         objective:
-          "When given a verbal reminder, Johnny will follow directions within 30 seconds by saying “okay,” beginning the task, or moving to the expected location.",
+          "When given a verbal reminder, Johnny will follow directions within 30 seconds by saying 'okay,' beginning the task, or moving to the expected location.",
         example:
           "Examples: starts work after teacher says 'Please begin,' lines up when directed, puts materials away after one reminder.",
         baseline: "0/5 opportunities independently",
@@ -177,7 +177,6 @@ function App() {
 
   const addStudent = (e) => {
     e.preventDefault();
-
     if (!studentForm.name.trim()) return;
 
     const safeId = `student-${Date.now()}`;
@@ -401,48 +400,300 @@ function App() {
     (entry) => entry.studentId === selectedStudentId
   );
 
+  const styles = {
+    page: {
+      minHeight: "100vh",
+      background:
+        "linear-gradient(180deg, #edf4ff 0%, #f6fbff 40%, #ffffff 100%)",
+      color: "#1e293b",
+      fontFamily:
+        'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      padding: "24px",
+    },
+    container: {
+      maxWidth: "1400px",
+      margin: "0 auto",
+    },
+    hero: {
+      background: "linear-gradient(135deg, #1d4ed8 0%, #2563eb 55%, #60a5fa 100%)",
+      color: "white",
+      borderRadius: "24px",
+      padding: "28px",
+      boxShadow: "0 20px 50px rgba(37, 99, 235, 0.20)",
+      marginBottom: "24px",
+    },
+    heroTitle: {
+      fontSize: "34px",
+      fontWeight: 800,
+      margin: 0,
+      letterSpacing: "-0.02em",
+    },
+    heroText: {
+      marginTop: "10px",
+      fontSize: "16px",
+      opacity: 0.95,
+      lineHeight: 1.5,
+    },
+    grid: {
+      display: "grid",
+      gridTemplateColumns: "340px 1fr",
+      gap: "24px",
+      alignItems: "start",
+    },
+    sidebar: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "20px",
+    },
+    card: {
+      background: "white",
+      borderRadius: "22px",
+      padding: "20px",
+      boxShadow: "0 10px 30px rgba(15, 23, 42, 0.08)",
+      border: "1px solid #dbeafe",
+    },
+    cardTitle: {
+      margin: "0 0 16px 0",
+      fontSize: "22px",
+      fontWeight: 700,
+      color: "#1e3a8a",
+    },
+    sectionTitle: {
+      margin: "0 0 18px 0",
+      fontSize: "24px",
+      fontWeight: 700,
+      color: "#1e3a8a",
+    },
+    label: {
+      display: "block",
+      fontSize: "14px",
+      fontWeight: 600,
+      marginBottom: "7px",
+      color: "#334155",
+    },
+    input: {
+      width: "100%",
+      padding: "12px 14px",
+      borderRadius: "12px",
+      border: "1px solid #cbd5e1",
+      background: "#ffffff",
+      fontSize: "14px",
+      boxSizing: "border-box",
+      outline: "none",
+    },
+    textarea: {
+      width: "100%",
+      padding: "12px 14px",
+      borderRadius: "12px",
+      border: "1px solid #cbd5e1",
+      background: "#ffffff",
+      fontSize: "14px",
+      boxSizing: "border-box",
+      minHeight: "90px",
+      resize: "vertical",
+      outline: "none",
+      fontFamily: "inherit",
+    },
+    multiSelect: {
+      width: "100%",
+      padding: "10px",
+      borderRadius: "12px",
+      border: "1px solid #cbd5e1",
+      background: "#ffffff",
+      fontSize: "14px",
+      boxSizing: "border-box",
+      minHeight: "150px",
+      outline: "none",
+    },
+    smallText: {
+      fontSize: "12px",
+      color: "#64748b",
+      marginTop: "6px",
+      lineHeight: 1.4,
+    },
+    buttonPrimary: {
+      width: "100%",
+      background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+      color: "white",
+      border: "none",
+      borderRadius: "14px",
+      padding: "12px 16px",
+      fontSize: "15px",
+      fontWeight: 700,
+      cursor: "pointer",
+      boxShadow: "0 10px 18px rgba(37, 99, 235, 0.20)",
+    },
+    buttonSecondary: {
+      background: "#0f172a",
+      color: "white",
+      border: "none",
+      borderRadius: "14px",
+      padding: "12px 16px",
+      fontSize: "14px",
+      fontWeight: 700,
+      cursor: "pointer",
+    },
+    buttonGreen: {
+      width: "100%",
+      background: "linear-gradient(135deg, #059669 0%, #10b981 100%)",
+      color: "white",
+      border: "none",
+      borderRadius: "14px",
+      padding: "12px 16px",
+      fontSize: "15px",
+      fontWeight: 700,
+      cursor: "pointer",
+      boxShadow: "0 10px 18px rgba(16, 185, 129, 0.18)",
+    },
+    buttonRed: {
+      width: "100%",
+      background: "linear-gradient(135deg, #dc2626 0%, #ef4444 100%)",
+      color: "white",
+      border: "none",
+      borderRadius: "14px",
+      padding: "12px 16px",
+      fontSize: "15px",
+      fontWeight: 700,
+      cursor: "pointer",
+      boxShadow: "0 10px 18px rgba(239, 68, 68, 0.18)",
+    },
+    goalCard: {
+      border: "1px solid #bfdbfe",
+      borderRadius: "22px",
+      padding: "18px",
+      background: "linear-gradient(180deg, #f8fbff 0%, #ffffff 100%)",
+      boxShadow: "0 8px 25px rgba(15, 23, 42, 0.05)",
+      marginBottom: "20px",
+    },
+    sessionBox: {
+      background: "#eff6ff",
+      border: "1px solid #bfdbfe",
+      borderRadius: "18px",
+      padding: "16px",
+      marginTop: "18px",
+    },
+    topBar: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      gap: "12px",
+      marginBottom: "18px",
+      flexWrap: "wrap",
+    },
+    studentSummary: {
+      background: "#eff6ff",
+      border: "1px solid #bfdbfe",
+      borderRadius: "16px",
+      padding: "14px",
+      marginTop: "16px",
+      lineHeight: 1.7,
+      fontSize: "14px",
+    },
+    twoCol: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: "12px",
+    },
+    sessionGrid: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+      gap: "12px",
+      marginBottom: "12px",
+    },
+    tableWrap: {
+      overflowX: "auto",
+      borderRadius: "18px",
+      border: "1px solid #dbeafe",
+    },
+    table: {
+      width: "100%",
+      borderCollapse: "collapse",
+      fontSize: "14px",
+      background: "white",
+    },
+    th: {
+      textAlign: "left",
+      padding: "14px",
+      background: "#dbeafe",
+      color: "#1e3a8a",
+      fontWeight: 700,
+      borderBottom: "1px solid #bfdbfe",
+    },
+    td: {
+      padding: "14px",
+      borderBottom: "1px solid #e2e8f0",
+      verticalAlign: "top",
+    },
+    deleteButton: {
+      background: "linear-gradient(135deg, #dc2626 0%, #ef4444 100%)",
+      color: "white",
+      border: "none",
+      borderRadius: "12px",
+      padding: "10px 14px",
+      fontSize: "13px",
+      fontWeight: 700,
+      cursor: "pointer",
+      alignSelf: "flex-start",
+    },
+  };
+
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-800">
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <header className="mb-6">
-          <div className="bg-white rounded-2xl shadow-sm border p-6">
-            <h1 className="text-3xl font-bold mb-2">RaMP Tracker</h1>
-            <p className="text-slate-600">
-              Track student goals using a 0 / 1 / 2 scale with prompts, notes,
-              and local storage.
-            </p>
+    <div style={styles.page}>
+      <style>{`
+        * { box-sizing: border-box; }
+        body { margin: 0; }
+        input, select, textarea, button { font: inherit; }
+        input:focus, select:focus, textarea:focus {
+          border-color: #3b82f6 !important;
+          box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+        }
+        button:hover { filter: brightness(0.98); }
+        @media (max-width: 1100px) {
+          .ramp-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+        @media (max-width: 700px) {
+          .ramp-two-col {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
+
+      <div style={styles.container}>
+        <div style={styles.hero}>
+          <h1 style={styles.heroTitle}>RaMP Tracker</h1>
+          <div style={styles.heroText}>
+            Track student goals with clean visuals, simple data collection, prompt levels,
+            examples, and exportable records.
           </div>
-        </header>
+        </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          <section className="xl:col-span-1 space-y-6">
-            <div className="bg-white rounded-2xl shadow-sm border p-5">
-              <h2 className="text-xl font-semibold mb-4">Add Student</h2>
+        <div className="ramp-grid" style={styles.grid}>
+          <div style={styles.sidebar}>
+            <div style={styles.card}>
+              <h2 style={styles.cardTitle}>Add Student</h2>
 
-              <form onSubmit={addStudent} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Student Name
-                  </label>
+              <form onSubmit={addStudent}>
+                <div style={{ marginBottom: "14px" }}>
+                  <label style={styles.label}>Student Name</label>
                   <input
                     type="text"
                     name="name"
                     value={studentForm.name}
                     onChange={handleStudentFormChange}
-                    className="w-full border rounded-lg px-3 py-2"
+                    style={styles.input}
                     placeholder="Enter student name"
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Grade
-                  </label>
+                <div style={{ marginBottom: "14px" }}>
+                  <label style={styles.label}>Grade</label>
                   <select
                     name="grade"
                     value={studentForm.grade}
                     onChange={handleStudentFormChange}
-                    className="w-full border rounded-lg px-3 py-2"
+                    style={styles.input}
                   >
                     <option value="">Select grade</option>
                     {GRADE_OPTIONS.map((grade) => (
@@ -453,30 +704,26 @@ function App() {
                   </select>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Case Manager
-                  </label>
+                <div style={{ marginBottom: "14px" }}>
+                  <label style={styles.label}>Case Manager</label>
                   <input
                     type="text"
                     name="caseManager"
                     value={studentForm.caseManager}
                     onChange={handleStudentFormChange}
-                    className="w-full border rounded-lg px-3 py-2"
+                    style={styles.input}
                     placeholder="Enter case manager"
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Disability / Eligibility
-                  </label>
+                <div style={{ marginBottom: "16px" }}>
+                  <label style={styles.label}>Disability / Eligibility</label>
                   <select
                     name="disabilities"
                     multiple
                     value={studentForm.disabilities}
                     onChange={handleStudentFormChange}
-                    className="w-full border rounded-lg px-3 py-2 min-h-[160px]"
+                    style={styles.multiSelect}
                   >
                     {DISABILITY_OPTIONS.map((item) => (
                       <option key={item} value={item}>
@@ -484,28 +731,24 @@ function App() {
                       </option>
                     ))}
                   </select>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Hold Ctrl (Windows) or Command (Mac) to select more than
-                    one.
-                  </p>
+                  <div style={styles.smallText}>
+                    Hold Ctrl (Windows) or Command (Mac) to select more than one.
+                  </div>
                 </div>
 
-                <button
-                  type="submit"
-                  className="w-full bg-blue-700 hover:bg-blue-800 text-white rounded-lg px-4 py-2 font-medium"
-                >
+                <button type="submit" style={styles.buttonPrimary}>
                   Add Student
                 </button>
               </form>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border p-5">
-              <h2 className="text-xl font-semibold mb-4">Select Student</h2>
+            <div style={styles.card}>
+              <h2 style={styles.cardTitle}>Select Student</h2>
 
               <select
                 value={selectedStudentId}
                 onChange={(e) => setSelectedStudentId(e.target.value)}
-                className="w-full border rounded-lg px-3 py-2"
+                style={styles.input}
               >
                 {students.map((student) => (
                   <option key={student.id} value={student.id}>
@@ -515,68 +758,50 @@ function App() {
               </select>
 
               {selectedStudent && (
-                <div className="mt-4 text-sm space-y-2">
-                  <p>
-                    <strong>Name:</strong> {selectedStudent.name}
-                  </p>
-                  <p>
-                    <strong>Grade:</strong> {selectedStudent.grade || "-"}
-                  </p>
-                  <p>
-                    <strong>Case Manager:</strong>{" "}
-                    {selectedStudent.caseManager || "-"}
-                  </p>
-                  <p>
+                <div style={styles.studentSummary}>
+                  <div><strong>Name:</strong> {selectedStudent.name}</div>
+                  <div><strong>Grade:</strong> {selectedStudent.grade || "-"}</div>
+                  <div><strong>Case Manager:</strong> {selectedStudent.caseManager || "-"}</div>
+                  <div>
                     <strong>Disability / Eligibility:</strong>{" "}
                     {selectedStudent.disabilities?.length
                       ? selectedStudent.disabilities.join(", ")
                       : "-"}
-                  </p>
+                  </div>
                 </div>
               )}
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border p-5">
-              <h2 className="text-xl font-semibold mb-4">Data Options</h2>
+            <div style={styles.card}>
+              <h2 style={styles.cardTitle}>Data Options</h2>
 
-              <div className="space-y-3">
-                <button
-                  onClick={exportCSV}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-4 py-2 font-medium"
-                >
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                <button onClick={exportCSV} style={styles.buttonGreen}>
                   Export CSV
                 </button>
 
-                <button
-                  onClick={clearAllSavedSessions}
-                  className="w-full bg-rose-600 hover:bg-rose-700 text-white rounded-lg px-4 py-2 font-medium"
-                >
+                <button onClick={clearAllSavedSessions} style={styles.buttonRed}>
                   Clear Saved Session History
                 </button>
               </div>
             </div>
-          </section>
+          </div>
 
-          <section className="xl:col-span-2 space-y-6">
-            <div className="bg-white rounded-2xl shadow-sm border p-5">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
-                <h2 className="text-xl font-semibold">Goals & Objectives</h2>
-                <button
-                  onClick={addGoalToStudent}
-                  className="bg-slate-800 hover:bg-slate-900 text-white rounded-lg px-4 py-2 font-medium"
-                >
+          <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+            <div style={styles.card}>
+              <div style={styles.topBar}>
+                <h2 style={styles.sectionTitle}>Goals & Objectives</h2>
+                <button onClick={addGoalToStudent} style={styles.buttonSecondary}>
                   Add Goal
                 </button>
               </div>
 
               {!selectedStudent ? (
-                <p className="text-slate-600">No student selected.</p>
+                <div>No student selected.</div>
               ) : selectedStudent.goals.length === 0 ? (
-                <p className="text-slate-600">
-                  No goals added for this student yet.
-                </p>
+                <div>No goals added for this student yet.</div>
               ) : (
-                <div className="space-y-6">
+                <div>
                   {selectedStudent.goals.map((goal) => {
                     const key = getGoalSessionKey(selectedStudent.id, goal.id);
                     const currentSession = sessionData[key] || {
@@ -587,107 +812,85 @@ function App() {
                     };
 
                     return (
-                      <div
-                        key={goal.id}
-                        className="border rounded-2xl p-4 bg-slate-50"
-                      >
-                        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-4">
-                          <div className="flex-1 space-y-2">
-                            <input
-                              type="text"
-                              value={goal.title}
-                              onChange={(e) =>
-                                updateGoalField(goal.id, "title", e.target.value)
-                              }
-                              className="w-full text-lg font-semibold bg-white border rounded-lg px-3 py-2"
-                            />
+                      <div key={goal.id} style={styles.goalCard}>
+                        <div
+                          className="ramp-two-col"
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "1fr auto",
+                            gap: "14px",
+                            alignItems: "start",
+                          }}
+                        >
+                          <div>
+                            <div style={{ marginBottom: "12px" }}>
+                              <label style={styles.label}>Goal Title</label>
+                              <input
+                                type="text"
+                                value={goal.title}
+                                onChange={(e) =>
+                                  updateGoalField(goal.id, "title", e.target.value)
+                                }
+                                style={styles.input}
+                              />
+                            </div>
 
-                            <div>
-                              <label className="block text-sm font-medium mb-1">
-                                Short Name
-                              </label>
+                            <div style={{ marginBottom: "12px" }}>
+                              <label style={styles.label}>Short Name</label>
                               <input
                                 type="text"
                                 value={goal.shortName || ""}
                                 onChange={(e) =>
-                                  updateGoalField(
-                                    goal.id,
-                                    "shortName",
-                                    e.target.value
-                                  )
+                                  updateGoalField(goal.id, "shortName", e.target.value)
                                 }
-                                className="w-full border rounded-lg px-3 py-2 bg-white"
+                                style={styles.input}
                               />
                             </div>
 
-                            <div>
-                              <label className="block text-sm font-medium mb-1">
-                                Objective
-                              </label>
+                            <div style={{ marginBottom: "12px" }}>
+                              <label style={styles.label}>Objective</label>
                               <textarea
                                 value={goal.objective || ""}
                                 onChange={(e) =>
-                                  updateGoalField(
-                                    goal.id,
-                                    "objective",
-                                    e.target.value
-                                  )
+                                  updateGoalField(goal.id, "objective", e.target.value)
                                 }
-                                className="w-full border rounded-lg px-3 py-2 min-h-[90px] bg-white"
+                                style={{ ...styles.textarea, minHeight: "110px" }}
                               />
                             </div>
 
-                            <div>
-                              <label className="block text-sm font-medium mb-1">
-                                Examples
-                              </label>
+                            <div style={{ marginBottom: "12px" }}>
+                              <label style={styles.label}>Examples</label>
                               <textarea
                                 value={goal.example || ""}
                                 onChange={(e) =>
-                                  updateGoalField(
-                                    goal.id,
-                                    "example",
-                                    e.target.value
-                                  )
+                                  updateGoalField(goal.id, "example", e.target.value)
                                 }
-                                className="w-full border rounded-lg px-3 py-2 min-h-[80px] bg-white"
+                                style={{ ...styles.textarea, minHeight: "90px" }}
                               />
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div className="ramp-two-col" style={styles.twoCol}>
                               <div>
-                                <label className="block text-sm font-medium mb-1">
-                                  Baseline
-                                </label>
+                                <label style={styles.label}>Baseline</label>
                                 <input
                                   type="text"
                                   value={goal.baseline || ""}
                                   onChange={(e) =>
-                                    updateGoalField(
-                                      goal.id,
-                                      "baseline",
-                                      e.target.value
-                                    )
+                                    updateGoalField(goal.id, "baseline", e.target.value)
                                   }
-                                  className="w-full border rounded-lg px-3 py-2 bg-white"
+                                  style={styles.input}
                                 />
                               </div>
 
                               <div>
-                                <label className="block text-sm font-medium mb-1">
-                                  Mastery
-                                </label>
+                                <label style={styles.label}>Mastery</label>
                                 <input
                                   type="text"
                                   value={goal.mastery || ""}
                                   onChange={(e) =>
-                                    updateGoalField(
-                                      goal.id,
-                                      "mastery",
-                                      e.target.value
-                                    )
+                                    updateGoalField(goal.id, "mastery", e.target.value)
                                   }
-                                  className="w-full border rounded-lg px-3 py-2 bg-white"
+                                  style={styles.input}
                                 />
                               </div>
                             </div>
@@ -695,55 +898,48 @@ function App() {
 
                           <button
                             onClick={() => removeGoal(goal.id)}
-                            className="bg-rose-600 hover:bg-rose-700 text-white rounded-lg px-3 py-2 h-fit"
+                            style={styles.deleteButton}
                           >
                             Delete Goal
                           </button>
                         </div>
 
-                        <div className="bg-white border rounded-2xl p-4">
-                          <h3 className="font-semibold mb-3">
+                        <div style={styles.sessionBox}>
+                          <div
+                            style={{
+                              fontWeight: 700,
+                              marginBottom: "12px",
+                              color: "#1e3a8a",
+                              fontSize: "17px",
+                            }}
+                          >
                             Record Session Data
-                          </h3>
+                          </div>
 
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
+                          <div style={styles.sessionGrid}>
                             <div>
-                              <label className="block text-sm font-medium mb-1">
-                                Date
-                              </label>
+                              <label style={styles.label}>Date</label>
                               <input
                                 type="date"
                                 value={currentSession.date}
                                 onChange={(e) =>
-                                  handleSessionChange(
-                                    goal.id,
-                                    "date",
-                                    e.target.value
-                                  )
+                                  handleSessionChange(goal.id, "date", e.target.value)
                                 }
-                                className="w-full border rounded-lg px-3 py-2"
+                                style={styles.input}
                               />
                             </div>
 
                             <div>
-                              <label className="block text-sm font-medium mb-1">
-                                Score
-                              </label>
+                              <label style={styles.label}>Score</label>
                               <select
                                 value={currentSession.score}
                                 onChange={(e) =>
-                                  handleSessionChange(
-                                    goal.id,
-                                    "score",
-                                    e.target.value
-                                  )
+                                  handleSessionChange(goal.id, "score", e.target.value)
                                 }
-                                className="w-full border rounded-lg px-3 py-2"
+                                style={styles.input}
                               >
                                 <option value="">Select score</option>
-                                <option value="0">
-                                  0 = Not demonstrating
-                                </option>
+                                <option value="0">0 = Not demonstrating</option>
                                 <option value="1">1 = With prompts</option>
                                 <option value="2">2 = Independent</option>
                               </select>
@@ -751,9 +947,7 @@ function App() {
 
                             {currentSession.score === "1" && (
                               <div>
-                                <label className="block text-sm font-medium mb-1">
-                                  Prompt Level
-                                </label>
+                                <label style={styles.label}>Prompt Level</label>
                                 <select
                                   value={currentSession.promptLevel}
                                   onChange={(e) =>
@@ -763,7 +957,7 @@ function App() {
                                       e.target.value
                                     )
                                   }
-                                  className="w-full border rounded-lg px-3 py-2"
+                                  style={styles.input}
                                 >
                                   <option value="">Select prompt</option>
                                   {PROMPT_OPTIONS.map((prompt) => (
@@ -776,27 +970,25 @@ function App() {
                             )}
                           </div>
 
-                          <div className="mb-3">
-                            <label className="block text-sm font-medium mb-1">
-                              Notes
-                            </label>
+                          <div style={{ marginBottom: "12px" }}>
+                            <label style={styles.label}>Notes</label>
                             <textarea
                               value={currentSession.notes}
                               onChange={(e) =>
-                                handleSessionChange(
-                                  goal.id,
-                                  "notes",
-                                  e.target.value
-                                )
+                                handleSessionChange(goal.id, "notes", e.target.value)
                               }
-                              className="w-full border rounded-lg px-3 py-2 min-h-[90px]"
+                              style={styles.textarea}
                               placeholder="Add notes about the session..."
                             />
                           </div>
 
                           <button
                             onClick={() => saveSessionEntry(goal)}
-                            className="bg-blue-700 hover:bg-blue-800 text-white rounded-lg px-4 py-2 font-medium"
+                            style={{
+                              ...styles.buttonPrimary,
+                              width: "auto",
+                              padding: "12px 18px",
+                            }}
                           >
                             Save Session
                           </button>
@@ -808,50 +1000,44 @@ function App() {
               )}
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border p-5">
-              <h2 className="text-xl font-semibold mb-4">Saved History</h2>
+            <div style={styles.card}>
+              <h2 style={styles.sectionTitle}>Saved History</h2>
 
               {!savedHistory.length ? (
-                <p className="text-slate-600">
-                  No saved entries yet for this student.
-                </p>
+                <div>No saved entries yet for this student.</div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm border-collapse">
+                <div style={styles.tableWrap}>
+                  <table style={styles.table}>
                     <thead>
-                      <tr className="bg-slate-100">
-                        <th className="text-left p-3 border">Date</th>
-                        <th className="text-left p-3 border">Goal</th>
-                        <th className="text-left p-3 border">Short Name</th>
-                        <th className="text-left p-3 border">Score</th>
-                        <th className="text-left p-3 border">Prompt</th>
-                        <th className="text-left p-3 border">Notes</th>
+                      <tr>
+                        <th style={styles.th}>Date</th>
+                        <th style={styles.th}>Goal</th>
+                        <th style={styles.th}>Short Name</th>
+                        <th style={styles.th}>Score</th>
+                        <th style={styles.th}>Prompt</th>
+                        <th style={styles.th}>Notes</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {[...savedHistory]
-                        .reverse()
-                        .map((entry) => (
-                          <tr key={entry.id}>
-                            <td className="p-3 border">{entry.date}</td>
-                            <td className="p-3 border">{entry.goalTitle}</td>
-                            <td className="p-3 border">{entry.shortName}</td>
-                            <td className="p-3 border">{entry.score}</td>
-                            <td className="p-3 border">
-                              {entry.promptLevel || "-"}
-                            </td>
-                            <td className="p-3 border">{entry.notes || "-"}</td>
-                          </tr>
-                        ))}
+                      {[...savedHistory].reverse().map((entry) => (
+                        <tr key={entry.id}>
+                          <td style={styles.td}>{entry.date}</td>
+                          <td style={styles.td}>{entry.goalTitle}</td>
+                          <td style={styles.td}>{entry.shortName}</td>
+                          <td style={styles.td}>{entry.score}</td>
+                          <td style={styles.td}>{entry.promptLevel || "-"}</td>
+                          <td style={styles.td}>{entry.notes || "-"}</td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
               )}
             </div>
-          </section>
+          </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }
 
