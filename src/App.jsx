@@ -47,14 +47,6 @@ const PROMPT_OPTIONS = [
   "Full Physical",
 ];
 
-const TAB_OPTIONS = [
-  "Dashboard",
-  "Students",
-  "Goals",
-  "Session Data",
-  "History",
-];
-
 const DEFAULT_STUDENTS = [
   {
     id: "student-johnny",
@@ -136,8 +128,8 @@ function App() {
     loadFromStorage("ramp_session_data", {})
   );
 
-  const [activeTab, setActiveTab] = useState(
-    () => loadFromStorage("ramp_active_tab", "Dashboard") || "Dashboard"
+  const [activeTab, setActiveTab] = useState(() =>
+    loadFromStorage("ramp_active_tab", "dashboard")
   );
 
   const [studentForm, setStudentForm] = useState({
@@ -176,11 +168,6 @@ function App() {
     (entry) => entry.studentId === selectedStudentId
   );
 
-  const selectedStudentGoalCount = selectedStudent?.goals?.length || 0;
-  const selectedStudentEntryCount = savedHistory.length;
-  const totalStudents = students.length;
-  const totalSavedEntries = allHistory.length;
-
   const handleStudentFormChange = (e) => {
     const { name, value, options } = e.target;
 
@@ -218,7 +205,7 @@ function App() {
 
     setStudents((prev) => [...prev, newStudent]);
     setSelectedStudentId(safeId);
-    setActiveTab("Goals");
+    setActiveTab("students");
 
     setStudentForm({
       name: "",
@@ -229,22 +216,19 @@ function App() {
   };
 
   const deleteStudent = (studentId) => {
+    const student = students.find((s) => s.id === studentId);
+    if (!student) return;
+
     const confirmed = window.confirm(
-      "Are you sure you want to delete this student?"
+      `Delete ${student.name}? This removes the student profile from the app.`
     );
     if (!confirmed) return;
 
-    const updatedStudents = students.filter((student) => student.id !== studentId);
+    const updatedStudents = students.filter((s) => s.id !== studentId);
     setStudents(updatedStudents);
 
-    const remainingHistory = allHistory.filter(
-      (entry) => entry.studentId !== studentId
-    );
-    localStorage.setItem("ramp_session_history", JSON.stringify(remainingHistory));
-
-    if (selectedStudentId === studentId) {
-      setSelectedStudentId(updatedStudents[0]?.id || "");
-    }
+    const newSelected = updatedStudents[0]?.id || "";
+    setSelectedStudentId(newSelected);
   };
 
   const addGoalToStudent = () => {
@@ -442,6 +426,11 @@ function App() {
     alert("All saved session history has been cleared.");
   };
 
+  const totalGoals = students.reduce(
+    (sum, student) => sum + (student.goals?.length || 0),
+    0
+  );
+
   const styles = {
     page: {
       minHeight: "100vh",
@@ -476,43 +465,31 @@ function App() {
       opacity: 0.95,
       lineHeight: 1.5,
     },
-    tabRow: {
+    tabsWrap: {
       display: "flex",
-      flexWrap: "wrap",
       gap: "10px",
+      flexWrap: "wrap",
       marginBottom: "20px",
     },
     tab: {
-      border: "1px solid #bfdbfe",
-      background: "#ffffff",
-      color: "#1d4ed8",
+      padding: "12px 18px",
       borderRadius: "14px",
-      padding: "10px 16px",
-      fontSize: "14px",
+      border: "1px solid #bfdbfe",
+      background: "white",
+      color: "#1e3a8a",
       fontWeight: 700,
       cursor: "pointer",
+      boxShadow: "0 6px 16px rgba(15, 23, 42, 0.05)",
     },
     activeTab: {
-      border: "1px solid #1d4ed8",
-      background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
-      color: "#ffffff",
+      padding: "12px 18px",
       borderRadius: "14px",
-      padding: "10px 16px",
-      fontSize: "14px",
+      border: "1px solid #2563eb",
+      background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+      color: "white",
       fontWeight: 700,
       cursor: "pointer",
       boxShadow: "0 10px 18px rgba(37, 99, 235, 0.18)",
-    },
-    grid: {
-      display: "grid",
-      gridTemplateColumns: "340px 1fr",
-      gap: "24px",
-      alignItems: "start",
-    },
-    sidebar: {
-      display: "flex",
-      flexDirection: "column",
-      gap: "20px",
     },
     card: {
       background: "white",
@@ -520,16 +497,17 @@ function App() {
       padding: "20px",
       boxShadow: "0 10px 30px rgba(15, 23, 42, 0.08)",
       border: "1px solid #dbeafe",
+      marginBottom: "20px",
     },
     cardTitle: {
       margin: "0 0 16px 0",
-      fontSize: "22px",
+      fontSize: "24px",
       fontWeight: 700,
       color: "#1e3a8a",
     },
-    sectionTitle: {
-      margin: "0 0 18px 0",
-      fontSize: "24px",
+    subTitle: {
+      margin: "0 0 14px 0",
+      fontSize: "20px",
       fontWeight: 700,
       color: "#1e3a8a",
     },
@@ -574,14 +552,7 @@ function App() {
       minHeight: "150px",
       outline: "none",
     },
-    smallText: {
-      fontSize: "12px",
-      color: "#64748b",
-      marginTop: "6px",
-      lineHeight: 1.4,
-    },
     buttonPrimary: {
-      width: "100%",
       background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
       color: "white",
       border: "none",
@@ -603,7 +574,6 @@ function App() {
       cursor: "pointer",
     },
     buttonGreen: {
-      width: "100%",
       background: "linear-gradient(135deg, #059669 0%, #10b981 100%)",
       color: "white",
       border: "none",
@@ -615,7 +585,6 @@ function App() {
       boxShadow: "0 10px 18px rgba(16, 185, 129, 0.18)",
     },
     buttonRed: {
-      width: "100%",
       background: "linear-gradient(135deg, #dc2626 0%, #ef4444 100%)",
       color: "white",
       border: "none",
@@ -625,6 +594,41 @@ function App() {
       fontWeight: 700,
       cursor: "pointer",
       boxShadow: "0 10px 18px rgba(239, 68, 68, 0.18)",
+    },
+    studentGrid: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+      gap: "16px",
+    },
+    summaryGrid: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+      gap: "16px",
+    },
+    statCard: {
+      background: "linear-gradient(180deg, #f8fbff 0%, #ffffff 100%)",
+      border: "1px solid #bfdbfe",
+      borderRadius: "18px",
+      padding: "18px",
+      boxShadow: "0 8px 25px rgba(15, 23, 42, 0.05)",
+    },
+    statNumber: {
+      fontSize: "32px",
+      fontWeight: 800,
+      color: "#1d4ed8",
+      marginBottom: "4px",
+    },
+    statLabel: {
+      fontSize: "14px",
+      color: "#475569",
+      fontWeight: 600,
+    },
+    studentCard: {
+      border: "1px solid #bfdbfe",
+      borderRadius: "18px",
+      padding: "16px",
+      background: "linear-gradient(180deg, #f8fbff 0%, #ffffff 100%)",
+      boxShadow: "0 8px 25px rgba(15, 23, 42, 0.05)",
     },
     goalCard: {
       border: "1px solid #bfdbfe",
@@ -641,33 +645,17 @@ function App() {
       padding: "16px",
       marginTop: "18px",
     },
-    topBar: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      gap: "12px",
-      marginBottom: "18px",
-      flexWrap: "wrap",
-    },
-    studentSummary: {
-      background: "#eff6ff",
-      border: "1px solid #bfdbfe",
-      borderRadius: "16px",
-      padding: "14px",
-      marginTop: "16px",
-      lineHeight: 1.7,
-      fontSize: "14px",
-    },
-    twoCol: {
-      display: "grid",
-      gridTemplateColumns: "1fr 1fr",
-      gap: "12px",
-    },
     sessionGrid: {
       display: "grid",
       gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
       gap: "12px",
       marginBottom: "12px",
+    },
+    rowGap: {
+      display: "flex",
+      gap: "10px",
+      flexWrap: "wrap",
+      alignItems: "center",
     },
     tableWrap: {
       overflowX: "auto",
@@ -693,72 +681,46 @@ function App() {
       borderBottom: "1px solid #e2e8f0",
       verticalAlign: "top",
     },
-    deleteButton: {
-      background: "linear-gradient(135deg, #dc2626 0%, #ef4444 100%)",
-      color: "white",
-      border: "none",
-      borderRadius: "12px",
-      padding: "10px 14px",
-      fontSize: "13px",
-      fontWeight: 700,
-      cursor: "pointer",
-      alignSelf: "flex-start",
-    },
-    metricGrid: {
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-      gap: "16px",
-    },
-    metricCard: {
-      background: "linear-gradient(180deg, #eff6ff 0%, #ffffff 100%)",
-      border: "1px solid #bfdbfe",
-      borderRadius: "20px",
-      padding: "18px",
-    },
-    metricValue: {
-      fontSize: "30px",
-      fontWeight: 800,
-      color: "#1d4ed8",
-      marginBottom: "6px",
-    },
-    metricLabel: {
-      fontSize: "14px",
-      color: "#475569",
-      fontWeight: 600,
-    },
-    studentListItem: {
-      border: "1px solid #dbeafe",
-      borderRadius: "18px",
-      padding: "16px",
-      background: "#ffffff",
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "flex-start",
-      gap: "14px",
-      marginBottom: "14px",
-      flexWrap: "wrap",
+    smallText: {
+      fontSize: "12px",
+      color: "#64748b",
+      marginTop: "6px",
+      lineHeight: 1.4,
     },
   };
 
-  const renderSidebar = () => (
-    <div style={styles.sidebar}>
+  const renderDashboard = () => (
+    <>
       <div style={styles.card}>
-        <h2 style={styles.cardTitle}>Select Student</h2>
+        <h2 style={styles.cardTitle}>Dashboard</h2>
+        <div style={styles.summaryGrid}>
+          <div style={styles.statCard}>
+            <div style={styles.statNumber}>{students.length}</div>
+            <div style={styles.statLabel}>Students</div>
+          </div>
+          <div style={styles.statCard}>
+            <div style={styles.statNumber}>{totalGoals}</div>
+            <div style={styles.statLabel}>Total Goals</div>
+          </div>
+          <div style={styles.statCard}>
+            <div style={styles.statNumber}>{allHistory.length}</div>
+            <div style={styles.statLabel}>Saved Data Entries</div>
+          </div>
+          <div style={styles.statCard}>
+            <div style={styles.statNumber}>
+              {selectedStudent ? selectedStudent.goals.length : 0}
+            </div>
+            <div style={styles.statLabel}>Goals for Selected Student</div>
+          </div>
+        </div>
+      </div>
 
-        <select
-          value={selectedStudentId}
-          onChange={(e) => setSelectedStudentId(e.target.value)}
-          style={styles.input}
-        >
-          {students.map((student) => (
-            <option key={student.id} value={student.id}>
-              {student.name}
-            </option>
-          ))}
-        </select>
-
-        {selectedStudent && (
-          <div style={styles.studentSummary}>
+      <div style={styles.card}>
+        <h3 style={styles.subTitle}>Current Student</h3>
+        {!selectedStudent ? (
+          <div>No student selected.</div>
+        ) : (
+          <div style={styles.studentCard}>
             <div><strong>Name:</strong> {selectedStudent.name}</div>
             <div><strong>Grade:</strong> {selectedStudent.grade || "-"}</div>
             <div><strong>Case Manager:</strong> {selectedStudent.caseManager || "-"}</div>
@@ -768,123 +730,77 @@ function App() {
                 ? selectedStudent.disabilities.join(", ")
                 : "-"}
             </div>
-            <div><strong>Goals:</strong> {selectedStudent.goals?.length || 0}</div>
-            <div><strong>Saved Entries:</strong> {savedHistory.length}</div>
+            <div><strong>Goals:</strong> {selectedStudent.goals.length}</div>
           </div>
         )}
       </div>
 
       <div style={styles.card}>
-        <h2 style={styles.cardTitle}>Data Options</h2>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          <button onClick={exportCSV} style={styles.buttonGreen}>
-            Export CSV
+        <h3 style={styles.subTitle}>Quick Actions</h3>
+        <div style={styles.rowGap}>
+          <button style={styles.buttonPrimary} onClick={() => setActiveTab("students")}>
+            Go to Students
           </button>
-
-          <button onClick={clearAllSavedSessions} style={styles.buttonRed}>
-            Clear Saved Session History
+          <button style={styles.buttonSecondary} onClick={() => setActiveTab("goals")}>
+            Go to Goals & Data
+          </button>
+          <button style={styles.buttonGreen} onClick={() => setActiveTab("history")}>
+            Go to History
           </button>
         </div>
       </div>
-    </div>
-  );
-
-  const renderDashboard = () => (
-    <div style={styles.card}>
-      <h2 style={styles.sectionTitle}>Dashboard</h2>
-
-      <div style={styles.metricGrid}>
-        <div style={styles.metricCard}>
-          <div style={styles.metricValue}>{totalStudents}</div>
-          <div style={styles.metricLabel}>Total Students</div>
-        </div>
-
-        <div style={styles.metricCard}>
-          <div style={styles.metricValue}>{selectedStudentGoalCount}</div>
-          <div style={styles.metricLabel}>Goals for Selected Student</div>
-        </div>
-
-        <div style={styles.metricCard}>
-          <div style={styles.metricValue}>{selectedStudentEntryCount}</div>
-          <div style={styles.metricLabel}>Saved Entries for Selected Student</div>
-        </div>
-
-        <div style={styles.metricCard}>
-          <div style={styles.metricValue}>{totalSavedEntries}</div>
-          <div style={styles.metricLabel}>All Saved Entries</div>
-        </div>
-      </div>
-
-      {selectedStudent && (
-        <div style={{ marginTop: "24px" }}>
-          <h3 style={{ ...styles.cardTitle, marginBottom: "12px" }}>
-            Current Student Snapshot
-          </h3>
-          <div style={styles.studentSummary}>
-            <div><strong>Name:</strong> {selectedStudent.name}</div>
-            <div><strong>Grade:</strong> {selectedStudent.grade || "-"}</div>
-            <div><strong>Case Manager:</strong> {selectedStudent.caseManager || "-"}</div>
-            <div>
-              <strong>Disability / Eligibility:</strong>{" "}
-              {selectedStudent.disabilities?.length
-                ? selectedStudent.disabilities.join(", ")
-                : "-"}
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+    </>
   );
 
   const renderStudents = () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+    <>
       <div style={styles.card}>
-        <h2 style={styles.sectionTitle}>Add Student</h2>
-
+        <h2 style={styles.cardTitle}>Add Student</h2>
         <form onSubmit={addStudent}>
-          <div style={{ marginBottom: "14px" }}>
-            <label style={styles.label}>Student Name</label>
-            <input
-              type="text"
-              name="name"
-              value={studentForm.name}
-              onChange={handleStudentFormChange}
-              style={styles.input}
-              placeholder="Enter student name"
-            />
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "14px" }}>
+            <div>
+              <label style={styles.label}>Student Name</label>
+              <input
+                type="text"
+                name="name"
+                value={studentForm.name}
+                onChange={handleStudentFormChange}
+                style={styles.input}
+                placeholder="Enter student name"
+              />
+            </div>
+
+            <div>
+              <label style={styles.label}>Grade</label>
+              <select
+                name="grade"
+                value={studentForm.grade}
+                onChange={handleStudentFormChange}
+                style={styles.input}
+              >
+                <option value="">Select grade</option>
+                {GRADE_OPTIONS.map((grade) => (
+                  <option key={grade} value={grade}>
+                    {grade}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label style={styles.label}>Case Manager</label>
+              <input
+                type="text"
+                name="caseManager"
+                value={studentForm.caseManager}
+                onChange={handleStudentFormChange}
+                style={styles.input}
+                placeholder="Enter case manager"
+              />
+            </div>
           </div>
 
-          <div style={{ marginBottom: "14px" }}>
-            <label style={styles.label}>Grade</label>
-            <select
-              name="grade"
-              value={studentForm.grade}
-              onChange={handleStudentFormChange}
-              style={styles.input}
-            >
-              <option value="">Select grade</option>
-              {GRADE_OPTIONS.map((grade) => (
-                <option key={grade} value={grade}>
-                  {grade}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div style={{ marginBottom: "14px" }}>
-            <label style={styles.label}>Case Manager</label>
-            <input
-              type="text"
-              name="caseManager"
-              value={studentForm.caseManager}
-              onChange={handleStudentFormChange}
-              style={styles.input}
-              placeholder="Enter case manager"
-            />
-          </div>
-
-          <div style={{ marginBottom: "16px" }}>
+          <div style={{ marginTop: "14px" }}>
             <label style={styles.label}>Disability / Eligibility</label>
             <select
               name="disabilities"
@@ -904,69 +820,90 @@ function App() {
             </div>
           </div>
 
-          <button type="submit" style={styles.buttonPrimary}>
-            Add Student
-          </button>
+          <div style={{ marginTop: "16px" }}>
+            <button type="submit" style={styles.buttonPrimary}>
+              Add Student
+            </button>
+          </div>
         </form>
       </div>
 
       <div style={styles.card}>
-        <h2 style={styles.sectionTitle}>Student List</h2>
+        <h2 style={styles.cardTitle}>Student List</h2>
+        <div style={{ marginBottom: "16px" }}>
+          <label style={styles.label}>Selected Student</label>
+          <select
+            value={selectedStudentId}
+            onChange={(e) => setSelectedStudentId(e.target.value)}
+            style={styles.input}
+          >
+            {students.map((student) => (
+              <option key={student.id} value={student.id}>
+                {student.name}
+              </option>
+            ))}
+          </select>
+        </div>
 
-        {students.length === 0 ? (
-          <div>No students yet.</div>
-        ) : (
-          students.map((student) => (
-            <div key={student.id} style={styles.studentListItem}>
-              <div style={{ flex: 1, minWidth: "220px" }}>
-                <div style={{ fontSize: "18px", fontWeight: 700, color: "#1e3a8a" }}>
-                  {student.name}
-                </div>
-                <div style={{ marginTop: "6px", lineHeight: 1.7, fontSize: "14px" }}>
-                  <div><strong>Grade:</strong> {student.grade || "-"}</div>
-                  <div><strong>Case Manager:</strong> {student.caseManager || "-"}</div>
-                  <div>
-                    <strong>Disability / Eligibility:</strong>{" "}
-                    {student.disabilities?.length
-                      ? student.disabilities.join(", ")
-                      : "-"}
-                  </div>
-                  <div><strong>Goals:</strong> {student.goals?.length || 0}</div>
-                </div>
+        <div style={styles.studentGrid}>
+          {students.map((student) => (
+            <div key={student.id} style={styles.studentCard}>
+              <div style={{ fontWeight: 800, fontSize: "18px", color: "#1e3a8a", marginBottom: "10px" }}>
+                {student.name}
               </div>
+              <div><strong>Grade:</strong> {student.grade || "-"}</div>
+              <div><strong>Case Manager:</strong> {student.caseManager || "-"}</div>
+              <div>
+                <strong>Disability / Eligibility:</strong>{" "}
+                {student.disabilities?.length ? student.disabilities.join(", ") : "-"}
+              </div>
+              <div><strong>Goals:</strong> {student.goals?.length || 0}</div>
 
-              <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+              <div style={{ ...styles.rowGap, marginTop: "14px" }}>
                 <button
+                  style={styles.buttonPrimary}
                   onClick={() => {
                     setSelectedStudentId(student.id);
-                    setActiveTab("Dashboard");
+                    setActiveTab("goals");
                   }}
-                  style={styles.buttonSecondary}
                 >
-                  Select
+                  Open
                 </button>
-
                 <button
+                  style={styles.buttonRed}
                   onClick={() => deleteStudent(student.id)}
-                  style={styles.deleteButton}
                 >
                   Delete
                 </button>
               </div>
             </div>
-          ))
-        )}
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 
   const renderGoals = () => (
     <div style={styles.card}>
-      <div style={styles.topBar}>
-        <h2 style={styles.sectionTitle}>Goals & Objectives</h2>
-        <button onClick={addGoalToStudent} style={styles.buttonSecondary}>
-          Add Goal
-        </button>
+      <div style={{ ...styles.rowGap, justifyContent: "space-between", marginBottom: "16px" }}>
+        <h2 style={{ ...styles.cardTitle, marginBottom: 0 }}>Goals & Data</h2>
+        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+          <select
+            value={selectedStudentId}
+            onChange={(e) => setSelectedStudentId(e.target.value)}
+            style={{ ...styles.input, minWidth: "220px" }}
+          >
+            {students.map((student) => (
+              <option key={student.id} value={student.id}>
+                {student.name}
+              </option>
+            ))}
+          </select>
+
+          <button onClick={addGoalToStudent} style={styles.buttonSecondary}>
+            Add Goal
+          </button>
+        </div>
       </div>
 
       {!selectedStudent ? (
@@ -975,10 +912,312 @@ function App() {
         <div>No goals added for this student yet.</div>
       ) : (
         <div>
-          {selectedStudent.goals.map((goal) => (
-            <div key={goal.id} style={styles.goalCard}>
-              <div
-                className="ramp-two-col"
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1
+          {selectedStudent.goals.map((goal) => {
+            const key = getGoalSessionKey(selectedStudent.id, goal.id);
+            const currentSession = sessionData[key] || {
+              date: new Date().toISOString().slice(0, 10),
+              score: "",
+              promptLevel: "",
+              notes: "",
+            };
+
+            return (
+              <div key={goal.id} style={styles.goalCard}>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", flexWrap: "wrap", marginBottom: "12px" }}>
+                  <div style={{ flex: 1, minWidth: "280px" }}>
+                    <div style={{ marginBottom: "12px" }}>
+                      <label style={styles.label}>Goal Title</label>
+                      <input
+                        type="text"
+                        value={goal.title}
+                        onChange={(e) =>
+                          updateGoalField(goal.id, "title", e.target.value)
+                        }
+                        style={styles.input}
+                      />
+                    </div>
+
+                    <div style={{ marginBottom: "12px" }}>
+                      <label style={styles.label}>Short Name</label>
+                      <input
+                        type="text"
+                        value={goal.shortName || ""}
+                        onChange={(e) =>
+                          updateGoalField(goal.id, "shortName", e.target.value)
+                        }
+                        style={styles.input}
+                      />
+                    </div>
+
+                    <div style={{ marginBottom: "12px" }}>
+                      <label style={styles.label}>Objective</label>
+                      <textarea
+                        value={goal.objective || ""}
+                        onChange={(e) =>
+                          updateGoalField(goal.id, "objective", e.target.value)
+                        }
+                        style={{ ...styles.textarea, minHeight: "110px" }}
+                      />
+                    </div>
+
+                    <div style={{ marginBottom: "12px" }}>
+                      <label style={styles.label}>Examples</label>
+                      <textarea
+                        value={goal.example || ""}
+                        onChange={(e) =>
+                          updateGoalField(goal.id, "example", e.target.value)
+                        }
+                        style={styles.textarea}
+                      />
+                    </div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "12px" }}>
+                      <div>
+                        <label style={styles.label}>Baseline</label>
+                        <input
+                          type="text"
+                          value={goal.baseline || ""}
+                          onChange={(e) =>
+                            updateGoalField(goal.id, "baseline", e.target.value)
+                          }
+                          style={styles.input}
+                        />
+                      </div>
+
+                      <div>
+                        <label style={styles.label}>Mastery</label>
+                        <input
+                          type="text"
+                          value={goal.mastery || ""}
+                          onChange={(e) =>
+                            updateGoalField(goal.id, "mastery", e.target.value)
+                          }
+                          style={styles.input}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <button
+                      onClick={() => removeGoal(goal.id)}
+                      style={styles.buttonRed}
+                    >
+                      Delete Goal
+                    </button>
+                  </div>
+                </div>
+
+                <div style={styles.sessionBox}>
+                  <div
+                    style={{
+                      fontWeight: 700,
+                      marginBottom: "12px",
+                      color: "#1e3a8a",
+                      fontSize: "17px",
+                    }}
+                  >
+                    Record Session Data
+                  </div>
+
+                  <div style={styles.sessionGrid}>
+                    <div>
+                      <label style={styles.label}>Date</label>
+                      <input
+                        type="date"
+                        value={currentSession.date}
+                        onChange={(e) =>
+                          handleSessionChange(goal.id, "date", e.target.value)
+                        }
+                        style={styles.input}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={styles.label}>Score</label>
+                      <select
+                        value={currentSession.score}
+                        onChange={(e) =>
+                          handleSessionChange(goal.id, "score", e.target.value)
+                        }
+                        style={styles.input}
+                      >
+                        <option value="">Select score</option>
+                        <option value="0">0 = Not demonstrating</option>
+                        <option value="1">1 = With prompts</option>
+                        <option value="2">2 = Independent</option>
+                      </select>
+                    </div>
+
+                    {currentSession.score === "1" && (
+                      <div>
+                        <label style={styles.label}>Prompt Level</label>
+                        <select
+                          value={currentSession.promptLevel}
+                          onChange={(e) =>
+                            handleSessionChange(
+                              goal.id,
+                              "promptLevel",
+                              e.target.value
+                            )
+                          }
+                          style={styles.input}
+                        >
+                          <option value="">Select prompt</option>
+                          {PROMPT_OPTIONS.map((prompt) => (
+                            <option key={prompt} value={prompt}>
+                              {prompt}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                  </div>
+
+                  <div style={{ marginBottom: "12px" }}>
+                    <label style={styles.label}>Notes</label>
+                    <textarea
+                      value={currentSession.notes}
+                      onChange={(e) =>
+                        handleSessionChange(goal.id, "notes", e.target.value)
+                      }
+                      style={styles.textarea}
+                      placeholder="Add notes about the session..."
+                    />
+                  </div>
+
+                  <button
+                    onClick={() => saveSessionEntry(goal)}
+                    style={styles.buttonPrimary}
+                  >
+                    Save Session
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+
+  const renderHistory = () => (
+    <>
+      <div style={styles.card}>
+        <h2 style={styles.cardTitle}>History & Export</h2>
+
+        <div style={{ ...styles.rowGap, marginBottom: "16px" }}>
+          <select
+            value={selectedStudentId}
+            onChange={(e) => setSelectedStudentId(e.target.value)}
+            style={{ ...styles.input, minWidth: "240px" }}
+          >
+            {students.map((student) => (
+              <option key={student.id} value={student.id}>
+                {student.name}
+              </option>
+            ))}
+          </select>
+
+          <button onClick={exportCSV} style={styles.buttonGreen}>
+            Export CSV
+          </button>
+
+          <button onClick={clearAllSavedSessions} style={styles.buttonRed}>
+            Clear Saved Session History
+          </button>
+        </div>
+
+        {!savedHistory.length ? (
+          <div>No saved entries yet for this student.</div>
+        ) : (
+          <div style={styles.tableWrap}>
+            <table style={styles.table}>
+              <thead>
+                <tr>
+                  <th style={styles.th}>Date</th>
+                  <th style={styles.th}>Goal</th>
+                  <th style={styles.th}>Short Name</th>
+                  <th style={styles.th}>Score</th>
+                  <th style={styles.th}>Prompt</th>
+                  <th style={styles.th}>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[...savedHistory].reverse().map((entry) => (
+                  <tr key={entry.id}>
+                    <td style={styles.td}>{entry.date}</td>
+                    <td style={styles.td}>{entry.goalTitle}</td>
+                    <td style={styles.td}>{entry.shortName}</td>
+                    <td style={styles.td}>{entry.score}</td>
+                    <td style={styles.td}>{entry.promptLevel || "-"}</td>
+                    <td style={styles.td}>{entry.notes || "-"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </>
+  );
+
+  return (
+    <div style={styles.page}>
+      <style>{`
+        * { box-sizing: border-box; }
+        body { margin: 0; }
+        input, select, textarea, button { font: inherit; }
+        input:focus, select:focus, textarea:focus {
+          border-color: #3b82f6 !important;
+          box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+        }
+        button:hover { filter: brightness(0.98); }
+      `}</style>
+
+      <div style={styles.container}>
+        <div style={styles.hero}>
+          <h1 style={styles.heroTitle}>RaMP Tracker</h1>
+          <div style={styles.heroText}>
+            Track student goals with structured data, prompt levels, examples,
+            and a cleaner app layout with tabs.
+          </div>
+        </div>
+
+        <div style={styles.tabsWrap}>
+          <button
+            style={activeTab === "dashboard" ? styles.activeTab : styles.tab}
+            onClick={() => setActiveTab("dashboard")}
+          >
+            Dashboard
+          </button>
+          <button
+            style={activeTab === "students" ? styles.activeTab : styles.tab}
+            onClick={() => setActiveTab("students")}
+          >
+            Students
+          </button>
+          <button
+            style={activeTab === "goals" ? styles.activeTab : styles.tab}
+            onClick={() => setActiveTab("goals")}
+          >
+            Goals & Data
+          </button>
+          <button
+            style={activeTab === "history" ? styles.activeTab : styles.tab}
+            onClick={() => setActiveTab("history")}
+          >
+            History
+          </button>
+        </div>
+
+        {activeTab === "dashboard" && renderDashboard()}
+        {activeTab === "students" && renderStudents()}
+        {activeTab === "goals" && renderGoals()}
+        {activeTab === "history" && renderHistory()}
+      </div>
+    </div>
+  );
+}
+
+export default App;
