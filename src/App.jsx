@@ -112,6 +112,177 @@ function loadFromStorage(key, fallback) {
   }
 }
 
+function GraphCard({ title, points }) {
+  const width = 700;
+  const height = 240;
+  const padLeft = 50;
+  const padRight = 20;
+  const padTop = 20;
+  const padBottom = 40;
+
+  const chartWidth = width - padLeft - padRight;
+  const chartHeight = height - padTop - padBottom;
+
+  if (!points || points.length === 0) {
+    return (
+      <div
+        style={{
+          border: "1px solid #bfdbfe",
+          borderRadius: "18px",
+          padding: "16px",
+          background: "linear-gradient(180deg, #f8fbff 0%, #ffffff 100%)",
+          marginBottom: "16px",
+        }}
+      >
+        <div
+          style={{
+            fontWeight: 700,
+            color: "#1e3a8a",
+            marginBottom: "10px",
+            fontSize: "18px",
+          }}
+        >
+          {title}
+        </div>
+        <div style={{ color: "#64748b" }}>No saved data yet for this goal.</div>
+      </div>
+    );
+  }
+
+  const sorted = [...points].sort((a, b) => a.date.localeCompare(b.date));
+
+  const xForIndex = (index) => {
+    if (sorted.length === 1) return padLeft + chartWidth / 2;
+    return padLeft + (index / (sorted.length - 1)) * chartWidth;
+  };
+
+  const yForScore = (score) => {
+    const normalized = Number(score) / 2;
+    return padTop + chartHeight - normalized * chartHeight;
+  };
+
+  const pathD = sorted
+    .map((point, index) => {
+      const x = xForIndex(index);
+      const y = yForScore(point.score);
+      return `${index === 0 ? "M" : "L"} ${x} ${y}`;
+    })
+    .join(" ");
+
+  return (
+    <div
+      style={{
+        border: "1px solid #bfdbfe",
+        borderRadius: "18px",
+        padding: "16px",
+        background: "linear-gradient(180deg, #f8fbff 0%, #ffffff 100%)",
+        marginBottom: "16px",
+        boxShadow: "0 8px 25px rgba(15, 23, 42, 0.05)",
+      }}
+    >
+      <div
+        style={{
+          fontWeight: 700,
+          color: "#1e3a8a",
+          marginBottom: "12px",
+          fontSize: "18px",
+        }}
+      >
+        {title}
+      </div>
+
+      <div style={{ overflowX: "auto" }}>
+        <svg
+          viewBox={`0 0 ${width} ${height}`}
+          style={{ width: "100%", minWidth: "620px", display: "block" }}
+        >
+          <line
+            x1={padLeft}
+            y1={padTop}
+            x2={padLeft}
+            y2={padTop + chartHeight}
+            stroke="#94a3b8"
+            strokeWidth="1.5"
+          />
+          <line
+            x1={padLeft}
+            y1={padTop + chartHeight}
+            x2={padLeft + chartWidth}
+            y2={padTop + chartHeight}
+            stroke="#94a3b8"
+            strokeWidth="1.5"
+          />
+
+          {[0, 1, 2].map((tick) => {
+            const y = yForScore(tick);
+            return (
+              <g key={tick}>
+                <line
+                  x1={padLeft}
+                  y1={y}
+                  x2={padLeft + chartWidth}
+                  y2={y}
+                  stroke="#dbeafe"
+                  strokeWidth="1"
+                />
+                <text
+                  x={padLeft - 12}
+                  y={y + 5}
+                  fontSize="12"
+                  textAnchor="end"
+                  fill="#475569"
+                >
+                  {tick}
+                </text>
+              </g>
+            );
+          })}
+
+          <path
+            d={pathD}
+            fill="none"
+            stroke="#2563eb"
+            strokeWidth="3"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+          />
+
+          {sorted.map((point, index) => {
+            const x = xForIndex(index);
+            const y = yForScore(point.score);
+            return (
+              <g key={`${point.date}-${index}`}>
+                <circle cx={x} cy={y} r="5.5" fill="#1d4ed8" />
+                <text
+                  x={x}
+                  y={height - 10}
+                  fontSize="11"
+                  textAnchor="middle"
+                  fill="#475569"
+                >
+                  {point.date.slice(5)}
+                </text>
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+
+      <div
+        style={{
+          marginTop: "10px",
+          fontSize: "12px",
+          color: "#64748b",
+          lineHeight: 1.5,
+        }}
+      >
+        0 = Not demonstrating &nbsp; • &nbsp; 1 = With prompts &nbsp; • &nbsp; 2
+        = Independent
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [students, setStudents] = useState(() =>
     loadFromStorage("ramp_students", DEFAULT_STUDENTS)
@@ -167,6 +338,25 @@ function App() {
   const savedHistory = allHistory.filter(
     (entry) => entry.studentId === selectedStudentId
   );
+
+  const graphGroups = useMemo(() => {
+    if (!selectedStudent) return [];
+
+    return selectedStudent.goals.map((goal) => {
+      const matching = savedHistory
+        .filter((entry) => entry.goalId === goal.id)
+        .map((entry) => ({
+          date: entry.date,
+          score: Number(entry.score),
+        }));
+
+      return {
+        goalId: goal.id,
+        title: goal.title,
+        points: matching,
+      };
+    });
+  }, [selectedStudent, savedHistory]);
 
   const handleStudentFormChange = (e) => {
     const { name, value, options } = e.target;
@@ -736,6 +926,21 @@ function App() {
       </div>
 
       <div style={styles.card}>
+        <h3 style={styles.subTitle}>Progress Graphs</h3>
+        {!selectedStudent ? (
+          <div>No student selected.</div>
+        ) : (
+          graphGroups.map((group) => (
+            <GraphCard
+              key={group.goalId}
+              title={group.title}
+              points={group.points}
+            />
+          ))
+        )}
+      </div>
+
+      <div style={styles.card}>
         <h3 style={styles.subTitle}>Quick Actions</h3>
         <div style={styles.rowGap}>
           <button style={styles.buttonPrimary} onClick={() => setActiveTab("students")}>
@@ -1128,6 +1333,21 @@ function App() {
           </button>
         </div>
 
+        <h3 style={styles.subTitle}>Progress Graphs</h3>
+        {!selectedStudent ? (
+          <div>No student selected.</div>
+        ) : (
+          graphGroups.map((group) => (
+            <GraphCard
+              key={group.goalId}
+              title={group.title}
+              points={group.points}
+            />
+          ))
+        )}
+
+        <h3 style={{ ...styles.subTitle, marginTop: "22px" }}>Saved Entries</h3>
+
         {!savedHistory.length ? (
           <div>No saved entries yet for this student.</div>
         ) : (
@@ -1180,7 +1400,7 @@ function App() {
           <h1 style={styles.heroTitle}>RaMP Tracker</h1>
           <div style={styles.heroText}>
             Track student goals with structured data, prompt levels, examples,
-            and a cleaner app layout with tabs.
+            saved history, and progress graphs.
           </div>
         </div>
 
