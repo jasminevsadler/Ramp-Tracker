@@ -482,7 +482,7 @@ export default function App() {
     loadFromStorage("ramp_selected_benchmark", "")
   );
   const [showGoalDetails, setShowGoalDetails] = useState(() =>
-    loadFromStorage("ramp_show_goal_details", true)
+    loadFromStorage("ramp_show_goal_details", false)
   );
   const [sessionData, setSessionData] = useState(() =>
     loadFromStorage("ramp_session_data", {})
@@ -1630,6 +1630,14 @@ export default function App() {
       padding: "16px",
       marginTop: "18px",
     },
+    quickRecordBox: {
+      background: "#eff6ff",
+      border: "1px solid #bfdbfe",
+      borderRadius: "18px",
+      padding: "16px",
+      marginTop: "14px",
+      marginBottom: "18px",
+    },
     sessionGrid: {
       display: "grid",
       gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
@@ -2113,13 +2121,404 @@ export default function App() {
       selectedGoal?.benchmarks?.length ? selectedBenchmark : null;
 
     const sessionKey = selectedGoal
-      ? getGoalSessionKey(selectedStudent.id, selectedGoal.id, activeTargetBenchmark?.id)
+      ? getGoalSessionKey(
+          selectedStudent.id,
+          selectedGoal.id,
+          activeTargetBenchmark?.id
+        )
       : "";
     const currentSession = sessionData[sessionKey] || getDefaultSessionForGoal();
+
+    const renderRecordDataBox = () => {
+      if (!selectedGoal) return null;
+
+      return (
+        <div style={styles.quickRecordBox}>
+          <div
+            style={{
+              fontWeight: 700,
+              marginBottom: "12px",
+              color: "#1e3a8a",
+              fontSize: "17px",
+            }}
+          >
+            Record Data For:{" "}
+            {activeTargetBenchmark
+              ? activeTargetBenchmark.text
+              : selectedGoal.goalTitle}
+          </div>
+
+          {selectedGoal.collectionMethod === "interval" ? (
+            <>
+              <div style={styles.sessionGrid}>
+                <div>
+                  <label style={styles.label}>Date</label>
+                  <input
+                    type="date"
+                    value={currentSession.date}
+                    onChange={(e) =>
+                      handleSessionChange(
+                        selectedGoal,
+                        activeTargetBenchmark,
+                        "date",
+                        e.target.value
+                      )
+                    }
+                    style={styles.input}
+                  />
+                </div>
+
+                <div>
+                  <label style={styles.label}>Location</label>
+                  <select
+                    value={currentSession.location}
+                    onChange={(e) =>
+                      handleSessionChange(
+                        selectedGoal,
+                        activeTargetBenchmark,
+                        "location",
+                        e.target.value
+                      )
+                    }
+                    style={styles.input}
+                  >
+                    {SESSION_LOCATION_OPTIONS.map((location) => (
+                      <option key={location} value={location}>
+                        {location}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={styles.label}>Collected By</label>
+                  <select
+                    value={currentSession.collectedBy}
+                    onChange={(e) =>
+                      handleSessionChange(
+                        selectedGoal,
+                        activeTargetBenchmark,
+                        "collectedBy",
+                        e.target.value
+                      )
+                    }
+                    style={styles.input}
+                  >
+                    {COLLECTED_BY_OPTIONS.map((person) => (
+                      <option key={person} value={person}>
+                        {person}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={styles.label}>Interval Type</label>
+                  <select
+                    value={currentSession.intervalType}
+                    onChange={(e) =>
+                      handleSessionChange(
+                        selectedGoal,
+                        activeTargetBenchmark,
+                        "intervalType",
+                        e.target.value
+                      )
+                    }
+                    style={styles.input}
+                  >
+                    {INTERVAL_TYPES.map((type) => (
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={styles.label}>Session Length (minutes)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={currentSession.sessionLength}
+                    onChange={(e) =>
+                      handleSessionChange(
+                        selectedGoal,
+                        activeTargetBenchmark,
+                        "sessionLength",
+                        e.target.value
+                      )
+                    }
+                    style={styles.input}
+                  />
+                </div>
+
+                <div>
+                  <label style={styles.label}>Interval Length (minutes)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={currentSession.intervalLength}
+                    onChange={(e) =>
+                      handleSessionChange(
+                        selectedGoal,
+                        activeTargetBenchmark,
+                        "intervalLength",
+                        e.target.value
+                      )
+                    }
+                    style={styles.input}
+                  />
+                </div>
+              </div>
+
+              <div style={{ marginBottom: "12px" }}>
+                <div style={styles.label}>Intervals</div>
+                <div style={styles.smallText}>
+                  Score each interval yes or no. Total intervals:{" "}
+                  {
+                    syncIntervalArray(
+                      currentSession.intervalResults,
+                      currentSession.sessionLength,
+                      currentSession.intervalLength
+                    ).length
+                  }
+                </div>
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
+                    gap: "10px",
+                    marginTop: "12px",
+                  }}
+                >
+                  {syncIntervalArray(
+                    currentSession.intervalResults,
+                    currentSession.sessionLength,
+                    currentSession.intervalLength
+                  ).map((result, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        border: "1px solid #dbeafe",
+                        borderRadius: "12px",
+                        padding: "10px",
+                        background: "white",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: "13px",
+                          fontWeight: 700,
+                          color: "#1e3a8a",
+                          marginBottom: "8px",
+                        }}
+                      >
+                        Interval {index + 1}
+                      </div>
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        <button
+                          type="button"
+                          style={styles.intervalButton(result === "yes")}
+                          onClick={() =>
+                            handleIntervalResultChange(
+                              selectedGoal,
+                              activeTargetBenchmark,
+                              index,
+                              "yes"
+                            )
+                          }
+                        >
+                          Yes
+                        </button>
+                        <button
+                          type="button"
+                          style={styles.intervalButton(result === "no")}
+                          onClick={() =>
+                            handleIntervalResultChange(
+                              selectedGoal,
+                              activeTargetBenchmark,
+                              index,
+                              "no"
+                            )
+                          }
+                        >
+                          No
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ marginBottom: "12px" }}>
+                <label style={styles.label}>Notes</label>
+                <textarea
+                  value={currentSession.notes}
+                  onChange={(e) =>
+                    handleSessionChange(
+                      selectedGoal,
+                      activeTargetBenchmark,
+                      "notes",
+                      e.target.value
+                    )
+                  }
+                  style={styles.textarea}
+                  placeholder="Add notes about the session..."
+                />
+              </div>
+
+              <button
+                onClick={() => saveSessionEntry(selectedGoal, activeTargetBenchmark)}
+                style={styles.buttonPrimary}
+              >
+                Save Interval Session
+              </button>
+            </>
+          ) : (
+            <>
+              <div style={styles.sessionGrid}>
+                <div>
+                  <label style={styles.label}>Date</label>
+                  <input
+                    type="date"
+                    value={currentSession.date}
+                    onChange={(e) =>
+                      handleSessionChange(
+                        selectedGoal,
+                        activeTargetBenchmark,
+                        "date",
+                        e.target.value
+                      )
+                    }
+                    style={styles.input}
+                  />
+                </div>
+
+                <div>
+                  <label style={styles.label}>Location</label>
+                  <select
+                    value={currentSession.location}
+                    onChange={(e) =>
+                      handleSessionChange(
+                        selectedGoal,
+                        activeTargetBenchmark,
+                        "location",
+                        e.target.value
+                      )
+                    }
+                    style={styles.input}
+                  >
+                    {SESSION_LOCATION_OPTIONS.map((location) => (
+                      <option key={location} value={location}>
+                        {location}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={styles.label}>Collected By</label>
+                  <select
+                    value={currentSession.collectedBy}
+                    onChange={(e) =>
+                      handleSessionChange(
+                        selectedGoal,
+                        activeTargetBenchmark,
+                        "collectedBy",
+                        e.target.value
+                      )
+                    }
+                    style={styles.input}
+                  >
+                    {COLLECTED_BY_OPTIONS.map((person) => (
+                      <option key={person} value={person}>
+                        {person}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={styles.label}>Score</label>
+                  <select
+                    value={currentSession.score}
+                    onChange={(e) =>
+                      handleSessionChange(
+                        selectedGoal,
+                        activeTargetBenchmark,
+                        "score",
+                        e.target.value
+                      )
+                    }
+                    style={styles.input}
+                  >
+                    <option value="">Select score</option>
+                    <option value="0">0 = Not demonstrating</option>
+                    <option value="1">1 = With prompts</option>
+                    <option value="2">2 = Independent</option>
+                  </select>
+                </div>
+
+                {currentSession.score === "1" && (
+                  <div>
+                    <label style={styles.label}>Prompt Level</label>
+                    <select
+                      value={currentSession.promptLevel}
+                      onChange={(e) =>
+                        handleSessionChange(
+                          selectedGoal,
+                          activeTargetBenchmark,
+                          "promptLevel",
+                          e.target.value
+                        )
+                      }
+                      style={styles.input}
+                    >
+                      <option value="">Select prompt</option>
+                      {PROMPT_OPTIONS.map((prompt) => (
+                        <option key={prompt} value={prompt}>
+                          {prompt}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+
+              <div style={{ marginBottom: "12px" }}>
+                <label style={styles.label}>Notes</label>
+                <textarea
+                  value={currentSession.notes}
+                  onChange={(e) =>
+                    handleSessionChange(
+                      selectedGoal,
+                      activeTargetBenchmark,
+                      "notes",
+                      e.target.value
+                    )
+                  }
+                  style={styles.textarea}
+                  placeholder="Add notes about the session..."
+                />
+              </div>
+
+              <button
+                onClick={() => saveSessionEntry(selectedGoal, activeTargetBenchmark)}
+                style={styles.buttonPrimary}
+              >
+                Save Session
+              </button>
+            </>
+          )}
+        </div>
+      );
+    };
 
     return (
       <>
         {renderStudentSelect()}
+
         <div style={styles.card}>
           <div
             style={{
@@ -2173,20 +2572,17 @@ export default function App() {
                         {goal.goalTitle}
                       </div>
                       <div style={{ lineHeight: 1.6 }}>{goal.fullGoalText}</div>
-                      <div style={styles.smallText}>
-                        {goal.benchmarks?.length
-                          ? `${goal.benchmarks.length} benchmark(s)/objective(s)`
-                          : "No short-term benchmarks/objectives yet — data will be taken on the goal"}
-                      </div>
                     </div>
                   );
                 })}
               </div>
+
+              {selectedGoal && renderRecordDataBox()}
             </>
           )}
         </div>
 
-        {selectedGoal && (
+        {selectedGoal && showGoalDetails && (
           <div style={styles.card}>
             <h3 style={styles.subTitle}>{selectedGoal.goalTitle}</h3>
 
@@ -2199,72 +2595,70 @@ export default function App() {
               <div style={{ lineHeight: 1.6 }}>{selectedGoal.fullGoalText || "-"}</div>
             </div>
 
-            {showGoalDetails && (
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                  gap: "12px",
-                  marginBottom: "12px",
-                }}
-              >
-                <div style={styles.infoBlock}>
-                  <div
-                    style={{
-                      fontWeight: 800,
-                      color: "#1e3a8a",
-                      marginBottom: "8px",
-                    }}
-                  >
-                    Examples / Definition
-                  </div>
-                  <div>{selectedGoal.examplesDefinition || "-"}</div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                gap: "12px",
+                marginBottom: "12px",
+              }}
+            >
+              <div style={styles.infoBlock}>
+                <div
+                  style={{
+                    fontWeight: 800,
+                    color: "#1e3a8a",
+                    marginBottom: "8px",
+                  }}
+                >
+                  Examples / Definition
                 </div>
+                <div>{selectedGoal.examplesDefinition || "-"}</div>
+              </div>
 
-                <div style={styles.infoBlock}>
-                  <div
-                    style={{
-                      fontWeight: 800,
-                      color: "#1e3a8a",
-                      marginBottom: "8px",
-                    }}
-                  >
-                    Baseline
-                  </div>
-                  <div>{selectedGoal.baseline || "-"}</div>
+              <div style={styles.infoBlock}>
+                <div
+                  style={{
+                    fontWeight: 800,
+                    color: "#1e3a8a",
+                    marginBottom: "8px",
+                  }}
+                >
+                  Baseline
                 </div>
+                <div>{selectedGoal.baseline || "-"}</div>
+              </div>
 
-                <div style={styles.infoBlock}>
-                  <div
-                    style={{
-                      fontWeight: 800,
-                      color: "#1e3a8a",
-                      marginBottom: "8px",
-                    }}
-                  >
-                    Mastery
-                  </div>
-                  <div>{selectedGoal.mastery || "-"}</div>
+              <div style={styles.infoBlock}>
+                <div
+                  style={{
+                    fontWeight: 800,
+                    color: "#1e3a8a",
+                    marginBottom: "8px",
+                  }}
+                >
+                  Mastery
                 </div>
+                <div>{selectedGoal.mastery || "-"}</div>
+              </div>
 
-                <div style={styles.infoBlock}>
-                  <div
-                    style={{
-                      fontWeight: 800,
-                      color: "#1e3a8a",
-                      marginBottom: "8px",
-                    }}
-                  >
-                    Collection Method
-                  </div>
-                  <div>
-                    {selectedGoal.collectionMethod === "interval"
-                      ? "Interval Data"
-                      : "Rating Scale"}
-                  </div>
+              <div style={styles.infoBlock}>
+                <div
+                  style={{
+                    fontWeight: 800,
+                    color: "#1e3a8a",
+                    marginBottom: "8px",
+                  }}
+                >
+                  Collection Method
+                </div>
+                <div>
+                  {selectedGoal.collectionMethod === "interval"
+                    ? "Interval Data"
+                    : "Rating Scale"}
                 </div>
               </div>
-            )}
+            </div>
 
             <div style={{ marginBottom: "16px" }}>
               <div
@@ -2333,474 +2727,11 @@ export default function App() {
                 })
               )}
             </div>
-
-            <div style={styles.sessionBox}>
-              <div
-                style={{
-                  fontWeight: 700,
-                  marginBottom: "12px",
-                  color: "#1e3a8a",
-                  fontSize: "17px",
-                }}
-              >
-                Record Data For:{" "}
-                {activeTargetBenchmark ? activeTargetBenchmark.text : selectedGoal.goalTitle}
-              </div>
-
-              {selectedGoal.collectionMethod === "interval" ? (
-                <>
-                  <div style={styles.sessionGrid}>
-                    <div>
-                      <label style={styles.label}>Date</label>
-                      <input
-                        type="date"
-                        value={currentSession.date}
-                        onChange={(e) =>
-                          handleSessionChange(
-                            selectedGoal,
-                            activeTargetBenchmark,
-                            "date",
-                            e.target.value
-                          )
-                        }
-                        style={styles.input}
-                      />
-                    </div>
-
-                    <div>
-                      <label style={styles.label}>Location</label>
-                      <select
-                        value={currentSession.location}
-                        onChange={(e) =>
-                          handleSessionChange(
-                            selectedGoal,
-                            activeTargetBenchmark,
-                            "location",
-                            e.target.value
-                          )
-                        }
-                        style={styles.input}
-                      >
-                        {SESSION_LOCATION_OPTIONS.map((location) => (
-                          <option key={location} value={location}>
-                            {location}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label style={styles.label}>Collected By</label>
-                      <select
-                        value={currentSession.collectedBy}
-                        onChange={(e) =>
-                          handleSessionChange(
-                            selectedGoal,
-                            activeTargetBenchmark,
-                            "collectedBy",
-                            e.target.value
-                          )
-                        }
-                        style={styles.input}
-                      >
-                        {COLLECTED_BY_OPTIONS.map((person) => (
-                          <option key={person} value={person}>
-                            {person}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label style={styles.label}>Interval Type</label>
-                      <select
-                        value={currentSession.intervalType}
-                        onChange={(e) =>
-                          handleSessionChange(
-                            selectedGoal,
-                            activeTargetBenchmark,
-                            "intervalType",
-                            e.target.value
-                          )
-                        }
-                        style={styles.input}
-                      >
-                        {INTERVAL_TYPES.map((type) => (
-                          <option key={type} value={type}>
-                            {type}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label style={styles.label}>Session Length (minutes)</label>
-                      <input
-                        type="number"
-                        min="1"
-                        value={currentSession.sessionLength}
-                        onChange={(e) =>
-                          handleSessionChange(
-                            selectedGoal,
-                            activeTargetBenchmark,
-                            "sessionLength",
-                            e.target.value
-                          )
-                        }
-                        style={styles.input}
-                      />
-                    </div>
-
-                    <div>
-                      <label style={styles.label}>Interval Length (minutes)</label>
-                      <input
-                        type="number"
-                        min="1"
-                        value={currentSession.intervalLength}
-                        onChange={(e) =>
-                          handleSessionChange(
-                            selectedGoal,
-                            activeTargetBenchmark,
-                            "intervalLength",
-                            e.target.value
-                          )
-                        }
-                        style={styles.input}
-                      />
-                    </div>
-                  </div>
-
-                  <div style={{ marginBottom: "12px" }}>
-                    <div style={styles.label}>Intervals</div>
-                    <div style={styles.smallText}>
-                      Score each interval yes or no. Total intervals:{" "}
-                      {
-                        syncIntervalArray(
-                          currentSession.intervalResults,
-                          currentSession.sessionLength,
-                          currentSession.intervalLength
-                        ).length
-                      }
-                    </div>
-
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
-                        gap: "10px",
-                        marginTop: "12px",
-                      }}
-                    >
-                      {syncIntervalArray(
-                        currentSession.intervalResults,
-                        currentSession.sessionLength,
-                        currentSession.intervalLength
-                      ).map((result, index) => (
-                        <div
-                          key={index}
-                          style={{
-                            border: "1px solid #dbeafe",
-                            borderRadius: "12px",
-                            padding: "10px",
-                            background: "white",
-                          }}
-                        >
-                          <div
-                            style={{
-                              fontSize: "13px",
-                              fontWeight: 700,
-                              color: "#1e3a8a",
-                              marginBottom: "8px",
-                            }}
-                          >
-                            Interval {index + 1}
-                          </div>
-                          <div style={{ display: "flex", gap: "8px" }}>
-                            <button
-                              type="button"
-                              style={styles.intervalButton(result === "yes")}
-                              onClick={() =>
-                                handleIntervalResultChange(
-                                  selectedGoal,
-                                  activeTargetBenchmark,
-                                  index,
-                                  "yes"
-                                )
-                              }
-                            >
-                              Yes
-                            </button>
-                            <button
-                              type="button"
-                              style={styles.intervalButton(result === "no")}
-                              onClick={() =>
-                                handleIntervalResultChange(
-                                  selectedGoal,
-                                  activeTargetBenchmark,
-                                  index,
-                                  "no"
-                                )
-                              }
-                            >
-                              No
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div style={{ marginBottom: "12px" }}>
-                    <label style={styles.label}>Notes</label>
-                    <textarea
-                      value={currentSession.notes}
-                      onChange={(e) =>
-                        handleSessionChange(
-                          selectedGoal,
-                          activeTargetBenchmark,
-                          "notes",
-                          e.target.value
-                        )
-                      }
-                      style={styles.textarea}
-                      placeholder="Add notes about the session..."
-                    />
-                  </div>
-
-                  <button
-                    onClick={() =>
-                      saveSessionEntry(selectedGoal, activeTargetBenchmark)
-                    }
-                    style={styles.buttonPrimary}
-                  >
-                    Save Interval Session
-                  </button>
-                </>
-              ) : (
-                <>
-                  <div style={styles.sessionGrid}>
-                    <div>
-                      <label style={styles.label}>Date</label>
-                      <input
-                        type="date"
-                        value={currentSession.date}
-                        onChange={(e) =>
-                          handleSessionChange(
-                            selectedGoal,
-                            activeTargetBenchmark,
-                            "date",
-                            e.target.value
-                          )
-                        }
-                        style={styles.input}
-                      />
-                    </div>
-
-                    <div>
-                      <label style={styles.label}>Location</label>
-                      <select
-                        value={currentSession.location}
-                        onChange={(e) =>
-                          handleSessionChange(
-                            selectedGoal,
-                            activeTargetBenchmark,
-                            "location",
-                            e.target.value
-                          )
-                        }
-                        style={styles.input}
-                      >
-                        {SESSION_LOCATION_OPTIONS.map((location) => (
-                          <option key={location} value={location}>
-                            {location}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label style={styles.label}>Collected By</label>
-                      <select
-                        value={currentSession.collectedBy}
-                        onChange={(e) =>
-                          handleSessionChange(
-                            selectedGoal,
-                            activeTargetBenchmark,
-                            "collectedBy",
-                            e.target.value
-                          )
-                        }
-                        style={styles.input}
-                      >
-                        {COLLECTED_BY_OPTIONS.map((person) => (
-                          <option key={person} value={person}>
-                            {person}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label style={styles.label}>Score</label>
-                      <select
-                        value={currentSession.score}
-                        onChange={(e) =>
-                          handleSessionChange(
-                            selectedGoal,
-                            activeTargetBenchmark,
-                            "score",
-                            e.target.value
-                          )
-                        }
-                        style={styles.input}
-                      >
-                        <option value="">Select score</option>
-                        <option value="0">0 = Not demonstrating</option>
-                        <option value="1">1 = With prompts</option>
-                        <option value="2">2 = Independent</option>
-                      </select>
-                    </div>
-
-                    {currentSession.score === "1" && (
-                      <div>
-                        <label style={styles.label}>Prompt Level</label>
-                        <select
-                          value={currentSession.promptLevel}
-                          onChange={(e) =>
-                            handleSessionChange(
-                              selectedGoal,
-                              activeTargetBenchmark,
-                              "promptLevel",
-                              e.target.value
-                            )
-                          }
-                          style={styles.input}
-                        >
-                          <option value="">Select prompt</option>
-                          {PROMPT_OPTIONS.map((prompt) => (
-                            <option key={prompt} value={prompt}>
-                              {prompt}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
-                  </div>
-
-                  <div style={{ marginBottom: "12px" }}>
-                    <label style={styles.label}>Notes</label>
-                    <textarea
-                      value={currentSession.notes}
-                      onChange={(e) =>
-                        handleSessionChange(
-                          selectedGoal,
-                          activeTargetBenchmark,
-                          "notes",
-                          e.target.value
-                        )
-                      }
-                      style={styles.textarea}
-                      placeholder="Add notes about the session..."
-                    />
-                  </div>
-
-                  <button
-                    onClick={() =>
-                      saveSessionEntry(selectedGoal, activeTargetBenchmark)
-                    }
-                    style={styles.buttonPrimary}
-                  >
-                    Save Session
-                  </button>
-                </>
-              )}
-            </div>
           </div>
         )}
       </>
     );
   };
-
-
-
-
-  const renderStudentProgress = () => (
-    <>
-      {renderStudentSelect()}
-      <div style={styles.card}>
-        <h2 style={styles.cardTitle}>Student Progress</h2>
-
-        {!selectedStudent ? (
-          <div>No student selected.</div>
-        ) : (
-          <>
-            <h3 style={{ ...styles.subTitle, marginTop: "4px" }}>Progress Graphs</h3>
-            {graphGroups.map((group) => (
-              <GraphCard
-                key={group.id}
-                title={group.title}
-                points={group.points}
-                mode={group.mode}
-              />
-            ))}
-
-            <h3 style={{ ...styles.subTitle, marginTop: "22px" }}>Saved Entries</h3>
-
-            {!savedHistory.length ? (
-              <div>No saved entries yet for this student.</div>
-            ) : (
-              <div style={styles.tableWrap}>
-                <table style={styles.table}>
-                  <thead>
-                    <tr>
-                      <th style={styles.th}>Date</th>
-                      <th style={styles.th}>Goal</th>
-                      <th style={styles.th}>Benchmark / Objective</th>
-                      <th style={styles.th}>Location</th>
-                      <th style={styles.th}>Collected By</th>
-                      <th style={styles.th}>Method</th>
-                      <th style={styles.th}>Score / %</th>
-                      <th style={styles.th}>Prompt / Interval</th>
-                      <th style={styles.th}>Notes</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[...savedHistory].reverse().map((entry) => (
-                      <tr key={entry.id}>
-                        <td style={styles.td}>{entry.date}</td>
-                        <td style={styles.td}>{entry.goalTitle}</td>
-                        <td style={styles.td}>
-                          {entry.targetType === "benchmark"
-                            ? entry.benchmarkText
-                            : "Goal Level"}
-                        </td>
-                        <td style={styles.td}>{entry.location || "-"}</td>
-                        <td style={styles.td}>{entry.collectedBy || "-"}</td>
-                        <td style={styles.td}>
-                          {entry.collectionMethod === "interval" ? "Interval" : "Rating"}
-                        </td>
-                        <td style={styles.td}>
-                          {entry.collectionMethod === "interval"
-                            ? `${entry.percent ?? 0}%`
-                            : entry.score}
-                        </td>
-                        <td style={styles.td}>
-                          {entry.collectionMethod === "interval"
-                            ? `${entry.intervalType || "-"} (${entry.yesCount ?? 0}/${entry.totalIntervals ?? 0})`
-                            : entry.promptLevel || "-"}
-                        </td>
-                        <td style={styles.td}>{entry.notes || "-"}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-    </>
-  );
 
   return (
     <div style={styles.page}>
