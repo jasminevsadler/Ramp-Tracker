@@ -341,15 +341,19 @@ function App() {
   const [students, setStudents] = useState(() =>
     loadFromStorage("ramp_students", DEFAULT_STUDENTS)
   );
+
   const [selectedStudentId, setSelectedStudentId] = useState(() =>
     loadFromStorage("ramp_selected_student", DEFAULT_STUDENTS[0]?.id || "")
   );
+
   const [sessionData, setSessionData] = useState(() =>
     loadFromStorage("ramp_session_data", {})
   );
+
   const [activeTab, setActiveTab] = useState(() =>
     loadFromStorage("ramp_active_tab", "dashboard")
   );
+
   const [studentForm, setStudentForm] = useState({
     name: "",
     grade: "",
@@ -357,6 +361,7 @@ function App() {
     disabilities: [],
     setting: "",
   });
+
   const [activeGoalId, setActiveGoalId] = useState(null);
   const [expandedObjectiveId, setExpandedObjectiveId] = useState(null);
 
@@ -442,6 +447,7 @@ function App() {
     if (!studentForm.name.trim()) return;
 
     const safeId = `student-${Date.now()}`;
+
     const newStudent = {
       id: safeId,
       name: studentForm.name.trim(),
@@ -466,6 +472,7 @@ function App() {
   };
 
   const deleteStudent = (studentId) => {
+    if (!studentId) return;
     const student = students.find((s) => s.id === studentId);
     if (!student) return;
 
@@ -823,192 +830,861 @@ function App() {
     alert("All saved session history has been cleared.");
   };
 
-  const styles = {
-    page: {
-      minHeight: "100vh",
-      background:
-        "linear-gradient(180deg, #edf4ff 0%, #f6fbff 40%, #ffffff 100%)",
-      color: "#1e293b",
-      fontFamily:
-        'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-      padding: "24px",
-    },
-    container: {
-      maxWidth: "1400px",
-      margin: "0 auto",
-    },
-    hero: {
-      background: "linear-gradient(135deg, #1d4ed8 0%, #2563eb 55%, #60a5fa 100%)",
-      color: "white",
-      borderRadius: "24px",
-      padding: "28px",
-      boxShadow: "0 20px 50px rgba(37, 99, 235, 0.20)",
-      marginBottom: "20px",
-    },
-    heroTitle: {
-      fontSize: "34px",
-      fontWeight: 800,
-      margin: 0,
-      letterSpacing: "-0.02em",
-    },
-    heroText: {
-      marginTop: "10px",
-      fontSize: "16px",
-      opacity: 0.95,
-      lineHeight: 1.5,
-    },
-    tabsWrap: {
-      display: "flex",
-      gap: "10px",
-      flexWrap: "wrap",
-      marginBottom: "20px",
-    },
-    tab: {
-      padding: "12px 18px",
-      borderRadius: "14px",
-      border: "1px solid #bfdbfe",
-      background: "white",
-      color: "#1e3a8a",
-      fontWeight: 700,
-      cursor: "pointer",
-      boxShadow: "0 6px 16px rgba(15, 23, 42, 0.05)",
-    },
-    activeTab: {
-      padding: "12px 18px",
-      borderRadius: "14px",
-      border: "1px solid #2563eb",
-      background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
-      color: "white",
-      fontWeight: 700,
-      cursor: "pointer",
-      boxShadow: "0 10px 18px rgba(37, 99, 235, 0.18)",
-    },
-    layout: {
-      display: "grid",
-      gridTemplateColumns: "340px 1fr",
-      gap: "24px",
-      alignItems: "start",
-    },
-    sidebar: {
-      display: "flex",
-      flexDirection: "column",
-      gap: "20px",
-    },
-    content: {
-      minWidth: 0,
-    },
-    card: {
-      background: "white",
-      borderRadius: "22px",
-      padding: "20px",
-      boxShadow: "0 10px 30px rgba(15, 23, 42, 0.08)",
-      border: "1px solid #dbeafe",
-      marginBottom: "20px",
-    },
-    cardTitle: {
-      margin: "0 0 16px 0",
-      fontSize: "24px",
-      fontWeight: 700,
-      color: "#1e3a8a",
-    },
-    subTitle: {
-      margin: "0 0 14px 0",
-      fontSize: "20px",
-      fontWeight: 700,
-      color: "#1e3a8a",
-    },
-    label: {
-      display: "block",
-      fontSize: "14px",
-      fontWeight: 600,
-      marginBottom: "7px",
-      color: "#334155",
-    },
-    input: {
-      width: "100%",
-      padding: "12px 14px",
-      borderRadius: "12px",
-      border: "1px solid #cbd5e1",
-      background: "#ffffff",
-      fontSize: "14px",
-      boxSizing: "border-box",
-      outline: "none",
-    },
-    textarea: {
-      width: "100%",
-      padding: "12px 14px",
-      borderRadius: "12px",
-      border: "1px solid #cbd5e1",
-      background: "#ffffff",
-      fontSize: "14px",
-      boxSizing: "border-box",
-      minHeight: "90px",
-      resize: "vertical",
-      outline: "none",
-      fontFamily: "inherit",
-    },
-    multiSelect: {
-      width: "100%",
-      padding: "10px",
-      borderRadius: "12px",
-      border: "1px solid #cbd5e1",
-      background: "#ffffff",
-      fontSize: "14px",
-      boxSizing: "border-box",
-      minHeight: "150px",
-      outline: "none",
-    },
-    buttonPrimary: {
-      background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
-      color: "white",
-      border: "none",
-      borderRadius: "14px",
-      padding: "12px 16px",
-      fontSize: "15px",
-      fontWeight: 700,
-      cursor: "pointer",
-      boxShadow: "0 10px 18px rgba(37, 99, 235, 0.20)",
-    },
-    buttonSecondary: {
-      background: "#0f172a",
-      color: "white",
-      border: "none",
-      borderRadius: "14px",
-      padding: "12px 16px",
-      fontSize: "14px",
-      fontWeight: 700,
-      cursor: "pointer",
-    },
-    buttonGreen: {
-      background: "linear-gradient(135deg, #059669 0%, #10b981 100%)",
-      color: "white",
-      border: "none",
-      borderRadius: "14px",
-      padding: "12px 16px",
-      fontSize: "15px",
-      fontWeight: 700,
-      cursor: "pointer",
-      boxShadow: "0 10px 18px rgba(16, 185, 129, 0.18)",
-    },
-    buttonRed: {
-      background: "linear-gradient(135deg, #dc2626 0%, #ef4444 100%)",
-      color: "white",
-      border: "none",
-      borderRadius: "14px",
-      padding: "12px 16px",
-      fontSize: "15px",
-      fontWeight: 700,
-      cursor: "pointer",
-      boxShadow: "0 10px 18px rgba(239, 68, 68, 0.18)",
-    },
-    summaryGrid: {
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-      gap: "16px",
-    },
-    statCard: {
-      background: "linear-gradient(180deg, #f8fbff 0%, #ffffff 100%)",
-      border: "1px solid #bfdbfe",
-      borderRadius: "18px",
-      padding: "18px",
-      boxShadow: "0 8px 25px rgba
+  const renderAddStudentCard = () => (
+    <div style={styles.card}>
+      <h2 style={styles.subTitle}>Add Student</h2>
+      <form onSubmit={addStudent}>
+        <div style={{ marginBottom: "14px" }}>
+          <label style={styles.label}>Student Name</label>
+          <input
+            type="text"
+            name="name"
+            value={studentForm.name}
+            onChange={handleStudentFormChange}
+            style={styles.input}
+            placeholder="Enter student name"
+          />
+        </div>
+
+        <div style={{ marginBottom: "14px" }}>
+          <label style={styles.label}>Grade</label>
+          <select
+            name="grade"
+            value={studentForm.grade}
+            onChange={handleStudentFormChange}
+            style={styles.input}
+          >
+            <option value="">Select grade</option>
+            {GRADE_OPTIONS.map((grade) => (
+              <option key={grade} value={grade}>
+                {grade}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div style={{ marginBottom: "14px" }}>
+          <label style={styles.label}>Support Person</label>
+          <input
+            type="text"
+            name="supportPerson"
+            value={studentForm.supportPerson}
+            onChange={handleStudentFormChange}
+            style={styles.input}
+            placeholder="Teacher, parent, therapist, etc."
+          />
+        </div>
+
+        <div style={{ marginBottom: "14px" }}>
+          <label style={styles.label}>Primary Setting</label>
+          <select
+            name="setting"
+            value={studentForm.setting}
+            onChange={handleStudentFormChange}
+            style={styles.input}
+          >
+            <option value="">Select setting</option>
+            {SETTING_OPTIONS.map((setting) => (
+              <option key={setting} value={setting}>
+                {setting}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div style={{ marginBottom: "16px" }}>
+          <label style={styles.label}>Disability / Eligibility</label>
+          <select
+            name="disabilities"
+            multiple
+            value={studentForm.disabilities}
+            onChange={handleStudentFormChange}
+            style={styles.multiSelect}
+          >
+            {DISABILITY_OPTIONS.map((item) => (
+              <option key={item} value={item}>
+                {item}
+              </option>
+            ))}
+          </select>
+          <div style={styles.smallText}>
+            Hold Ctrl (Windows) or Command (Mac) to select more than one.
+          </div>
+        </div>
+
+        <button type="submit" style={{ ...styles.buttonPrimary, width: "100%" }}>
+          Add Student
+        </button>
+      </form>
+    </div>
+  );
+
+  const renderSelectedStudentCard = () => (
+    <div style={styles.card}>
+      <h2 style={styles.subTitle}>Selected Student</h2>
+      <select
+        value={selectedStudent?.id || ""}
+        onChange={(e) => setSelectedStudentId(e.target.value)}
+        style={styles.input}
+      >
+        {students.map((student) => (
+          <option key={student.id} value={student.id}>
+            {student.name}
+          </option>
+        ))}
+      </select>
+
+      {selectedStudent && (
+        <div style={{ marginTop: "16px", lineHeight: 1.7, fontSize: "14px" }}>
+          <div><strong>Name:</strong> {selectedStudent.name}</div>
+          <div><strong>Grade:</strong> {selectedStudent.grade || "-"}</div>
+          <div><strong>Support Person:</strong> {selectedStudent.supportPerson || "-"}</div>
+          <div><strong>Setting:</strong> {selectedStudent.setting || "-"}</div>
+          <div><strong>Goals:</strong> {selectedStudent.goals?.length || 0}</div>
+          <div><strong>Saved Entries:</strong> {savedHistory.length}</div>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderDataOptionsCard = () => (
+    <div style={styles.card}>
+      <h2 style={styles.subTitle}>Data Options</h2>
+      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        <button onClick={exportCSV} style={styles.buttonGreen}>
+          Export CSV
+        </button>
+
+        <button
+          onClick={() => alert("Printable reports coming next!")}
+          style={styles.buttonPrimary}
+        >
+          Print Progress Report
+        </button>
+
+        <button onClick={clearAllSavedSessions} style={styles.buttonRed}>
+          Clear Saved Session History
+        </button>
+
+        <button
+          onClick={() => deleteStudent(selectedStudent?.id)}
+          style={styles.buttonRed}
+          disabled={!selectedStudent}
+        >
+          Delete Selected Student
+        </button>
+      </div>
+    </div>
+  );
+
+  const renderDashboard = () => (
+    <div style={styles.card}>
+      <h2 style={styles.cardTitle}>Dashboard</h2>
+
+      {!selectedStudent ? (
+        <div>No student selected.</div>
+      ) : (
+        <div style={styles.summaryGrid}>
+          <div style={styles.statCard}>
+            <div style={styles.statNumber}>{selectedStudent.name}</div>
+            <div style={styles.statLabel}>Selected Student</div>
+          </div>
+          <div style={styles.statCard}>
+            <div style={styles.statNumber}>{selectedStudent.goals.length}</div>
+            <div style={styles.statLabel}>Number of Goals</div>
+          </div>
+          <div style={styles.statCard}>
+            <div style={styles.statNumber}>{savedHistory.length}</div>
+            <div style={styles.statLabel}>Saved Entries</div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderGoals = () => {
+    if (!selectedStudent) {
+      return (
+        <div style={styles.card}>
+          <h2 style={styles.cardTitle}>Goals & Data</h2>
+          <div>No student selected.</div>
+        </div>
+      );
+    }
+
+    if (!activeGoalId) {
+      return (
+        <div style={styles.card}>
+          <div
+            style={{
+              ...styles.rowGap,
+              justifyContent: "space-between",
+              marginBottom: "16px",
+            }}
+          >
+            <h2 style={{ ...styles.cardTitle, marginBottom: 0 }}>Goals & Data</h2>
+            <button onClick={addGoalToStudent} style={styles.buttonSecondary}>
+              Add Goal
+            </button>
+          </div>
+
+          {selectedStudent.goals.length === 0 ? (
+            <div>No goals added for this student yet.</div>
+          ) : (
+            selectedStudent.goals.map((goal) => (
+              <div
+                key={goal.id}
+                onClick={() => setActiveGoalId(goal.id)}
+                style={styles.goalSelectCard}
+              >
+                <div
+                  style={{
+                    fontWeight: 700,
+                    color: "#1e3a8a",
+                    marginBottom: "6px",
+                  }}
+                >
+                  {goal.shortName || "Goal"}
+                </div>
+                <div style={{ lineHeight: 1.5 }}>{goal.title}</div>
+              </div>
+            ))
+          )}
+        </div>
+      );
+    }
+
+    const goal = selectedStudent.goals.find((g) => g.id === activeGoalId);
+    if (!goal) {
+      return (
+        <div style={styles.card}>
+          <h2 style={styles.cardTitle}>Goals & Data</h2>
+          <div>Goal not found.</div>
+        </div>
+      );
+    }
+
+    const key = getGoalSessionKey(selectedStudent.id, goal.id);
+    const currentSession = sessionData[key] || getDefaultSessionForGoal();
+
+    return (
+      <div style={styles.card}>
+        <div style={{ ...styles.rowGap, justifyContent: "space-between", marginBottom: "16px" }}>
+          <button
+            onClick={() => {
+              setActiveGoalId(null);
+              setExpandedObjectiveId(null);
+            }}
+            style={styles.buttonSecondary}
+          >
+            ← Back to Goals
+          </button>
+
+          <button
+            onClick={() => removeGoal(goal.id)}
+            style={styles.buttonRed}
+          >
+            Delete Goal
+          </button>
+        </div>
+
+        <div style={styles.goalCard}>
+          <div style={{ marginBottom: "12px" }}>
+            <label style={styles.label}>Short Name</label>
+            <input
+              type="text"
+              value={goal.shortName || ""}
+              onChange={(e) =>
+                updateGoalField(goal.id, "shortName", e.target.value)
+              }
+              style={styles.input}
+            />
+          </div>
+
+          <div style={{ marginBottom: "12px" }}>
+            <label style={styles.label}>Full Goal</label>
+            <textarea
+              value={goal.title}
+              onChange={(e) =>
+                updateGoalField(goal.id, "title", e.target.value)
+              }
+              style={{ ...styles.textarea, minHeight: "100px" }}
+            />
+          </div>
+
+          <div style={{ marginBottom: "12px" }}>
+            <label style={styles.label}>Collection Method</label>
+            <select
+              value={goal.collectionMethod || "rating"}
+              onChange={(e) =>
+                updateGoalField(goal.id, "collectionMethod", e.target.value)
+              }
+              style={styles.input}
+            >
+              {COLLECTION_METHODS.map((method) => (
+                <option key={method} value={method}>
+                  {method === "rating" ? "Rating Scale" : "Interval Data"}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div style={{ marginBottom: "12px" }}>
+            <button
+              onClick={() =>
+                setExpandedObjectiveId(
+                  expandedObjectiveId === goal.id ? null : goal.id
+                )
+              }
+              style={styles.buttonSecondary}
+            >
+              {expandedObjectiveId === goal.id
+                ? "Hide Objective & Details"
+                : "Show Objective & Details"}
+            </button>
+          </div>
+
+          {expandedObjectiveId === goal.id && (
+            <div
+              style={{
+                border: "1px solid #dbeafe",
+                borderRadius: "14px",
+                padding: "16px",
+                background: "#f8fbff",
+                marginBottom: "16px",
+              }}
+            >
+              <div style={{ marginBottom: "12px" }}>
+                <label style={styles.label}>Objective</label>
+                <textarea
+                  value={goal.objective || ""}
+                  onChange={(e) =>
+                    updateGoalField(goal.id, "objective", e.target.value)
+                  }
+                  style={styles.textarea}
+                />
+              </div>
+
+              <div style={{ marginBottom: "12px" }}>
+                <label style={styles.label}>Examples</label>
+                <textarea
+                  value={goal.example || ""}
+                  onChange={(e) =>
+                    updateGoalField(goal.id, "example", e.target.value)
+                  }
+                  style={styles.textarea}
+                />
+              </div>
+
+              <div style={styles.sessionGrid}>
+                <div>
+                  <label style={styles.label}>Baseline</label>
+                  <input
+                    type="text"
+                    value={goal.baseline || ""}
+                    onChange={(e) =>
+                      updateGoalField(goal.id, "baseline", e.target.value)
+                    }
+                    style={styles.input}
+                  />
+                </div>
+
+                <div>
+                  <label style={styles.label}>Mastery</label>
+                  <input
+                    type="text"
+                    value={goal.mastery || ""}
+                    onChange={(e) =>
+                      updateGoalField(goal.id, "mastery", e.target.value)
+                    }
+                    style={styles.input}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {goal.collectionMethod === "interval" ? (
+            <div style={styles.sessionBox}>
+              <div
+                style={{
+                  fontWeight: 700,
+                  marginBottom: "12px",
+                  color: "#1e3a8a",
+                  fontSize: "17px",
+                }}
+              >
+                Record Data
+              </div>
+
+              <div style={styles.sessionGrid}>
+                <div>
+                  <label style={styles.label}>Date</label>
+                  <input
+                    type="date"
+                    value={currentSession.date}
+                    onChange={(e) =>
+                      handleSessionChange(goal, "date", e.target.value)
+                    }
+                    style={styles.input}
+                  />
+                </div>
+
+                <div>
+                  <label style={styles.label}>Location</label>
+                  <select
+                    value={currentSession.location}
+                    onChange={(e) =>
+                      handleSessionChange(goal, "location", e.target.value)
+                    }
+                    style={styles.input}
+                  >
+                    {SESSION_LOCATION_OPTIONS.map((location) => (
+                      <option key={location} value={location}>
+                        {location}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={styles.label}>Collected By</label>
+                  <select
+                    value={currentSession.collectedBy}
+                    onChange={(e) =>
+                      handleSessionChange(goal, "collectedBy", e.target.value)
+                    }
+                    style={styles.input}
+                  >
+                    {COLLECTED_BY_OPTIONS.map((person) => (
+                      <option key={person} value={person}>
+                        {person}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={styles.label}>Interval Type</label>
+                  <select
+                    value={currentSession.intervalType}
+                    onChange={(e) =>
+                      handleSessionChange(goal, "intervalType", e.target.value)
+                    }
+                    style={styles.input}
+                  >
+                    {INTERVAL_TYPES.map((type) => (
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={styles.label}>Session Length (minutes)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={currentSession.sessionLength}
+                    onChange={(e) =>
+                      handleSessionChange(goal, "sessionLength", e.target.value)
+                    }
+                    style={styles.input}
+                  />
+                </div>
+
+                <div>
+                  <label style={styles.label}>Interval Length (minutes)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={currentSession.intervalLength}
+                    onChange={(e) =>
+                      handleSessionChange(goal, "intervalLength", e.target.value)
+                    }
+                    style={styles.input}
+                  />
+                </div>
+              </div>
+
+              <div style={{ marginBottom: "12px" }}>
+                <div style={styles.label}>Intervals</div>
+                <div style={styles.smallText}>
+                  Score each interval yes or no. Total intervals:{" "}
+                  {
+                    syncIntervalArray(
+                      currentSession.intervalResults,
+                      currentSession.sessionLength,
+                      currentSession.intervalLength
+                    ).length
+                  }
+                </div>
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
+                    gap: "10px",
+                    marginTop: "12px",
+                  }}
+                >
+                  {syncIntervalArray(
+                    currentSession.intervalResults,
+                    currentSession.sessionLength,
+                    currentSession.intervalLength
+                  ).map((result, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        border: "1px solid #dbeafe",
+                        borderRadius: "12px",
+                        padding: "10px",
+                        background: "white",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: "13px",
+                          fontWeight: 700,
+                          color: "#1e3a8a",
+                          marginBottom: "8px",
+                        }}
+                      >
+                        Interval {index + 1}
+                      </div>
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        <button
+                          type="button"
+                          style={styles.intervalButton(result === "yes")}
+                          onClick={() =>
+                            handleIntervalResultChange(goal, index, "yes")
+                          }
+                        >
+                          Yes
+                        </button>
+                        <button
+                          type="button"
+                          style={styles.intervalButton(result === "no")}
+                          onClick={() =>
+                            handleIntervalResultChange(goal, index, "no")
+                          }
+                        >
+                          No
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ marginBottom: "12px" }}>
+                <label style={styles.label}>Notes</label>
+                <textarea
+                  value={currentSession.notes}
+                  onChange={(e) =>
+                    handleSessionChange(goal, "notes", e.target.value)
+                  }
+                  style={styles.textarea}
+                  placeholder="Add notes about the session..."
+                />
+              </div>
+
+              <button
+                onClick={() => saveSessionEntry(goal)}
+                style={styles.buttonPrimary}
+              >
+                Save
+              </button>
+            </div>
+          ) : (
+            <div style={styles.sessionBox}>
+              <div
+                style={{
+                  fontWeight: 700,
+                  marginBottom: "12px",
+                  color: "#1e3a8a",
+                  fontSize: "17px",
+                }}
+              >
+                Record Data
+              </div>
+
+              <div style={styles.sessionGrid}>
+                <div>
+                  <label style={styles.label}>Date</label>
+                  <input
+                    type="date"
+                    value={currentSession.date}
+                    onChange={(e) =>
+                      handleSessionChange(goal, "date", e.target.value)
+                    }
+                    style={styles.input}
+                  />
+                </div>
+
+                <div>
+                  <label style={styles.label}>Location</label>
+                  <select
+                    value={currentSession.location}
+                    onChange={(e) =>
+                      handleSessionChange(goal, "location", e.target.value)
+                    }
+                    style={styles.input}
+                  >
+                    {SESSION_LOCATION_OPTIONS.map((location) => (
+                      <option key={location} value={location}>
+                        {location}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={styles.label}>Collected By</label>
+                  <select
+                    value={currentSession.collectedBy}
+                    onChange={(e) =>
+                      handleSessionChange(goal, "collectedBy", e.target.value)
+                    }
+                    style={styles.input}
+                  >
+                    {COLLECTED_BY_OPTIONS.map((person) => (
+                      <option key={person} value={person}>
+                        {person}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={styles.label}>Score</label>
+                  <select
+                    value={currentSession.score}
+                    onChange={(e) =>
+                      handleSessionChange(goal, "score", e.target.value)
+                    }
+                    style={styles.input}
+                  >
+                    <option value="">Select score</option>
+                    <option value="0">0 = Not demonstrating</option>
+                    <option value="1">1 = With prompts</option>
+                    <option value="2">2 = Independent</option>
+                  </select>
+                </div>
+
+                {currentSession.score === "1" && (
+                  <div>
+                    <label style={styles.label}>Prompt Level</label>
+                    <select
+                      value={currentSession.promptLevel}
+                      onChange={(e) =>
+                        handleSessionChange(goal, "promptLevel", e.target.value)
+                      }
+                      style={styles.input}
+                    >
+                      <option value="">Select prompt</option>
+                      {PROMPT_OPTIONS.map((prompt) => (
+                        <option key={prompt} value={prompt}>
+                          {prompt}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+
+              <div style={{ marginBottom: "12px" }}>
+                <label style={styles.label}>Notes</label>
+                <textarea
+                  value={currentSession.notes}
+                  onChange={(e) =>
+                    handleSessionChange(goal, "notes", e.target.value)
+                  }
+                  style={styles.textarea}
+                  placeholder="Add notes about the session..."
+                />
+              </div>
+
+              <button
+                onClick={() => saveSessionEntry(goal)}
+                style={styles.buttonPrimary}
+              >
+                Save
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const renderHistory = () => (
+    <div style={styles.card}>
+      <h2 style={styles.cardTitle}>History</h2>
+
+      {!selectedStudent ? (
+        <div>No student selected.</div>
+      ) : (
+        <>
+          <h3 style={styles.subTitle}>Progress Graphs</h3>
+          {graphGroups.map((group) => (
+            <GraphCard
+              key={group.goalId}
+              title={group.title}
+              points={group.points}
+              mode={group.mode}
+            />
+          ))}
+
+          <h3 style={{ ...styles.subTitle, marginTop: "22px" }}>Saved Entries</h3>
+
+          {!savedHistory.length ? (
+            <div>No saved entries yet for this student.</div>
+          ) : (
+            <div style={styles.tableWrap}>
+              <table style={styles.table}>
+                <thead>
+                  <tr>
+                    <th style={styles.th}>Date</th>
+                    <th style={styles.th}>Goal</th>
+                    <th style={styles.th}>Location</th>
+                    <th style={styles.th}>Collected By</th>
+                    <th style={styles.th}>Method</th>
+                    <th style={styles.th}>Score / %</th>
+                    <th style={styles.th}>Prompt / Interval</th>
+                    <th style={styles.th}>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[...savedHistory].reverse().map((entry) => (
+                    <tr key={entry.id}>
+                      <td style={styles.td}>{entry.date}</td>
+                      <td style={styles.td}>{entry.shortName || entry.goalTitle}</td>
+                      <td style={styles.td}>{entry.location || "-"}</td>
+                      <td style={styles.td}>{entry.collectedBy || "-"}</td>
+                      <td style={styles.td}>
+                        {entry.collectionMethod === "interval"
+                          ? "Interval"
+                          : "Rating"}
+                      </td>
+                      <td style={styles.td}>
+                        {entry.collectionMethod === "interval"
+                          ? `${entry.percent ?? 0}%`
+                          : entry.score}
+                      </td>
+                      <td style={styles.td}>
+                        {entry.collectionMethod === "interval"
+                          ? `${entry.intervalType || "-"} (${entry.yesCount ?? 0}/${entry.totalIntervals ?? 0})`
+                          : entry.promptLevel || "-"}
+                      </td>
+                      <td style={styles.td}>{entry.notes || "-"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+
+  return (
+    <div style={styles.page}>
+      <style>{`
+        * { box-sizing: border-box; }
+        body { margin: 0; }
+        input, select, textarea, button { font: inherit; }
+        input:focus, select:focus, textarea:focus {
+          border-color: #3b82f6 !important;
+          box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+        }
+        button:hover { filter: brightness(0.98); }
+
+        .ramp-desktop-layout {
+          display: grid;
+          grid-template-columns: 340px 1fr;
+          gap: 24px;
+          align-items: start;
+        }
+
+        .ramp-mobile-stack {
+          display: none;
+        }
+
+        @media (max-width: 1100px) {
+          .ramp-desktop-layout {
+            display: none !important;
+          }
+
+          .ramp-mobile-stack {
+            display: block !important;
+          }
+        }
+      `}</style>
+
+      <div style={styles.container}>
+        <div style={styles.hero}>
+          <h1 style={styles.heroTitle}>RaMP Tracker</h1>
+          <div style={styles.heroText}>
+            Track progress. Build skills. Support growth across school, home,
+            and therapy using clear prompt-level and interval data.
+          </div>
+        </div>
+
+        <div style={styles.tabsWrap}>
+          <button
+            style={activeTab === "dashboard" ? styles.activeTab : styles.tab}
+            onClick={() => setActiveTab("dashboard")}
+          >
+            Dashboard
+          </button>
+          <button
+            style={activeTab === "goals" ? styles.activeTab : styles.tab}
+            onClick={() => setActiveTab("goals")}
+          >
+            Goals & Data
+          </button>
+          <button
+            style={activeTab === "history" ? styles.activeTab : styles.tab}
+            onClick={() => setActiveTab("history")}
+          >
+            History
+          </button>
+        </div>
+
+        {/* Desktop layout */}
+        <div className="ramp-desktop-layout">
+          <div style={styles.sidebar}>
+            {activeTab === "dashboard" && renderAddStudentCard()}
+            {renderSelectedStudentCard()}
+            {renderDataOptionsCard()}
+          </div>
+
+          <div style={styles.content}>
+            {activeTab === "dashboard" && renderDashboard()}
+            {activeTab === "goals" && renderGoals()}
+            {activeTab === "history" && renderHistory()}
+          </div>
+        </div>
+
+        {/* Mobile layout */}
+        <div className="ramp-mobile-stack">
+          {activeTab === "dashboard" && renderAddStudentCard()}
+          {renderSelectedStudentCard()}
+
+          <div style={styles.content}>
+            {activeTab === "dashboard" && renderDashboard()}
+            {activeTab === "goals" && renderGoals()}
+            {activeTab === "history" && renderHistory()}
+          </div>
+
+          {renderDataOptionsCard()}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default App;
