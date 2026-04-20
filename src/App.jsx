@@ -493,6 +493,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState(() =>
     loadFromStorage("ramp_active_tab", "studentDashboard")
   );
+  const [showAddStudentForm, setShowAddStudentForm] = useState(false);
   const [studentForm, setStudentForm] = useState({
     name: "",
     grade: "",
@@ -753,6 +754,7 @@ export default function App() {
     setSelectedStudentId(newStudent.id);
     setSelectedGoalId("");
     setSelectedBenchmarkId("");
+    setShowAddStudentForm(false);
 
     setStudentForm({
       name: "",
@@ -1520,12 +1522,6 @@ export default function App() {
       gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
       gap: "16px",
     },
-    compactSummaryGrid: {
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-      gap: "12px",
-      marginBottom: "18px",
-    },
     statCard: {
       background: "linear-gradient(180deg, #f8fbff 0%, #ffffff 100%)",
       border: "1px solid #bfdbfe",
@@ -1682,9 +1678,17 @@ export default function App() {
     }),
   };
 
-  const renderStudentSelectorCard = () => (
+
+
+
+
+
+
+
+
+  const renderStudentSelect = () => (
     <div style={styles.card}>
-      <h2 style={styles.subTitle}>Selected Student</h2>
+      <label style={styles.label}>Select Student</label>
       <select
         value={selectedStudent?.id || ""}
         onChange={(e) => {
@@ -1702,177 +1706,108 @@ export default function App() {
           </option>
         ))}
       </select>
-
-      {selectedStudent && (
-        <div style={{ marginTop: "16px", lineHeight: 1.7, fontSize: "14px" }}>
-          <div><strong>Name:</strong> {selectedStudent.name}</div>
-          <div><strong>Grade:</strong> {selectedStudent.grade || "-"}</div>
-          <div><strong>Support Person:</strong> {selectedStudent.supportPerson || "-"}</div>
-          <div><strong>Setting:</strong> {selectedStudent.setting || "-"}</div>
-          <div>
-            <strong>Disability / Eligibility:</strong>{" "}
-            {selectedStudent.disabilities?.length
-              ? selectedStudent.disabilities.join(", ")
-              : "-"}
-          </div>
-          <div><strong>Goals:</strong> {selectedStudent.goals?.length || 0}</div>
-          <div>
-            <strong>Current Benchmarks/Objectives:</strong> {selectedStudentCurrentCount}
-          </div>
-          <div>
-            <strong>Mastered Benchmarks/Objectives:</strong> {selectedStudentMasteredCount}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-
-  const renderDataOptionsCard = () => (
-    <div style={styles.card}>
-      <h2 style={styles.subTitle}>Data Options</h2>
-      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-        <button onClick={exportCSV} style={styles.buttonGreen}>
-          Export CSV
-        </button>
-        <button
-          onClick={() => alert("Printable reports coming next!")}
-          style={styles.buttonPrimary}
-        >
-          Print Progress Report
-        </button>
-        <button onClick={clearAllSavedSessions} style={styles.buttonRed}>
-          Clear Saved Session History
-        </button>
-      </div>
-    </div>
-  );
-
-  const renderDashboardSidebar = () => (
-    <div style={styles.sidebar}>
-      <div style={styles.card}>
-        <h2 style={styles.subTitle}>Add Student</h2>
-        <form onSubmit={addStudent}>
-          <div style={{ marginBottom: "14px" }}>
-            <label style={styles.label}>Student Name</label>
-            <input
-              type="text"
-              name="name"
-              value={studentForm.name}
-              onChange={handleStudentFormChange}
-              style={styles.input}
-              placeholder="Enter student name"
-            />
-          </div>
-
-          <div style={{ marginBottom: "14px" }}>
-            <label style={styles.label}>Grade</label>
-            <select
-              name="grade"
-              value={studentForm.grade}
-              onChange={handleStudentFormChange}
-              style={styles.input}
-            >
-              <option value="">Select grade</option>
-              {GRADE_OPTIONS.map((grade) => (
-                <option key={grade} value={grade}>
-                  {grade}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div style={{ marginBottom: "14px" }}>
-            <label style={styles.label}>Support Person</label>
-            <input
-              type="text"
-              name="supportPerson"
-              value={studentForm.supportPerson}
-              onChange={handleStudentFormChange}
-              style={styles.input}
-              placeholder="Teacher, parent, therapist, etc."
-            />
-          </div>
-
-          <div style={{ marginBottom: "14px" }}>
-            <label style={styles.label}>Primary Setting</label>
-            <select
-              name="setting"
-              value={studentForm.setting}
-              onChange={handleStudentFormChange}
-              style={styles.input}
-            >
-              <option value="">Select setting</option>
-              {SETTING_OPTIONS.map((setting) => (
-                <option key={setting} value={setting}>
-                  {setting}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div style={{ marginBottom: "16px" }}>
-            <label style={styles.label}>Disability / Eligibility</label>
-            <select
-              name="disabilities"
-              multiple
-              value={studentForm.disabilities}
-              onChange={handleStudentFormChange}
-              style={styles.multiSelect}
-            >
-              {DISABILITY_OPTIONS.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </select>
-            <div style={styles.smallText}>
-              Hold Ctrl (Windows) or Command (Mac) to select more than one.
-            </div>
-          </div>
-
-          <button type="submit" style={{ ...styles.buttonPrimary, width: "100%" }}>
-            Add Student
-          </button>
-        </form>
-      </div>
-
-      {renderStudentSelectorCard()}
-      {renderDataOptionsCard()}
-    </div>
-  );
-
-  const renderStandardSidebar = () => (
-    <div style={styles.sidebar}>
-      {renderStudentSelectorCard()}
-      {renderDataOptionsCard()}
     </div>
   );
 
   const renderStudentDashboard = () => (
     <>
       <div style={styles.card}>
-        <h2 style={styles.cardTitle}>Student Dashboard</h2>
-        <div style={styles.summaryGrid}>
-          <div style={styles.statCard}>
-            <div style={styles.statNumber}>{students.length}</div>
-            <div style={styles.statLabel}>Students</div>
-          </div>
-          <div style={styles.statCard}>
-            <div style={styles.statNumber}>{totalGoals}</div>
-            <div style={styles.statLabel}>Goals</div>
-          </div>
-          <div style={styles.statCard}>
-            <div style={styles.statNumber}>{totalBenchmarks}</div>
-            <div style={styles.statLabel}>Short-Term Benchmarks/Objectives</div>
-          </div>
-          <div style={styles.statCard}>
-            <div style={styles.statNumber}>
-              {selectedStudent ? selectedStudent.goals.length : 0}
-            </div>
-            <div style={styles.statLabel}>Goals for Selected Student</div>
-          </div>
+        <div style={{ ...styles.rowGap, justifyContent: "space-between" }}>
+          <h2 style={{ ...styles.cardTitle, marginBottom: 0 }}>Student Dashboard</h2>
+          <button
+            onClick={() => setShowAddStudentForm((prev) => !prev)}
+            style={styles.buttonPrimary}
+          >
+            {showAddStudentForm ? "Hide Add Student" : "Add Student"}
+          </button>
         </div>
       </div>
+
+      {showAddStudentForm && (
+        <div style={styles.card}>
+          <h3 style={styles.subTitle}>Add Student</h3>
+          <form onSubmit={addStudent}>
+            <div style={{ marginBottom: "14px" }}>
+              <label style={styles.label}>Student Name</label>
+              <input
+                type="text"
+                name="name"
+                value={studentForm.name}
+                onChange={handleStudentFormChange}
+                style={styles.input}
+                placeholder="Enter student name"
+              />
+            </div>
+
+            <div style={{ marginBottom: "14px" }}>
+              <label style={styles.label}>Grade</label>
+              <select
+                name="grade"
+                value={studentForm.grade}
+                onChange={handleStudentFormChange}
+                style={styles.input}
+              >
+                <option value="">Select grade</option>
+                {GRADE_OPTIONS.map((grade) => (
+                  <option key={grade} value={grade}>
+                    {grade}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ marginBottom: "14px" }}>
+              <label style={styles.label}>Support Person</label>
+              <input
+                type="text"
+                name="supportPerson"
+                value={studentForm.supportPerson}
+                onChange={handleStudentFormChange}
+                style={styles.input}
+                placeholder="Teacher, parent, therapist, etc."
+              />
+            </div>
+
+            <div style={{ marginBottom: "14px" }}>
+              <label style={styles.label}>Primary Setting</label>
+              <select
+                name="setting"
+                value={studentForm.setting}
+                onChange={handleStudentFormChange}
+                style={styles.input}
+              >
+                <option value="">Select setting</option>
+                {SETTING_OPTIONS.map((setting) => (
+                  <option key={setting} value={setting}>
+                    {setting}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ marginBottom: "16px" }}>
+              <label style={styles.label}>Disability / Eligibility</label>
+              <select
+                name="disabilities"
+                multiple
+                value={studentForm.disabilities}
+                onChange={handleStudentFormChange}
+                style={styles.multiSelect}
+              >
+                {DISABILITY_OPTIONS.map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <button type="submit" style={styles.buttonPrimary}>
+              Save Student
+            </button>
+          </form>
+        </div>
+      )}
 
       <div style={styles.card}>
         <h3 style={styles.subTitle}>Students</h3>
@@ -2010,16 +1945,10 @@ export default function App() {
                     >
                       Open in Progress Monitoring
                     </button>
-                    <button
-                      onClick={() => editGoal(goal)}
-                      style={styles.smallButton}
-                    >
+                    <button onClick={() => editGoal(goal)} style={styles.smallButton}>
                       Edit Goal
                     </button>
-                    <button
-                      onClick={() => removeGoal(goal.id)}
-                      style={styles.smallButton}
-                    >
+                    <button onClick={() => removeGoal(goal.id)} style={styles.smallButton}>
                       Delete Goal
                     </button>
                   </div>
@@ -2147,11 +2076,7 @@ export default function App() {
                           <select
                             value={benchmark.status}
                             onChange={(e) =>
-                              updateBenchmarkStatus(
-                                goal.id,
-                                benchmark.id,
-                                e.target.value
-                              )
+                              updateBenchmarkStatus(goal.id, benchmark.id, e.target.value)
                             }
                             style={styles.input}
                           >
@@ -2194,7 +2119,7 @@ export default function App() {
 
     return (
       <>
-        {renderSelectedStudentSummaryBar()}
+        {renderStudentSelect()}
         <div style={styles.card}>
           <div
             style={{
@@ -2796,47 +2721,12 @@ export default function App() {
     );
   };
 
-  const renderSelectedStudentSummaryBar = () => {
-    if (!selectedStudent) return null;
 
-    return (
-      <div style={styles.card}>
-        <div
-          style={{
-            fontSize: "18px",
-            fontWeight: 800,
-            color: "#1e3a8a",
-            marginBottom: "14px",
-          }}
-        >
-          {selectedStudent.name}
-        </div>
 
-        <div style={styles.compactSummaryGrid}>
-          <div style={styles.statCard}>
-            <div style={styles.statNumber}>{selectedStudent.grade || "-"}</div>
-            <div style={styles.statLabel}>Grade</div>
-          </div>
-          <div style={styles.statCard}>
-            <div style={styles.statNumber}>{selectedStudent.goals.length}</div>
-            <div style={styles.statLabel}>Goals</div>
-          </div>
-          <div style={styles.statCard}>
-            <div style={styles.statNumber}>{selectedStudentCurrentCount}</div>
-            <div style={styles.statLabel}>Current</div>
-          </div>
-          <div style={styles.statCard}>
-            <div style={styles.statNumber}>{selectedStudentMasteredCount}</div>
-            <div style={styles.statLabel}>Mastered</div>
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   const renderStudentProgress = () => (
     <>
-      {renderSelectedStudentSummaryBar()}
+      {renderStudentSelect()}
       <div style={styles.card}>
         <h2 style={styles.cardTitle}>Student Progress</h2>
 
@@ -2844,26 +2734,7 @@ export default function App() {
           <div>No student selected.</div>
         ) : (
           <>
-            <div style={styles.summaryGrid}>
-              <div style={styles.statCard}>
-                <div style={styles.statNumber}>{savedHistory.length}</div>
-                <div style={styles.statLabel}>Saved Entries</div>
-              </div>
-              <div style={styles.statCard}>
-                <div style={styles.statNumber}>{selectedStudent.goals.length}</div>
-                <div style={styles.statLabel}>Goals</div>
-              </div>
-              <div style={styles.statCard}>
-                <div style={styles.statNumber}>{selectedStudentCurrentCount}</div>
-                <div style={styles.statLabel}>Current Benchmarks/Objectives</div>
-              </div>
-              <div style={styles.statCard}>
-                <div style={styles.statNumber}>{selectedStudentMasteredCount}</div>
-                <div style={styles.statLabel}>Mastered Benchmarks/Objectives</div>
-              </div>
-            </div>
-
-            <h3 style={{ ...styles.subTitle, marginTop: "22px" }}>Progress Graphs</h3>
+            <h3 style={{ ...styles.subTitle, marginTop: "4px" }}>Progress Graphs</h3>
             {graphGroups.map((group) => (
               <GraphCard
                 key={group.id}
@@ -2993,18 +2864,10 @@ export default function App() {
           </button>
         </div>
 
-        <div className="ramp-layout" style={styles.layout}>
-          <div className="ramp-sidebar">
-            {activeTab === "studentDashboard"
-              ? renderDashboardSidebar()
-              : renderStandardSidebar()}
-          </div>
-
-          <div className="ramp-content" style={styles.content}>
-            {activeTab === "studentDashboard" && renderStudentDashboard()}
-            {activeTab === "progressMonitoring" && renderProgressMonitoring()}
-            {activeTab === "studentProgress" && renderStudentProgress()}
-          </div>
+        <div style={styles.content}>
+          {activeTab === "studentDashboard" && renderStudentDashboard()}
+          {activeTab === "progressMonitoring" && renderProgressMonitoring()}
+          {activeTab === "studentProgress" && renderStudentProgress()}
         </div>
       </div>
     </div>
