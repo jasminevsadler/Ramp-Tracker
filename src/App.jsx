@@ -1520,6 +1520,12 @@ export default function App() {
       gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
       gap: "16px",
     },
+    compactSummaryGrid: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+      gap: "12px",
+      marginBottom: "18px",
+    },
     statCard: {
       background: "linear-gradient(180deg, #f8fbff 0%, #ffffff 100%)",
       border: "1px solid #bfdbfe",
@@ -1718,7 +1724,8 @@ export default function App() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 
   const renderDataOptionsCard = () => (
@@ -2188,6 +2195,7 @@ export default function App() {
 
     return (
       <>
+        {renderSelectedStudentSummaryBar()}
         <div style={styles.card}>
           <div
             style={{
@@ -2789,8 +2797,48 @@ export default function App() {
     );
   };
 
+  const renderSelectedStudentSummaryBar = () => {
+    if (!selectedStudent) return null;
+
+    return (
+      <div style={styles.card}>
+        <div
+          style={{
+            fontSize: "18px",
+            fontWeight: 800,
+            color: "#1e3a8a",
+            marginBottom: "14px",
+          }}
+        >
+          {selectedStudent.name}
+        </div>
+
+        <div style={styles.compactSummaryGrid}>
+          <div style={styles.statCard}>
+            <div style={styles.statNumber}>{selectedStudent.grade || "-"}</div>
+            <div style={styles.statLabel}>Grade</div>
+          </div>
+          <div style={styles.statCard}>
+            <div style={styles.statNumber}>{selectedStudent.goals.length}</div>
+            <div style={styles.statLabel}>Goals</div>
+          </div>
+          <div style={styles.statCard}>
+            <div style={styles.statNumber}>{selectedStudentCurrentCount}</div>
+            <div style={styles.statLabel}>Current</div>
+          </div>
+          <div style={styles.statCard}>
+            <div style={styles.statNumber}>{selectedStudentMasteredCount}</div>
+            <div style={styles.statLabel}>Mastered</div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderStudentProgress = () => (
-    <div style={styles.card}>
+    <>
+      {renderSelectedStudentSummaryBar()}
+      <div style={styles.card}>
       <h2 style={styles.cardTitle}>Student Progress</h2>
 
       {!selectedStudent ? (
