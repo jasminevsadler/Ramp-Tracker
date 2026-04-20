@@ -2369,7 +2369,9 @@ export default function App() {
               </div>
 
               <button
-                onClick={() => saveSessionEntry(selectedGoal, activeTargetBenchmark)}
+                onClick={() =>
+                  saveSessionEntry(selectedGoal, activeTargetBenchmark)
+                }
                 style={styles.buttonPrimary}
               >
                 Save Interval Session
@@ -2504,7 +2506,9 @@ export default function App() {
               </div>
 
               <button
-                onClick={() => saveSessionEntry(selectedGoal, activeTargetBenchmark)}
+                onClick={() =>
+                  saveSessionEntry(selectedGoal, activeTargetBenchmark)
+                }
                 style={styles.buttonPrimary}
               >
                 Save Session
@@ -2732,6 +2736,84 @@ export default function App() {
       </>
     );
   };
+
+  const renderStudentProgress = () => (
+    <>
+      {renderStudentSelect()}
+      <div style={styles.card}>
+        <h2 style={styles.cardTitle}>Student Progress</h2>
+
+        {!selectedStudent ? (
+          <div>No student selected.</div>
+        ) : (
+          <>
+            <h3 style={{ ...styles.subTitle, marginTop: "4px" }}>Progress Graphs</h3>
+            {graphGroups.map((group) => (
+              <GraphCard
+                key={group.id}
+                title={group.title}
+                points={group.points}
+                mode={group.mode}
+              />
+            ))}
+
+            <h3 style={{ ...styles.subTitle, marginTop: "22px" }}>Saved Entries</h3>
+
+            {!savedHistory.length ? (
+              <div>No saved entries yet for this student.</div>
+            ) : (
+              <div style={styles.tableWrap}>
+                <table style={styles.table}>
+                  <thead>
+                    <tr>
+                      <th style={styles.th}>Date</th>
+                      <th style={styles.th}>Goal</th>
+                      <th style={styles.th}>Benchmark / Objective</th>
+                      <th style={styles.th}>Location</th>
+                      <th style={styles.th}>Collected By</th>
+                      <th style={styles.th}>Method</th>
+                      <th style={styles.th}>Score / %</th>
+                      <th style={styles.th}>Prompt / Interval</th>
+                      <th style={styles.th}>Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[...savedHistory].reverse().map((entry) => (
+                      <tr key={entry.id}>
+                        <td style={styles.td}>{entry.date}</td>
+                        <td style={styles.td}>{entry.goalTitle}</td>
+                        <td style={styles.td}>
+                          {entry.targetType === "benchmark"
+                            ? entry.benchmarkText
+                            : "Goal Level"}
+                        </td>
+                        <td style={styles.td}>{entry.location || "-"}</td>
+                        <td style={styles.td}>{entry.collectedBy || "-"}</td>
+                        <td style={styles.td}>
+                          {entry.collectionMethod === "interval" ? "Interval" : "Rating"}
+                        </td>
+                        <td style={styles.td}>
+                          {entry.collectionMethod === "interval"
+                            ? `${entry.percent ?? 0}%`
+                            : entry.score}
+                        </td>
+                        <td style={styles.td}>
+                          {entry.collectionMethod === "interval"
+                            ? `${entry.intervalType || "-"} (${entry.yesCount ?? 0}/${entry.totalIntervals ?? 0})`
+                            : entry.promptLevel || "-"}
+                        </td>
+                        <td style={styles.td}>{entry.notes || "-"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </>
+  );
 
   return (
     <div style={styles.page}>
