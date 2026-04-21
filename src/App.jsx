@@ -6,6 +6,7 @@ const STORAGE_KEY = "students";
 const DEMO_STUDENTS = [
   {
     id: "demo-1",
+    Demo Mode — Start with Johnny → review the goal → scroll to see progress over time.
     name: "Johnny",
     grade: "3",
     goals: [
@@ -56,6 +57,31 @@ const DEMO_STUDENTS = [
     ]
   }
 ];
+<button
+  onClick={() => {
+    if (isDemoMode) {
+      demoBlocked("Recording data");
+      return;
+    }
+    alert("This is where you would record data.");
+  }}
+  style={{
+    marginTop: 10,
+    background: "#2563eb",
+    color: "white",
+    padding: "10px 14px",
+    borderRadius: 10,
+    border: "none",
+    cursor: "pointer",
+    fontWeight: "bold"
+  }}
+>
+  Record Data
+</button>
+
+<p style={{ marginTop: 10, fontWeight: "bold", color: "#16a34a" }}>
+  Progress is improving — prompts are decreasing and independence is increasing.
+</p>
 
 function scoreLabel(score) {
   if (score === 2) return "Independent";
