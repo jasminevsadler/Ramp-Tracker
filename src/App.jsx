@@ -1,5 +1,133 @@
-
 import React, { useEffect, useMemo, useState } from "react";
+
+const DEMO_STUDENTS = [
+  {
+    id: "demo-1",
+    name: "Johnny",
+    grade: "3",
+    goals: [
+      {
+        id: "goal-1",
+        title: "Following Directions",
+        shortName: "Follow Directions",
+        baseline:
+          "Johnny currently requires 2–3 prompts to begin tasks and often delays or avoids starting work, completing directions independently in 40% of opportunities.",
+        mastery:
+          "Johnny will independently begin tasks within 30 seconds in 80% of opportunities across 3 consecutive sessions.",
+        collectionMethod: "Teacher observation and frequency count",
+        examples:
+          "Begin work after instruction, line up when asked, transition to centers, put materials away, start independent work.",
+        strategyUsed: "Reinforcement, Modeling, and Prompting",
+        objectives: [
+          {
+            id: "obj-1",
+            text: "When given a verbal reminder, Johnny will begin a task within 30 seconds."
+          },
+          {
+            id: "obj-2",
+            text: "Johnny will begin tasks independently after teacher directions."
+          }
+        ],
+        entries: [
+          {
+            id: "entry-1",
+            date: "2026-04-10",
+            score: 1,
+            promptLevel: "Verbal",
+            note: "Needed one verbal reminder before starting math."
+          },
+          {
+            id: "entry-2",
+            date: "2026-04-11",
+            score: 1,
+            promptLevel: "Model",
+            note: "Teacher modeled how to start the task."
+          },
+          {
+            id: "entry-3",
+            date: "2026-04-14",
+            score: 2,
+            promptLevel: "",
+            note: "Began work independently after instruction."
+          },
+          {
+            id: "entry-4",
+            date: "2026-04-15",
+            score: 2,
+            promptLevel: "",
+            note: "Transitioned to centers without prompts."
+          },
+          {
+            id: "entry-5",
+            date: "2026-04-16",
+            score: 2,
+            promptLevel: "",
+            note: "Started independent work right away."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: "demo-2",
+    name: "Mia",
+    grade: "5",
+    goals: [
+      {
+        id: "goal-2",
+        title: "Accepting Feedback",
+        shortName: "Accept Feedback",
+        baseline:
+          "Mia often argues, shuts down, or refuses corrections during academic tasks.",
+        mastery:
+          "Mia will accept feedback appropriately in 4 out of 5 opportunities across 3 consecutive sessions.",
+        collectionMethod: "Teacher observation",
+        examples:
+          "Saying 'okay,' correcting work, continuing the task, responding calmly to redirection.",
+        strategyUsed: "Modeling and Prompting with reinforcement for calm responses",
+        objectives: [
+          {
+            id: "obj-3",
+            text: "When given corrective feedback, Mia will respond appropriately without arguing."
+          }
+        ],
+        entries: [
+          {
+            id: "entry-6",
+            date: "2026-04-09",
+            score: 1,
+            promptLevel: "Model",
+            note: "Needed modeled response before correcting work."
+          },
+          {
+            id: "entry-7",
+            date: "2026-04-12",
+            score: 1,
+            promptLevel: "Verbal",
+            note: "Accepted redirection after one reminder."
+          },
+          {
+            id: "entry-8",
+            date: "2026-04-14",
+            score: 2,
+            promptLevel: "",
+            note: "Corrected assignment appropriately."
+          },
+          {
+            id: "entry-9",
+            date: "2026-04-16",
+            score: 2,
+            promptLevel: "",
+            note: "Accepted feedback and continued working independently."
+          }
+        ]
+      }
+    ]
+  }
+];
+
+DEMO END
+
 
 const GRADE_OPTIONS = [
   "Preschool",
@@ -502,6 +630,26 @@ export default function App() {
     setting: "",
   });
 
+  const startDemoMode = () => {
+  setStudents(DEMO_STUDENTS);
+  setIsDemoMode(true);
+  setShowAccessScreen(false);
+};
+
+const startFullApp = () => {
+  const saved = localStorage.getItem("ramp_students");
+  setStudents(saved ? JSON.parse(saved) : []);
+  setIsDemoMode(false);
+  setShowAccessScreen(false);
+};
+
+const demoBlocked = (feature = "This feature") => {
+  alert(`${feature} is only available in the full version.`);
+};
+
+  const [isDemoMode, setIsDemoMode] = useState(false);
+const [showAccessScreen, setShowAccessScreen] = useState(true);
+
   useEffect(() => {
     localStorage.setItem("ramp_students", JSON.stringify(students));
   }, [students]);
@@ -514,12 +662,11 @@ export default function App() {
     localStorage.setItem("ramp_session_history", JSON.stringify(history));
   }, [history]);
 
-  useEffect(() => {
-    localStorage.setItem(
-      "ramp_selected_student",
-      JSON.stringify(selectedStudentId)
-    );
-  }, [selectedStudentId]);
+ useEffect(() => {
+  if (!isDemoMode) {
+    localStorage.setItem("ramp_students", JSON.stringify(students));
+  }
+}, [students, isDemoMode]);
 
   useEffect(() => {
     localStorage.setItem("ramp_selected_goal", JSON.stringify(selectedGoalId));
