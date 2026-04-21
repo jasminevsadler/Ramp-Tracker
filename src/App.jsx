@@ -6,7 +6,6 @@ const STORAGE_KEY = "students";
 const DEMO_STUDENTS = [
   {
     id: "demo-1",
-    Demo Mode — Start with Johnny → review the goal → scroll to see progress over time.
     name: "Johnny",
     grade: "3",
     goals: [
@@ -57,31 +56,6 @@ const DEMO_STUDENTS = [
     ]
   }
 ];
-<button
-  onClick={() => {
-    if (isDemoMode) {
-      demoBlocked("Recording data");
-      return;
-    }
-    alert("This is where you would record data.");
-  }}
-  style={{
-    marginTop: 10,
-    background: "#2563eb",
-    color: "white",
-    padding: "10px 14px",
-    borderRadius: 10,
-    border: "none",
-    cursor: "pointer",
-    fontWeight: "bold"
-  }}
->
-  Record Data
-</button>
-
-<p style={{ marginTop: 10, fontWeight: "bold", color: "#16a34a" }}>
-  Progress is improving — prompts are decreasing and independence is increasing.
-</p>
 
 function scoreLabel(score) {
   if (score === 2) return "Independent";
@@ -173,7 +147,7 @@ function App() {
   };
 
   const demoBlocked = (feature = "This feature") => {
-    alert(`${feature} is locked in Demo Mode.`);
+    alert(`${feature} is locked in Demo Mode. Create an account to use your own student data.`);
   };
 
   const addStudent = () => {
@@ -198,6 +172,14 @@ function App() {
     setSelectedStudentId(newStudent.id);
   };
 
+  const handleRecordData = () => {
+    if (isDemoMode) {
+      demoBlocked("Recording data");
+      return;
+    }
+    alert("This is where you would record data.");
+  };
+
   const appShellStyle = {
     minHeight: "100vh",
     background: "#f8fafc",
@@ -209,6 +191,26 @@ function App() {
     borderRadius: 20,
     boxShadow: "0 10px 30px rgba(15, 23, 42, 0.08)",
     border: "1px solid #e2e8f0"
+  };
+
+  const primaryButtonStyle = {
+    background: "#2563eb",
+    color: "#fff",
+    border: "none",
+    borderRadius: 12,
+    padding: "12px 16px",
+    fontWeight: 700,
+    cursor: "pointer"
+  };
+
+  const secondaryButtonStyle = {
+    background: "#fff",
+    color: "#0f172a",
+    border: "1px solid #cbd5e1",
+    borderRadius: 12,
+    padding: "12px 16px",
+    fontWeight: 700,
+    cursor: "pointer"
   };
 
   if (showAccessScreen) {
@@ -241,35 +243,17 @@ function App() {
                 Full App is where your own students live.
               </p>
 
+              <p style={{ color: "#1e40af", fontSize: 16, fontWeight: 700, lineHeight: 1.6, marginTop: 16 }}>
+                See how students move from prompts to independence using RaMP.
+              </p>
+
               <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 24 }}>
-                <button
-                  onClick={startDemoMode}
-                  style={{
-                    background: "#2563eb",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: 14,
-                    padding: "14px 18px",
-                    fontWeight: 700,
-                    cursor: "pointer"
-                  }}
-                >
-                  Try Demo
+                <button onClick={startDemoMode} style={{ ...primaryButtonStyle, borderRadius: 14, padding: "14px 18px" }}>
+                  Try Demo (No Login Needed)
                 </button>
 
-                <button
-                  onClick={startFullApp}
-                  style={{
-                    background: "#fff",
-                    color: "#0f172a",
-                    border: "1px solid #cbd5e1",
-                    borderRadius: 14,
-                    padding: "14px 18px",
-                    fontWeight: 700,
-                    cursor: "pointer"
-                  }}
-                >
-                  Enter Full App
+                <button onClick={startFullApp} style={{ ...secondaryButtonStyle, borderRadius: 14, padding: "14px 18px" }}>
+                  Create Account / Log In
                 </button>
               </div>
             </div>
@@ -304,7 +288,7 @@ function App() {
               fontWeight: 600
             }}
           >
-            Demo Mode — sample data only. Adding students and saving new features are locked.
+            Demo Mode — Start with Johnny, review the goal, and scroll to see progress over time.
           </div>
         )}
 
@@ -331,30 +315,15 @@ function App() {
             <button
               onClick={addStudent}
               style={{
+                ...primaryButtonStyle,
                 background: isDemoMode ? "#e2e8f0" : "#2563eb",
-                color: isDemoMode ? "#64748b" : "#fff",
-                border: "none",
-                borderRadius: 12,
-                padding: "12px 16px",
-                fontWeight: 700,
-                cursor: "pointer"
+                color: isDemoMode ? "#64748b" : "#fff"
               }}
             >
               Add Student
             </button>
 
-            <button
-              onClick={resetToHome}
-              style={{
-                background: "#fff",
-                color: "#0f172a",
-                border: "1px solid #cbd5e1",
-                borderRadius: 12,
-                padding: "12px 16px",
-                fontWeight: 700,
-                cursor: "pointer"
-              }}
-            >
+            <button onClick={resetToHome} style={secondaryButtonStyle}>
               Back to Start
             </button>
           </div>
@@ -460,7 +429,12 @@ function App() {
                         </div>
 
                         <div>
-                          <div style={{ fontWeight: 700, marginBottom: 10 }}>Progress Data</div>
+                          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 10 }}>
+                            <div style={{ fontWeight: 700 }}>Progress Data</div>
+                            <button onClick={handleRecordData} style={{ ...primaryButtonStyle, padding: "10px 14px", borderRadius: 10 }}>
+                              Record Data
+                            </button>
+                          </div>
 
                           {goal.entries?.length ? (
                             <div style={{ display: "grid", gap: 10 }}>
@@ -502,6 +476,10 @@ function App() {
                           ) : (
                             <div style={{ color: "#64748b" }}>No entries yet.</div>
                           )}
+
+                          <p style={{ marginTop: 12, fontWeight: 700, color: "#15803d" }}>
+                            Progress is improving — prompts are decreasing and independence is increasing.
+                          </p>
                         </div>
                       </div>
                     ))}
