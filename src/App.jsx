@@ -2190,7 +2190,10 @@ export default function App() {
 
 
   const renderAccessScreen = () => (
-    <div style={styles.page}>
+   return (
+  <div style={{ padding: 40, fontSize: 40, color: "red" }}>
+    TEST SCREEN
+  </div>
       <style>{`
         * { box-sizing: border-box; }
         body { margin: 0; }
