@@ -239,6 +239,367 @@ const DEFAULT_STUDENTS = [
       },
     ],
   },
+
+const DEMO_STUDENTS = [
+  {
+    id: "student-demo-johnny",
+    name: "Johnny",
+    grade: "3",
+    supportPerson: "Ms. Williams",
+    disabilities: ["Autism", "ADHD"],
+    setting: "School",
+    goals: [
+      {
+        id: "goal-demo-following-directions",
+        goalTitle: "Following Directions",
+        fullGoalText:
+          "When given a reminder, Johnny will follow directions within 30 seconds by saying 'okay,' beginning the task, or moving to the expected location across settings.",
+        benchmarks: [
+          {
+            id: "benchmark-demo-directions-1",
+            text: "Follow 1-step directions within 30 seconds with one reminder.",
+            status: "Mastered",
+          },
+          {
+            id: "benchmark-demo-directions-2",
+            text: "Follow 1-step directions within 30 seconds independently.",
+            status: "Current",
+          },
+        ],
+        examplesDefinition:
+          "Examples: starts work after teacher says 'Please begin,' lines up when directed, puts materials away after one reminder.",
+        baseline: "0/5 opportunities independently",
+        mastery: "4/5 opportunities across 3 consecutive sessions",
+        collectionMethod: "rating",
+      },
+      {
+        id: "goal-demo-staying-focused",
+        goalTitle: "Staying Focused",
+        fullGoalText:
+          "Given an assignment or task, Johnny will remain focused and work toward completion by staying on task, returning to task after redirection, and completing expected parts within the allotted time.",
+        benchmarks: [],
+        examplesDefinition:
+          "Examples: keeps working during independent work, finishes a class assignment, returns to task after distraction, completes steps of an activity.",
+        baseline: "1/5 opportunities",
+        mastery: "80% across 3 consecutive sessions",
+        collectionMethod: "interval",
+      },
+    ],
+  },
+  {
+    id: "student-demo-mia",
+    name: "Mia",
+    grade: "5",
+    supportPerson: "Ms. Carter",
+    disabilities: ["ADHD"],
+    setting: "School",
+    goals: [
+      {
+        id: "goal-demo-feedback",
+        goalTitle: "Accepting Feedback",
+        fullGoalText:
+          "When given corrective feedback, Mia will respond appropriately by remaining calm, acknowledging the feedback, and continuing the task without arguing.",
+        benchmarks: [
+          {
+            id: "benchmark-demo-feedback-1",
+            text: "Accept feedback with prompting and continue working.",
+            status: "Current",
+          },
+          {
+            id: "benchmark-demo-feedback-2",
+            text: "Accept feedback independently and continue working.",
+            status: "Not Started",
+          },
+        ],
+        examplesDefinition:
+          "Examples: says 'okay,' corrects work, uses calm words, continues the assignment.",
+        baseline: "1/5 opportunities",
+        mastery: "4/5 opportunities across 3 consecutive sessions",
+        collectionMethod: "rating",
+      },
+    ],
+  },
+];
+
+const DEMO_HISTORY = [
+  {
+    id: "demo-entry-1",
+    studentId: "student-demo-johnny",
+    studentName: "Johnny",
+    grade: "3",
+    supportPerson: "Ms. Williams",
+    disabilities: "Autism, ADHD",
+    setting: "School",
+    goalId: "goal-demo-following-directions",
+    goalTitle: "Following Directions",
+    fullGoalText:
+      "When given a reminder, Johnny will follow directions within 30 seconds by saying 'okay,' beginning the task, or moving to the expected location across settings.",
+    targetType: "benchmark",
+    benchmarkId: "benchmark-demo-directions-1",
+    benchmarkText: "Follow 1-step directions within 30 seconds with one reminder.",
+    benchmarkStatus: "Mastered",
+    date: "2026-04-10",
+    location: "Classroom",
+    collectedBy: "Teacher",
+    collectionMethod: "rating",
+    score: "1",
+    promptLevel: "Verbal",
+    notes: "Needed one reminder before starting math.",
+  },
+  {
+    id: "demo-entry-2",
+    studentId: "student-demo-johnny",
+    studentName: "Johnny",
+    grade: "3",
+    supportPerson: "Ms. Williams",
+    disabilities: "Autism, ADHD",
+    setting: "School",
+    goalId: "goal-demo-following-directions",
+    goalTitle: "Following Directions",
+    fullGoalText:
+      "When given a reminder, Johnny will follow directions within 30 seconds by saying 'okay,' beginning the task, or moving to the expected location across settings.",
+    targetType: "benchmark",
+    benchmarkId: "benchmark-demo-directions-1",
+    benchmarkText: "Follow 1-step directions within 30 seconds with one reminder.",
+    benchmarkStatus: "Mastered",
+    date: "2026-04-11",
+    location: "Classroom",
+    collectedBy: "Teacher",
+    collectionMethod: "rating",
+    score: "1",
+    promptLevel: "Model",
+    notes: "Teacher modeled how to begin the task.",
+  },
+  {
+    id: "demo-entry-3",
+    studentId: "student-demo-johnny",
+    studentName: "Johnny",
+    grade: "3",
+    supportPerson: "Ms. Williams",
+    disabilities: "Autism, ADHD",
+    setting: "School",
+    goalId: "goal-demo-following-directions",
+    goalTitle: "Following Directions",
+    fullGoalText:
+      "When given a reminder, Johnny will follow directions within 30 seconds by saying 'okay,' beginning the task, or moving to the expected location across settings.",
+    targetType: "benchmark",
+    benchmarkId: "benchmark-demo-directions-2",
+    benchmarkText: "Follow 1-step directions within 30 seconds independently.",
+    benchmarkStatus: "Current",
+    date: "2026-04-14",
+    location: "Classroom",
+    collectedBy: "Teacher",
+    collectionMethod: "rating",
+    score: "2",
+    promptLevel: "",
+    notes: "Started work independently after instruction.",
+  },
+  {
+    id: "demo-entry-4",
+    studentId: "student-demo-johnny",
+    studentName: "Johnny",
+    grade: "3",
+    supportPerson: "Ms. Williams",
+    disabilities: "Autism, ADHD",
+    setting: "School",
+    goalId: "goal-demo-following-directions",
+    goalTitle: "Following Directions",
+    fullGoalText:
+      "When given a reminder, Johnny will follow directions within 30 seconds by saying 'okay,' beginning the task, or moving to the expected location across settings.",
+    targetType: "benchmark",
+    benchmarkId: "benchmark-demo-directions-2",
+    benchmarkText: "Follow 1-step directions within 30 seconds independently.",
+    benchmarkStatus: "Current",
+    date: "2026-04-15",
+    location: "Small Group",
+    collectedBy: "Teacher",
+    collectionMethod: "rating",
+    score: "2",
+    promptLevel: "",
+    notes: "Transitioned to centers without prompts.",
+  },
+  {
+    id: "demo-entry-5",
+    studentId: "student-demo-johnny",
+    studentName: "Johnny",
+    grade: "3",
+    supportPerson: "Ms. Williams",
+    disabilities: "Autism, ADHD",
+    setting: "School",
+    goalId: "goal-demo-following-directions",
+    goalTitle: "Following Directions",
+    fullGoalText:
+      "When given a reminder, Johnny will follow directions within 30 seconds by saying 'okay,' beginning the task, or moving to the expected location across settings.",
+    targetType: "benchmark",
+    benchmarkId: "benchmark-demo-directions-2",
+    benchmarkText: "Follow 1-step directions within 30 seconds independently.",
+    benchmarkStatus: "Current",
+    date: "2026-04-16",
+    location: "Classroom",
+    collectedBy: "Teacher",
+    collectionMethod: "rating",
+    score: "2",
+    promptLevel: "",
+    notes: "Completed transition immediately and began task.",
+  },
+  {
+    id: "demo-entry-6",
+    studentId: "student-demo-johnny",
+    studentName: "Johnny",
+    grade: "3",
+    supportPerson: "Ms. Williams",
+    disabilities: "Autism, ADHD",
+    setting: "School",
+    goalId: "goal-demo-staying-focused",
+    goalTitle: "Staying Focused",
+    fullGoalText:
+      "Given an assignment or task, Johnny will remain focused and work toward completion by staying on task, returning to task after redirection, and completing expected parts within the allotted time.",
+    targetType: "goal",
+    benchmarkId: "",
+    benchmarkText: "",
+    benchmarkStatus: "",
+    date: "2026-04-10",
+    location: "Classroom",
+    collectedBy: "Teacher",
+    collectionMethod: "interval",
+    intervalType: "Whole Interval",
+    sessionLength: 10,
+    intervalLength: 1,
+    totalIntervals: 10,
+    yesCount: 4,
+    percent: 40,
+    notes: "Needed frequent redirection during independent work.",
+  },
+  {
+    id: "demo-entry-7",
+    studentId: "student-demo-johnny",
+    studentName: "Johnny",
+    grade: "3",
+    supportPerson: "Ms. Williams",
+    disabilities: "Autism, ADHD",
+    setting: "School",
+    goalId: "goal-demo-staying-focused",
+    goalTitle: "Staying Focused",
+    fullGoalText:
+      "Given an assignment or task, Johnny will remain focused and work toward completion by staying on task, returning to task after redirection, and completing expected parts within the allotted time.",
+    targetType: "goal",
+    benchmarkId: "",
+    benchmarkText: "",
+    benchmarkStatus: "",
+    date: "2026-04-12",
+    location: "Classroom",
+    collectedBy: "Teacher",
+    collectionMethod: "interval",
+    intervalType: "Whole Interval",
+    sessionLength: 10,
+    intervalLength: 1,
+    totalIntervals: 10,
+    yesCount: 6,
+    percent: 60,
+    notes: "Returned to work more quickly after prompts.",
+  },
+  {
+    id: "demo-entry-8",
+    studentId: "student-demo-johnny",
+    studentName: "Johnny",
+    grade: "3",
+    supportPerson: "Ms. Williams",
+    disabilities: "Autism, ADHD",
+    setting: "School",
+    goalId: "goal-demo-staying-focused",
+    goalTitle: "Staying Focused",
+    fullGoalText:
+      "Given an assignment or task, Johnny will remain focused and work toward completion by staying on task, returning to task after redirection, and completing expected parts within the allotted time.",
+    targetType: "goal",
+    benchmarkId: "",
+    benchmarkText: "",
+    benchmarkStatus: "",
+    date: "2026-04-15",
+    location: "Small Group",
+    collectedBy: "Teacher",
+    collectionMethod: "interval",
+    intervalType: "Whole Interval",
+    sessionLength: 10,
+    intervalLength: 1,
+    totalIntervals: 10,
+    yesCount: 8,
+    percent: 80,
+    notes: "Stayed engaged for most of the session.",
+  },
+  {
+    id: "demo-entry-9",
+    studentId: "student-demo-mia",
+    studentName: "Mia",
+    grade: "5",
+    supportPerson: "Ms. Carter",
+    disabilities: "ADHD",
+    setting: "School",
+    goalId: "goal-demo-feedback",
+    goalTitle: "Accepting Feedback",
+    fullGoalText:
+      "When given corrective feedback, Mia will respond appropriately by remaining calm, acknowledging the feedback, and continuing the task without arguing.",
+    targetType: "benchmark",
+    benchmarkId: "benchmark-demo-feedback-1",
+    benchmarkText: "Accept feedback with prompting and continue working.",
+    benchmarkStatus: "Current",
+    date: "2026-04-09",
+    location: "Classroom",
+    collectedBy: "Teacher",
+    collectionMethod: "rating",
+    score: "1",
+    promptLevel: "Model",
+    notes: "Needed modeled response before correcting work.",
+  },
+  {
+    id: "demo-entry-10",
+    studentId: "student-demo-mia",
+    studentName: "Mia",
+    grade: "5",
+    supportPerson: "Ms. Carter",
+    disabilities: "ADHD",
+    setting: "School",
+    goalId: "goal-demo-feedback",
+    goalTitle: "Accepting Feedback",
+    fullGoalText:
+      "When given corrective feedback, Mia will respond appropriately by remaining calm, acknowledging the feedback, and continuing the task without arguing.",
+    targetType: "benchmark",
+    benchmarkId: "benchmark-demo-feedback-1",
+    benchmarkText: "Accept feedback with prompting and continue working.",
+    benchmarkStatus: "Current",
+    date: "2026-04-12",
+    location: "Classroom",
+    collectedBy: "Teacher",
+    collectionMethod: "rating",
+    score: "1",
+    promptLevel: "Verbal",
+    notes: "Accepted redirection after one reminder.",
+  },
+  {
+    id: "demo-entry-11",
+    studentId: "student-demo-mia",
+    studentName: "Mia",
+    grade: "5",
+    supportPerson: "Ms. Carter",
+    disabilities: "ADHD",
+    setting: "School",
+    goalId: "goal-demo-feedback",
+    goalTitle: "Accepting Feedback",
+    fullGoalText:
+      "When given corrective feedback, Mia will respond appropriately by remaining calm, acknowledging the feedback, and continuing the task without arguing.",
+    targetType: "benchmark",
+    benchmarkId: "benchmark-demo-feedback-2",
+    benchmarkText: "Accept feedback independently and continue working.",
+    benchmarkStatus: "Not Started",
+    date: "2026-04-14",
+    location: "Classroom",
+    collectedBy: "Teacher",
+    collectionMethod: "rating",
+    score: "2",
+    promptLevel: "",
+    notes: "Corrected work calmly and continued the assignment.",
+  },
+];
+
 ];
 
 function loadFromStorage(key, fallback) {
@@ -501,47 +862,65 @@ export default function App() {
     disabilities: [],
     setting: "",
   });
+  const [isDemoMode, setIsDemoMode] = useState(false);
+  const [showAccessScreen, setShowAccessScreen] = useState(true);
 
   useEffect(() => {
-    localStorage.setItem("ramp_students", JSON.stringify(students));
-  }, [students]);
+    if (!isDemoMode) {
+      localStorage.setItem("ramp_students", JSON.stringify(students));
+    }
+  }, [students, isDemoMode]);
 
   useEffect(() => {
-    localStorage.setItem("ramp_session_data", JSON.stringify(sessionData));
-  }, [sessionData]);
+    if (!isDemoMode) {
+      localStorage.setItem("ramp_session_data", JSON.stringify(sessionData));
+    }
+  }, [sessionData, isDemoMode]);
 
   useEffect(() => {
-    localStorage.setItem("ramp_session_history", JSON.stringify(history));
-  }, [history]);
+    if (!isDemoMode) {
+      localStorage.setItem("ramp_session_history", JSON.stringify(history));
+    }
+  }, [history, isDemoMode]);
 
   useEffect(() => {
-    localStorage.setItem(
-      "ramp_selected_student",
-      JSON.stringify(selectedStudentId)
-    );
-  }, [selectedStudentId]);
+    if (!isDemoMode) {
+      localStorage.setItem(
+        "ramp_selected_student",
+        JSON.stringify(selectedStudentId)
+      );
+    }
+  }, [selectedStudentId, isDemoMode]);
 
   useEffect(() => {
-    localStorage.setItem("ramp_selected_goal", JSON.stringify(selectedGoalId));
-  }, [selectedGoalId]);
+    if (!isDemoMode) {
+      localStorage.setItem("ramp_selected_goal", JSON.stringify(selectedGoalId));
+    }
+  }, [selectedGoalId, isDemoMode]);
 
   useEffect(() => {
-    localStorage.setItem(
-      "ramp_selected_benchmark",
-      JSON.stringify(selectedBenchmarkId)
-    );
-  }, [selectedBenchmarkId]);
+    if (!isDemoMode) {
+      localStorage.setItem(
+        "ramp_selected_benchmark",
+        JSON.stringify(selectedBenchmarkId)
+      );
+    }
+  }, [selectedBenchmarkId, isDemoMode]);
 
   useEffect(() => {
-    localStorage.setItem(
-      "ramp_show_goal_details",
-      JSON.stringify(showGoalDetails)
-    );
-  }, [showGoalDetails]);
+    if (!isDemoMode) {
+      localStorage.setItem(
+        "ramp_show_goal_details",
+        JSON.stringify(showGoalDetails)
+      );
+    }
+  }, [showGoalDetails, isDemoMode]);
 
   useEffect(() => {
-    localStorage.setItem("ramp_active_tab", JSON.stringify(activeTab));
-  }, [activeTab]);
+    if (!isDemoMode) {
+      localStorage.setItem("ramp_active_tab", JSON.stringify(activeTab));
+    }
+  }, [activeTab, isDemoMode]);
 
   const selectedStudent = useMemo(
     () => students.find((student) => student.id === selectedStudentId) || students[0],
@@ -716,6 +1095,53 @@ export default function App() {
     return current.slice(0, totalIntervals);
   };
 
+
+  const startDemoMode = () => {
+    const demoStudents = normalizeStudents(DEMO_STUDENTS);
+    setStudents(demoStudents);
+    setHistory(DEMO_HISTORY);
+    setSessionData({});
+    setSelectedStudentId(demoStudents[0]?.id || "");
+    setSelectedGoalId(demoStudents[0]?.goals?.[0]?.id || "");
+    setSelectedBenchmarkId(demoStudents[0]?.goals?.[0]?.benchmarks?.[0]?.id || "");
+    setShowGoalDetails(true);
+    setActiveTab("studentDashboard");
+    setShowAddStudentForm(false);
+    setIsDemoMode(true);
+    setShowAccessScreen(false);
+  };
+
+  const startFullApp = () => {
+    const fullStudents = normalizeStudents(loadFromStorage("ramp_students", DEFAULT_STUDENTS));
+    const fullHistory = loadFromStorage("ramp_session_history", []);
+    const fullSessionData = loadFromStorage("ramp_session_data", {});
+    const fullStudentId = loadFromStorage("ramp_selected_student", fullStudents[0]?.id || "");
+    const fullGoalId = loadFromStorage("ramp_selected_goal", "");
+    const fullBenchmarkId = loadFromStorage("ramp_selected_benchmark", "");
+    const fullShowGoalDetails = loadFromStorage("ramp_show_goal_details", false);
+    const fullActiveTab = loadFromStorage("ramp_active_tab", "studentDashboard");
+
+    setStudents(fullStudents);
+    setHistory(Array.isArray(fullHistory) ? fullHistory : []);
+    setSessionData(fullSessionData || {});
+    setSelectedStudentId(fullStudentId || fullStudents[0]?.id || "");
+    setSelectedGoalId(fullGoalId || "");
+    setSelectedBenchmarkId(fullBenchmarkId || "");
+    setShowGoalDetails(Boolean(fullShowGoalDetails));
+    setActiveTab(fullActiveTab || "studentDashboard");
+    setShowAddStudentForm(false);
+    setIsDemoMode(false);
+    setShowAccessScreen(false);
+  };
+
+  const backToStart = () => {
+    setShowAccessScreen(true);
+  };
+
+  const demoBlocked = (feature = "This feature") => {
+    window.alert(`${feature} is locked in Demo Mode. Create an account to use your own student data.`);
+  };
+
   const handleStudentFormChange = (e) => {
     const { name, value, options } = e.target;
 
@@ -737,6 +1163,11 @@ export default function App() {
   };
 
   const addStudent = (e) => {
+    if (isDemoMode) {
+      if (e?.preventDefault) e.preventDefault();
+      demoBlocked("Adding students");
+      return;
+    }
     e.preventDefault();
     if (!studentForm.name.trim()) return;
 
@@ -766,6 +1197,10 @@ export default function App() {
   };
 
   const deleteStudent = (studentId) => {
+    if (isDemoMode) {
+      demoBlocked("Deleting students");
+      return;
+    }
     const student = students.find((s) => s.id === studentId);
     if (!student) return;
 
@@ -782,6 +1217,10 @@ export default function App() {
   };
 
   const addGoalCustom = () => {
+    if (isDemoMode) {
+      demoBlocked("Adding goals");
+      return;
+    }
     if (!selectedStudent) return;
 
     const goalTitle = window.prompt("Enter goal title:");
@@ -825,6 +1264,10 @@ export default function App() {
   };
 
   const addGoalFromTemplate = (templateLabel) => {
+    if (isDemoMode) {
+      demoBlocked("Adding goals");
+      return;
+    }
     if (!selectedStudent || !templateLabel) return;
 
     const template = GOAL_TEMPLATE_OPTIONS.find(
@@ -860,6 +1303,10 @@ export default function App() {
   };
 
   const removeGoal = (goalId) => {
+    if (isDemoMode) {
+      demoBlocked("Deleting goals");
+      return;
+    }
     if (!selectedStudent) return;
 
     const goal = selectedStudent.goals.find((g) => g.id === goalId);
@@ -887,6 +1334,10 @@ export default function App() {
   };
 
   const updateGoalField = (goalId, field, value) => {
+    if (isDemoMode) {
+      demoBlocked("Editing goals");
+      return;
+    }
     if (!selectedStudent) return;
 
     setStudents((prev) =>
@@ -904,6 +1355,10 @@ export default function App() {
   };
 
   const editGoal = (goal) => {
+    if (isDemoMode) {
+      demoBlocked("Editing goals");
+      return;
+    }
     if (!selectedStudent || !goal) return;
 
     const goalTitle = window.prompt("Edit goal title:", goal.goalTitle);
@@ -946,6 +1401,10 @@ export default function App() {
   };
 
   const addBenchmark = (goalId) => {
+    if (isDemoMode) {
+      demoBlocked("Adding benchmarks");
+      return;
+    }
     if (!selectedStudent) return;
     const text = window.prompt("Enter short-term benchmark/objective:");
     if (!text) return;
@@ -979,6 +1438,10 @@ export default function App() {
   };
 
   const editBenchmark = (goalId, benchmark) => {
+    if (isDemoMode) {
+      demoBlocked("Editing benchmarks");
+      return;
+    }
     if (!selectedStudent || !benchmark) return;
     const text = window.prompt(
       "Edit short-term benchmark/objective:",
@@ -1010,6 +1473,10 @@ export default function App() {
   };
 
   const updateBenchmarkStatus = (goalId, benchmarkId, status) => {
+    if (isDemoMode) {
+      demoBlocked("Updating benchmark status");
+      return;
+    }
     if (!selectedStudent) return;
 
     setStudents((prev) =>
@@ -1036,6 +1503,10 @@ export default function App() {
   };
 
   const removeBenchmark = (goalId, benchmarkId) => {
+    if (isDemoMode) {
+      demoBlocked("Deleting benchmarks");
+      return;
+    }
     if (!selectedStudent) return;
 
     const goal = selectedStudent.goals.find((g) => g.id === goalId);
@@ -1076,6 +1547,10 @@ export default function App() {
   };
 
   const handleSessionChange = (goal, benchmark, field, value) => {
+    if (isDemoMode) {
+      demoBlocked("Recording data");
+      return;
+    }
     if (!selectedStudent || !goal) return;
 
     const key = getGoalSessionKey(selectedStudent.id, goal.id, benchmark?.id);
@@ -1117,6 +1592,10 @@ export default function App() {
   };
 
   const handleIntervalResultChange = (goal, benchmark, index, value) => {
+    if (isDemoMode) {
+      demoBlocked("Recording data");
+      return;
+    }
     if (!selectedStudent || !goal) return;
 
     const key = getGoalSessionKey(selectedStudent.id, goal.id, benchmark?.id);
@@ -1137,6 +1616,10 @@ export default function App() {
   };
 
   const saveSessionEntry = (goal, benchmark = null) => {
+    if (isDemoMode) {
+      demoBlocked("Saving session data");
+      return;
+    }
     if (!selectedStudent || !goal) return;
 
     const key = getGoalSessionKey(selectedStudent.id, goal.id, benchmark?.id);
@@ -1234,6 +1717,10 @@ export default function App() {
   };
 
   const exportCSV = () => {
+    if (isDemoMode) {
+      demoBlocked("Exporting data");
+      return;
+    }
     if (!history.length) {
       alert("No saved session data to export yet.");
       return;
@@ -1310,6 +1797,10 @@ export default function App() {
   };
 
   const clearAllSavedSessions = () => {
+    if (isDemoMode) {
+      demoBlocked("Clearing saved sessions");
+      return;
+    }
     const confirmed = window.confirm(
       "Are you sure you want to delete all saved session history?"
     );
@@ -1694,6 +2185,94 @@ export default function App() {
 
 
 
+
+  const renderAccessScreen = () => (
+    <div style={styles.page}>
+      <style>{`
+        * { box-sizing: border-box; }
+        body { margin: 0; }
+        input, select, textarea, button { font: inherit; }
+      `}</style>
+
+      <div style={{ ...styles.container, minHeight: "calc(100vh - 48px)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ ...styles.card, maxWidth: "1100px", width: "100%", padding: "32px" }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+              gap: "24px",
+              alignItems: "stretch",
+            }}
+          >
+            <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+              <div
+                style={{
+                  display: "inline-block",
+                  padding: "8px 14px",
+                  borderRadius: "999px",
+                  background: "#dbeafe",
+                  color: "#1d4ed8",
+                  fontWeight: 700,
+                  fontSize: "14px",
+                  marginBottom: "18px",
+                  width: "fit-content",
+                }}
+              >
+                RaMP Tracker
+              </div>
+
+              <h1
+                style={{
+                  fontSize: "clamp(36px, 5vw, 58px)",
+                  lineHeight: 1.05,
+                  margin: "0 0 16px 0",
+                  color: "#0f172a",
+                  letterSpacing: "-0.03em",
+                }}
+              >
+                Let people preview the app without giving away the full product.
+              </h1>
+
+              <p style={{ color: "#475569", fontSize: "20px", lineHeight: 1.6, margin: 0 }}>
+                Demo Mode shows sample students, sample goals, and real-looking progress data.
+                Full App is where your own students live.
+              </p>
+
+              <p style={{ color: "#1e40af", fontSize: "18px", fontWeight: 700, lineHeight: 1.6, marginTop: "16px" }}>
+                See how students move from prompts to independence using RaMP.
+              </p>
+
+              <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "26px" }}>
+                <button
+                  onClick={startDemoMode}
+                  style={{ ...styles.buttonPrimary, padding: "14px 20px", borderRadius: "16px" }}
+                >
+                  Try Demo (No Login Needed)
+                </button>
+                <button
+                  onClick={startFullApp}
+                  style={{ ...styles.buttonLight, padding: "14px 20px", borderRadius: "16px" }}
+                >
+                  Create Account / Log In
+                </button>
+              </div>
+            </div>
+
+            <div style={{ ...styles.card, marginBottom: 0, background: "linear-gradient(180deg, #f8fbff 0%, #ffffff 100%)" }}>
+              <h2 style={{ marginTop: 0, color: "#0f172a", fontSize: "22px" }}>What Demo Mode shows</h2>
+              <ul style={{ color: "#475569", fontSize: "18px", lineHeight: 1.8, paddingLeft: "24px", marginBottom: 0 }}>
+                <li>Sample students: Johnny and Mia</li>
+                <li>Baseline and mastery examples</li>
+                <li>Sample progress entries using your 0–1–2 style</li>
+                <li>A realistic preview for teachers, schools, and families</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   const renderStudentSelect = () => (
     <div style={styles.card}>
       <label style={styles.label}>Select Student</label>
@@ -1723,7 +2302,13 @@ export default function App() {
         <div style={{ ...styles.rowGap, justifyContent: "space-between" }}>
           <h2 style={{ ...styles.cardTitle, marginBottom: 0 }}>Student Dashboard</h2>
           <button
-            onClick={() => setShowAddStudentForm((prev) => !prev)}
+            onClick={() => {
+              if (isDemoMode) {
+                demoBlocked("Adding students");
+                return;
+              }
+              setShowAddStudentForm((prev) => !prev);
+            }}
             style={styles.buttonPrimary}
           >
             {showAddStudentForm ? "Hide Add Student" : "Add Student"}
@@ -2147,6 +2732,22 @@ export default function App() {
               ? activeTargetBenchmark.text
               : selectedGoal.goalTitle}
           </div>
+
+          {isDemoMode && (
+            <div
+              style={{
+                background: "#ffffff",
+                border: "1px solid #bfdbfe",
+                color: "#1d4ed8",
+                borderRadius: "14px",
+                padding: "12px",
+                marginBottom: "12px",
+                fontWeight: 600,
+              }}
+            >
+              Demo preview — this shows where you would record data in the full version.
+            </div>
+          )}
 
           {selectedGoal.collectionMethod === "interval" ? (
             <>
@@ -2741,7 +3342,26 @@ export default function App() {
     <>
       {renderStudentSelect()}
       <div style={styles.card}>
-        <h2 style={styles.cardTitle}>Student Progress</h2>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: "12px",
+            flexWrap: "wrap",
+            alignItems: "center",
+            marginBottom: "10px",
+          }}
+        >
+          <h2 style={{ ...styles.cardTitle, marginBottom: 0 }}>Student Progress</h2>
+          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            <button onClick={exportCSV} style={styles.buttonSecondary}>
+              Export CSV
+            </button>
+            <button onClick={clearAllSavedSessions} style={styles.buttonRed}>
+              Clear Saved Sessions
+            </button>
+          </div>
+        </div>
 
         {!selectedStudent ? (
           <div>No student selected.</div>
@@ -2815,6 +3435,10 @@ export default function App() {
     </>
   );
 
+  if (showAccessScreen) {
+    return renderAccessScreen();
+  }
+
   return (
     <div style={styles.page}>
       <style>{`
@@ -2842,11 +3466,37 @@ export default function App() {
       `}</style>
 
       <div style={styles.container}>
+        {isDemoMode && (
+          <div
+            style={{
+              background: "#fef3c7",
+              color: "#92400e",
+              border: "1px solid #fcd34d",
+              padding: "14px 16px",
+              borderRadius: "16px",
+              marginBottom: "18px",
+              fontWeight: 700,
+              boxShadow: "0 8px 20px rgba(15, 23, 42, 0.05)",
+            }}
+          >
+            Demo Mode — Start with Johnny, open Progress Monitoring, and then view Student Progress to see growth over time.
+          </div>
+        )}
+
         <div style={styles.hero}>
-          <h1 style={styles.heroTitle}>RaMP Tracker</h1>
-          <div style={styles.heroText}>
-            Track progress. Build skills. Support growth across school, home,
-            and therapy using clear prompt-level and interval data.
+          <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
+            <div>
+              <h1 style={styles.heroTitle}>RaMP Tracker</h1>
+              <div style={styles.heroText}>
+                {isDemoMode
+                  ? "Previewing sample student data with demo goals, sample sessions, and example progress."
+                  : "Track progress. Build skills. Support growth across school, home, and therapy using clear prompt-level and interval data."}
+              </div>
+            </div>
+
+            <button onClick={backToStart} style={styles.buttonLight}>
+              Back to Start
+            </button>
           </div>
         </div>
 
