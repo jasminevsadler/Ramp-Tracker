@@ -863,7 +863,10 @@ export default function App() {
     setting: "",
   });
   const [isDemoMode, setIsDemoMode] = useState(false);
-  const [showAccessScreen, setShowAccessScreen] = useState(true);
+  const [showAccessScreen, setShowAccessScreen] = useState(() => true);
+  useEffect(() => {
+  setShowAccessScreen(true);
+}, []);
 
   useEffect(() => {
     if (!isDemoMode) {
