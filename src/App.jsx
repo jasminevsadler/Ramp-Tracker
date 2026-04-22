@@ -3438,9 +3438,9 @@ export default function App() {
     </>
   );
 
-  if (showAccessScreen) {
-    return renderAccessScreen();
-  }
+if (true) {
+  return renderAccessScreen();
+}
 
   return (
     <div style={styles.page}>
