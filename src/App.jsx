@@ -400,6 +400,74 @@ const DEMO_HISTORY = [
     reinforcementOther: "",
     notes: "Completed the task with only one brief redirection.",
   },
+  {
+    id: "demo-entry-johnny-6",
+    studentId: "student-johnny",
+    studentName: "Johnny",
+    grade: "3",
+    supportPerson: "Ms. Williams",
+    disabilities: "Autism, ADHD",
+    setting: "School",
+    goalId: "goal-task-completion",
+    goalTitle: "Task Completion",
+    fullGoalText:
+      "Given an assignment or task, Johnny will remain focused and work toward completion by staying on task, returning to task after redirection, and completing expected parts within the allotted time.",
+    targetType: "goal",
+    benchmarkId: "",
+    benchmarkText: "",
+    benchmarkStatus: "",
+    date: "2026-04-18",
+    location: "Classroom",
+    collectedBy: "Teacher",
+    collectionMethod: "interval",
+    intervalType: "Whole Interval",
+    sessionLength: 10,
+    intervalLength: 1,
+    totalIntervals: 10,
+    intervalResults: ["yes", "yes", "yes", "yes", "yes", "yes", "yes", "yes", "no", "yes"],
+    yesCount: 9,
+    percent: 90,
+    score: "",
+    promptLevel: "",
+    strategiesUsed: ["Reinforcement", "Prompting"],
+    reinforcementTypes: ["Praise"],
+    reinforcementOther: "",
+    notes: "Stayed engaged for nearly the full session and finished the assignment.",
+  },
+  {
+    id: "demo-entry-johnny-7",
+    studentId: "student-johnny",
+    studentName: "Johnny",
+    grade: "3",
+    supportPerson: "Ms. Williams",
+    disabilities: "Autism, ADHD",
+    setting: "School",
+    goalId: "goal-task-completion",
+    goalTitle: "Task Completion",
+    fullGoalText:
+      "Given an assignment or task, Johnny will remain focused and work toward completion by staying on task, returning to task after redirection, and completing expected parts within the allotted time.",
+    targetType: "goal",
+    benchmarkId: "",
+    benchmarkText: "",
+    benchmarkStatus: "",
+    date: "2026-04-21",
+    location: "Classroom",
+    collectedBy: "Teacher",
+    collectionMethod: "interval",
+    intervalType: "Whole Interval",
+    sessionLength: 10,
+    intervalLength: 1,
+    totalIntervals: 10,
+    intervalResults: ["yes", "yes", "yes", "yes", "yes", "yes", "yes", "yes", "yes", "yes"],
+    yesCount: 10,
+    percent: 100,
+    score: "",
+    promptLevel: "",
+    strategiesUsed: ["Reinforcement"],
+    reinforcementTypes: ["Praise", "Token"],
+    reinforcementOther: "",
+    notes: "Completed the full task independently and stayed engaged the entire session.",
+  },
 ];
 
 const DEMO_URL_KEYS = ["demo", "mode"]
@@ -476,7 +544,7 @@ function normalizeStudents(students) {
   }));
 }
 
-function GraphCard({ title, points, mode }) {
+function GraphCard({ title, points, mode, targetValue = null, targetLabel = "Goal" }) {
   const width = 700;
   const height = 240;
   const padLeft = 50;
@@ -535,6 +603,13 @@ function GraphCard({ title, points, mode }) {
     .join(" ");
 
   const ticks = mode === "interval" ? [0, 25, 50, 75, 100] : [0, 1, 2];
+  const showTargetLine =
+    targetValue !== null &&
+    targetValue !== undefined &&
+    !Number.isNaN(Number(targetValue)) &&
+    Number(targetValue) >= 0 &&
+    Number(targetValue) <= maxY;
+  const targetY = showTargetLine ? yForValue(Number(targetValue)) : null;
 
   return (
     <div
@@ -605,6 +680,30 @@ function GraphCard({ title, points, mode }) {
             );
           })}
 
+          {showTargetLine && (
+            <g>
+              <line
+                x1={padLeft}
+                y1={targetY}
+                x2={padLeft + chartWidth}
+                y2={targetY}
+                stroke="#dc2626"
+                strokeWidth="3"
+                strokeDasharray="10 6"
+              />
+              <text
+                x={padLeft + chartWidth - 4}
+                y={targetY - 6}
+                fontSize="11"
+                textAnchor="end"
+                fill="#b91c1c"
+                fontWeight="700"
+              >
+                {targetLabel}
+              </text>
+            </g>
+          )}
+
           <path
             d={pathD}
             fill="none"
@@ -646,6 +745,7 @@ function GraphCard({ title, points, mode }) {
         {mode === "interval"
           ? "Graph shows percent of intervals scored yes."
           : "0 = Not demonstrating • 1 = With prompts • 2 = Independent"}
+        {showTargetLine ? ` Goal line: ${targetLabel}.` : ""}
       </div>
     </div>
   );
@@ -835,59 +935,35 @@ export default function App() {
     return history.filter((entry) => entry.studentId === selectedStudent.id);
   }, [history, selectedStudent]);
 
-  const graphGroups = useMemo(() => {
+  const goalProgressSections = useMemo(() => {
     if (!selectedStudent) return [];
 
-    const groups = [];
+    return (selectedStudent.goals || []).map((goal) => {
+      const relatedEntries = savedHistory
+        .filter((entry) => entry.goalId === goal.id)
+        .sort((a, b) => a.date.localeCompare(b.date));
 
-    selectedStudent.goals.forEach((goal) => {
-      if (goal.benchmarks?.length) {
-        goal.benchmarks.forEach((benchmark) => {
-          const matching = savedHistory
-            .filter(
-              (entry) =>
-                entry.goalId === goal.id &&
-                entry.targetType === "benchmark" &&
-                entry.benchmarkId === benchmark.id
-            )
-            .map((entry) => ({
-              date: entry.date,
-              value:
-                entry.collectionMethod === "interval"
-                  ? Number(entry.percent || 0)
-                  : Number(entry.score || 0),
-            }));
+      const points = relatedEntries.map((entry) => ({
+        date: entry.date,
+        value:
+          entry.collectionMethod === "interval"
+            ? Number(entry.percent || 0)
+            : Number(entry.score || 0),
+      }));
 
-          groups.push({
-            id: `${goal.id}-${benchmark.id}`,
-            title: `${goal.goalTitle} — ${benchmark.text}`,
-            points: matching,
-            mode: goal.collectionMethod === "interval" ? "interval" : "rating",
-          });
-        });
-      } else {
-        const matching = savedHistory
-          .filter(
-            (entry) => entry.goalId === goal.id && entry.targetType === "goal"
-          )
-          .map((entry) => ({
-            date: entry.date,
-            value:
-              entry.collectionMethod === "interval"
-                ? Number(entry.percent || 0)
-                : Number(entry.score || 0),
-          }));
-
-        groups.push({
-          id: goal.id,
-          title: goal.goalTitle,
-          points: matching,
-          mode: goal.collectionMethod === "interval" ? "interval" : "rating",
-        });
-      }
+      return {
+        id: goal.id,
+        title: goal.goalTitle,
+        mode: goal.collectionMethod === "interval" ? "interval" : "rating",
+        targetValue: goal.collectionMethod === "interval" ? 80 : 2,
+        targetLabel:
+          goal.collectionMethod === "interval"
+            ? "Goal Line: 80%"
+            : "Goal Line: Independent",
+        points,
+        entries: [...relatedEntries].sort((a, b) => b.date.localeCompare(a.date)),
+      };
     });
-
-    return groups;
   }, [selectedStudent, savedHistory]);
 
   const totalGoals = students.reduce(
@@ -3300,87 +3376,99 @@ export default function App() {
 
         {!selectedStudent ? (
           <div>No student selected.</div>
+        ) : !goalProgressSections.length ? (
+          <div>No saved entries yet for this student.</div>
         ) : (
           <>
-            <h3 style={{ ...styles.subTitle, marginTop: "4px" }}>Progress Graphs</h3>
-            {graphGroups.map((group) => (
-              <GraphCard
-                key={group.id}
-                title={group.title}
-                points={group.points}
-                mode={group.mode}
-              />
-            ))}
+            {goalProgressSections.map((section) => (
+              <div key={section.id} style={{ ...styles.card, marginBottom: "20px", padding: "18px" }}>
+                <div style={{ fontSize: "20px", fontWeight: 800, color: "#1e3a8a", marginBottom: "12px" }}>{section.title}</div>
+                <GraphCard
+                  title={`${section.title} Progress`}
+                  points={section.points}
+                  mode={section.mode}
+                  targetValue={section.targetValue}
+                  targetLabel={section.targetLabel}
+                />
 
-            <h3 style={{ ...styles.subTitle, marginTop: "22px" }}>Saved Entries</h3>
+                <div
+                  style={{
+                    fontWeight: 800,
+                    color: "#1e3a8a",
+                    fontSize: "16px",
+                    marginBottom: "10px",
+                  }}
+                >
+                  Saved Entries for This Goal
+                </div>
 
-            {!savedHistory.length ? (
-              <div>No saved entries yet for this student.</div>
-            ) : (
-              <div style={styles.tableWrap}>
-                <table style={styles.table}>
-                  <thead>
-                    <tr>
-                      <th style={styles.th}>Date</th>
-                      <th style={styles.th}>Goal</th>
-                      <th style={styles.th}>Benchmark / Objective</th>
-                      <th style={styles.th}>Location</th>
-                      <th style={styles.th}>Collected By</th>
-                      <th style={styles.th}>Method</th>
-                      <th style={styles.th}>Score / %</th>
-                      <th style={styles.th}>Prompt / Interval</th>
-                      <th style={styles.th}>RaMP Strategy</th>
-                      <th style={styles.th}>Notes</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[...savedHistory].reverse().map((entry) => (
-                      <tr key={entry.id}>
-                        <td style={styles.td}>{entry.date}</td>
-                        <td style={styles.td}>{entry.goalTitle}</td>
-                        <td style={styles.td}>
-                          {entry.targetType === "benchmark"
-                            ? entry.benchmarkText
-                            : "Goal Level"}
-                        </td>
-                        <td style={styles.td}>{entry.location || "-"}</td>
-                        <td style={styles.td}>{entry.collectedBy || "-"}</td>
-                        <td style={styles.td}>
-                          {entry.collectionMethod === "interval" ? "Interval" : "Rating"}
-                        </td>
-                        <td style={styles.td}>
-                          {entry.collectionMethod === "interval"
-                            ? `${entry.percent ?? 0}%`
-                            : entry.score}
-                        </td>
-                        <td style={styles.td}>
-                          {entry.collectionMethod === "interval"
-                            ? `${entry.intervalType || "-"} (${entry.yesCount ?? 0}/${entry.totalIntervals ?? 0})`
-                            : entry.promptLevel || "-"}
-                        </td>
-                        <td style={styles.td}>
-                          {(entry.strategiesUsed || []).length
-                            ? `${entry.strategiesUsed.join(", ")}${
-                                (entry.reinforcementTypes || []).length || entry.reinforcementOther
-                                  ? ` • ${[
-                                      ...(entry.reinforcementTypes || []),
-                                      entry.reinforcementOther
-                                        ? `Other: ${entry.reinforcementOther}`
-                                        : "",
-                                    ]
-                                      .filter(Boolean)
-                                      .join(", ")}`
-                                  : ""
-                              }`
-                            : "-"}
-                        </td>
-                        <td style={styles.td}>{entry.notes || "-"}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                {!section.entries.length ? (
+                  <div style={styles.smallText}>No saved entries yet for this goal.</div>
+                ) : (
+                  <div style={styles.tableWrap}>
+                    <table style={styles.table}>
+                      <thead>
+                        <tr>
+                          <th style={styles.th}>Date</th>
+                          <th style={styles.th}>Benchmark / Objective</th>
+                          <th style={styles.th}>Location</th>
+                          <th style={styles.th}>Collected By</th>
+                          <th style={styles.th}>Method</th>
+                          <th style={styles.th}>Score / %</th>
+                          <th style={styles.th}>Prompt / Interval</th>
+                          <th style={styles.th}>RaMP Strategy</th>
+                          <th style={styles.th}>Notes</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {section.entries.map((entry) => (
+                          <tr key={entry.id}>
+                            <td style={styles.td}>{entry.date}</td>
+                            <td style={styles.td}>
+                              {entry.targetType === "benchmark"
+                                ? entry.benchmarkText
+                                : "Goal Level"}
+                            </td>
+                            <td style={styles.td}>{entry.location || "-"}</td>
+                            <td style={styles.td}>{entry.collectedBy || "-"}</td>
+                            <td style={styles.td}>
+                              {entry.collectionMethod === "interval" ? "Interval" : "Rating"}
+                            </td>
+                            <td style={styles.td}>
+                              {entry.collectionMethod === "interval"
+                                ? `${entry.percent ?? 0}%`
+                                : entry.score}
+                            </td>
+                            <td style={styles.td}>
+                              {entry.collectionMethod === "interval"
+                                ? `${entry.intervalType || "-"} (${entry.yesCount ?? 0}/${entry.totalIntervals ?? 0})`
+                                : entry.promptLevel || "-"}
+                            </td>
+                            <td style={styles.td}>
+                              {(entry.strategiesUsed || []).length
+                                ? `${entry.strategiesUsed.join(", ")}${
+                                    (entry.reinforcementTypes || []).length || entry.reinforcementOther
+                                      ? ` • ${[
+                                          ...(entry.reinforcementTypes || []),
+                                          entry.reinforcementOther
+                                            ? `Other: ${entry.reinforcementOther}`
+                                            : "",
+                                        ]
+                                          .filter(Boolean)
+                                          .join(", ")}`
+                                      : ""
+                                  }`
+                                : "-"}
+                            </td>
+                            <td style={styles.td}>{entry.notes || "-"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
-            )}
+            ))}
           </>
         )}
       </div>
