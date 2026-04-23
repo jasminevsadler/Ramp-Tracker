@@ -82,6 +82,15 @@ const PROMPT_OPTIONS = [
   "Full Physical",
 ];
 
+const REINFORCEMENT_OPTIONS = [
+  "Praise",
+  "Token",
+  "Break",
+  "Preferred Item",
+  "Preferred Activity",
+  "Other",
+];
+
 const INTERVAL_TYPES = [
   "Whole Interval",
   "Partial Interval",
@@ -527,9 +536,15 @@ export default function App() {
         selectedBorder: "#2563eb",
       };
 
-  const showDemoReadOnlyMessage = () => {
+  const showDemoStructureLockedMessage = () => {
     if (typeof window !== "undefined") {
-      window.alert("Demo mode is view-only. You can click through the app, but you cannot add, edit, delete, or save data.");
+      window.alert("Demo mode lets you explore sample students and enter practice data, but you cannot add, edit, delete, or permanently save account content.");
+    }
+  };
+
+  const showDemoUnsavedMessage = () => {
+    if (typeof window !== "undefined") {
+      window.alert("Demo changes are temporary. Create an account to save progress.");
     }
   };
 
@@ -751,6 +766,9 @@ export default function App() {
     collectedBy: "Teacher",
     score: "",
     promptLevel: "",
+    strategiesUsed: [],
+    reinforcementTypes: [],
+    reinforcementOther: "",
     notes: "",
     intervalType: "Whole Interval",
     sessionLength: 10,
@@ -773,7 +791,7 @@ export default function App() {
 
   const handleStudentFormChange = (e) => {
     if (isReadOnlyDemo) {
-      showDemoReadOnlyMessage();
+      showDemoStructureLockedMessage();
       return;
     }
     const { name, value, options } = e.target;
@@ -798,7 +816,7 @@ export default function App() {
   const addStudent = (e) => {
     if (isReadOnlyDemo) {
       e.preventDefault();
-      showDemoReadOnlyMessage();
+      showDemoStructureLockedMessage();
       return;
     }
     e.preventDefault();
@@ -831,7 +849,7 @@ export default function App() {
 
   const deleteStudent = (studentId) => {
     if (isReadOnlyDemo) {
-      showDemoReadOnlyMessage();
+      showDemoStructureLockedMessage();
       return;
     }
     const student = students.find((s) => s.id === studentId);
@@ -851,7 +869,7 @@ export default function App() {
 
   const addGoalCustom = () => {
     if (isReadOnlyDemo) {
-      showDemoReadOnlyMessage();
+      showDemoStructureLockedMessage();
       return;
     }
     if (!selectedStudent) return;
@@ -898,7 +916,7 @@ export default function App() {
 
   const addGoalFromTemplate = (templateLabel) => {
     if (isReadOnlyDemo) {
-      showDemoReadOnlyMessage();
+      showDemoStructureLockedMessage();
       return;
     }
     if (!selectedStudent || !templateLabel) return;
@@ -937,7 +955,7 @@ export default function App() {
 
   const removeGoal = (goalId) => {
     if (isReadOnlyDemo) {
-      showDemoReadOnlyMessage();
+      showDemoStructureLockedMessage();
       return;
     }
     if (!selectedStudent) return;
@@ -968,7 +986,7 @@ export default function App() {
 
   const updateGoalField = (goalId, field, value) => {
     if (isReadOnlyDemo) {
-      showDemoReadOnlyMessage();
+      showDemoStructureLockedMessage();
       return;
     }
     if (!selectedStudent) return;
@@ -989,7 +1007,7 @@ export default function App() {
 
   const editGoal = (goal) => {
     if (isReadOnlyDemo) {
-      showDemoReadOnlyMessage();
+      showDemoStructureLockedMessage();
       return;
     }
     if (!selectedStudent || !goal) return;
@@ -1035,7 +1053,7 @@ export default function App() {
 
   const addBenchmark = (goalId) => {
     if (isReadOnlyDemo) {
-      showDemoReadOnlyMessage();
+      showDemoStructureLockedMessage();
       return;
     }
     if (!selectedStudent) return;
@@ -1072,7 +1090,7 @@ export default function App() {
 
   const editBenchmark = (goalId, benchmark) => {
     if (isReadOnlyDemo) {
-      showDemoReadOnlyMessage();
+      showDemoStructureLockedMessage();
       return;
     }
     if (!selectedStudent || !benchmark) return;
@@ -1107,7 +1125,7 @@ export default function App() {
 
   const updateBenchmarkStatus = (goalId, benchmarkId, status) => {
     if (isReadOnlyDemo) {
-      showDemoReadOnlyMessage();
+      showDemoStructureLockedMessage();
       return;
     }
     if (!selectedStudent) return;
@@ -1137,7 +1155,7 @@ export default function App() {
 
   const removeBenchmark = (goalId, benchmarkId) => {
     if (isReadOnlyDemo) {
-      showDemoReadOnlyMessage();
+      showDemoStructureLockedMessage();
       return;
     }
     if (!selectedStudent) return;
@@ -1180,10 +1198,6 @@ export default function App() {
   };
 
   const handleSessionChange = (goal, benchmark, field, value) => {
-    if (isReadOnlyDemo) {
-      showDemoReadOnlyMessage();
-      return;
-    }
     if (!selectedStudent || !goal) return;
 
     const key = getGoalSessionKey(selectedStudent.id, goal.id, benchmark?.id);
@@ -1225,10 +1239,6 @@ export default function App() {
   };
 
   const handleIntervalResultChange = (goal, benchmark, index, value) => {
-    if (isReadOnlyDemo) {
-      showDemoReadOnlyMessage();
-      return;
-    }
     if (!selectedStudent || !goal) return;
 
     const key = getGoalSessionKey(selectedStudent.id, goal.id, benchmark?.id);
@@ -1250,7 +1260,7 @@ export default function App() {
 
   const saveSessionEntry = (goal, benchmark = null) => {
     if (isReadOnlyDemo) {
-      showDemoReadOnlyMessage();
+      showDemoUnsavedMessage();
       return;
     }
     if (!selectedStudent || !goal) return;
@@ -1308,6 +1318,9 @@ export default function App() {
         intervalResults,
         yesCount,
         percent,
+        strategiesUsed: entry.strategiesUsed || [],
+        reinforcementTypes: entry.reinforcementTypes || [],
+        reinforcementOther: entry.reinforcementOther || "",
         notes: entry.notes || "",
       };
 
@@ -1341,7 +1354,13 @@ export default function App() {
       collectedBy: entry.collectedBy || "",
       collectionMethod: "rating",
       score: entry.score || "",
-      promptLevel: entry.score === "1" ? entry.promptLevel || "" : "",
+      promptLevel:
+        entry.score === "1" || (entry.strategiesUsed || []).includes("Prompting")
+          ? entry.promptLevel || ""
+          : "",
+      strategiesUsed: entry.strategiesUsed || [],
+      reinforcementTypes: entry.reinforcementTypes || [],
+      reinforcementOther: entry.reinforcementOther || "",
       notes: entry.notes || "",
     };
 
@@ -1350,6 +1369,10 @@ export default function App() {
   };
 
   const exportCSV = () => {
+    if (isReadOnlyDemo) {
+      showDemoUnsavedMessage();
+      return;
+    }
     if (!history.length) {
       alert("No saved session data to export yet.");
       return;
@@ -1372,6 +1395,8 @@ export default function App() {
       "Collection Method",
       "Score",
       "Prompt Level",
+      "Strategy Used",
+      "Reinforcement Used",
       "Interval Type",
       "Session Length",
       "Interval Length",
@@ -1398,6 +1423,11 @@ export default function App() {
       item.collectionMethod || "rating",
       item.score ?? "",
       item.promptLevel ?? "",
+      (item.strategiesUsed || []).join("; "),
+      [
+        ...(item.reinforcementTypes || []),
+        item.reinforcementOther ? `Other: ${item.reinforcementOther}` : "",
+      ].filter(Boolean).join("; "),
       item.intervalType ?? "",
       item.sessionLength ?? "",
       item.intervalLength ?? "",
@@ -1427,7 +1457,7 @@ export default function App() {
 
   const clearAllSavedSessions = () => {
     if (isReadOnlyDemo) {
-      showDemoReadOnlyMessage();
+      showDemoStructureLockedMessage();
       return;
     }
     const confirmed = window.confirm(
@@ -1818,6 +1848,16 @@ export default function App() {
       fontWeight: 700,
       cursor: "pointer",
     }),
+    checkPill: (selected) => ({
+      padding: "10px 12px",
+      borderRadius: "999px",
+      border: selected ? `1px solid ${demoTheme.selectedBorder}` : "1px solid #cbd5e1",
+      background: selected ? demoTheme.accentSoft : "white",
+      color: selected ? demoTheme.accentDark : "#334155",
+      fontWeight: 700,
+      fontSize: "13px",
+      cursor: "pointer",
+    }),
   };
 
 
@@ -1827,6 +1867,40 @@ export default function App() {
 
 
 
+
+
+  const toggleSessionArrayValue = (goal, benchmark, field, value) => {
+    if (!selectedStudent || !goal) return;
+
+    const key = getGoalSessionKey(selectedStudent.id, goal.id, benchmark?.id);
+
+    setSessionData((prev) => {
+      const current = prev[key] || getDefaultSessionForGoal();
+      const currentArray = Array.isArray(current[field]) ? current[field] : [];
+      const nextArray = currentArray.includes(value)
+        ? currentArray.filter((item) => item !== value)
+        : [...currentArray, value];
+
+      const updated = {
+        ...current,
+        [field]: nextArray,
+      };
+
+      if (field === "strategiesUsed" && !nextArray.includes("Prompting")) {
+        updated.promptLevel = "";
+      }
+
+      if (field === "strategiesUsed" && !nextArray.includes("Reinforcement")) {
+        updated.reinforcementTypes = [];
+        updated.reinforcementOther = "";
+      }
+
+      return {
+        ...prev,
+        [key]: updated,
+      };
+    });
+  };
 
   const renderStudentSelect = () => (
     <div style={styles.card}>
@@ -1857,7 +1931,13 @@ export default function App() {
         <div style={{ ...styles.rowGap, justifyContent: "space-between" }}>
           <h2 style={{ ...styles.cardTitle, marginBottom: 0 }}>Student Dashboard</h2>
           <button
-            onClick={() => setShowAddStudentForm((prev) => !prev)}
+            onClick={() => {
+              if (isReadOnlyDemo) {
+                showDemoStructureLockedMessage();
+                return;
+              }
+              setShowAddStudentForm((prev) => !prev);
+            }}
             style={styles.buttonPrimary}
           >
             {showAddStudentForm ? "Hide Add Student" : "Add Student"}
@@ -2486,6 +2566,142 @@ export default function App() {
               </div>
 
               <div style={{ marginBottom: "12px" }}>
+                <label style={styles.label}>Strategy Used (RaMP)</label>
+                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "10px" }}>
+                  {["Reinforcement", "Modeling", "Prompting"].map((strategy) => (
+                    <button
+                      key={strategy}
+                      type="button"
+                      style={styles.checkPill((currentSession.strategiesUsed || []).includes(strategy))}
+                      onClick={() =>
+                        toggleSessionArrayValue(
+                          selectedGoal,
+                          activeTargetBenchmark,
+                          "strategiesUsed",
+                          strategy
+                        )
+                      }
+                    >
+                      {strategy}
+                    </button>
+                  ))}
+                </div>
+
+                {(currentSession.strategiesUsed || []).includes("Reinforcement") && (
+                  <div style={{ marginBottom: "10px" }}>
+                    <div style={styles.smallText}>Select reinforcement used during the session.</div>
+                    <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "8px" }}>
+                      {REINFORCEMENT_OPTIONS.map((item) => (
+                        <button
+                          key={item}
+                          type="button"
+                          style={styles.checkPill((currentSession.reinforcementTypes || []).includes(item))}
+                          onClick={() =>
+                            toggleSessionArrayValue(
+                              selectedGoal,
+                              activeTargetBenchmark,
+                              "reinforcementTypes",
+                              item
+                            )
+                          }
+                        >
+                          {item}
+                        </button>
+                      ))}
+                    </div>
+
+                    {(currentSession.reinforcementTypes || []).includes("Other") && (
+                      <div style={{ marginTop: "10px" }}>
+                        <label style={styles.label}>Other Reinforcement</label>
+                        <input
+                          type="text"
+                          value={currentSession.reinforcementOther || ""}
+                          onChange={(e) =>
+                            handleSessionChange(
+                              selectedGoal,
+                              activeTargetBenchmark,
+                              "reinforcementOther",
+                              e.target.value
+                            )
+                          }
+                          style={styles.input}
+                          placeholder="Describe reinforcement used"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div style={{ marginBottom: "12px" }}>
+                <label style={styles.label}>Strategy Used (RaMP)</label>
+                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "10px" }}>
+                  {["Reinforcement", "Modeling", "Prompting"].map((strategy) => (
+                    <button
+                      key={strategy}
+                      type="button"
+                      style={styles.checkPill((currentSession.strategiesUsed || []).includes(strategy))}
+                      onClick={() =>
+                        toggleSessionArrayValue(
+                          selectedGoal,
+                          activeTargetBenchmark,
+                          "strategiesUsed",
+                          strategy
+                        )
+                      }
+                    >
+                      {strategy}
+                    </button>
+                  ))}
+                </div>
+
+                {(currentSession.strategiesUsed || []).includes("Reinforcement") && (
+                  <div style={{ marginBottom: "10px" }}>
+                    <div style={styles.smallText}>Select reinforcement used during the session.</div>
+                    <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "8px" }}>
+                      {REINFORCEMENT_OPTIONS.map((item) => (
+                        <button
+                          key={item}
+                          type="button"
+                          style={styles.checkPill((currentSession.reinforcementTypes || []).includes(item))}
+                          onClick={() =>
+                            toggleSessionArrayValue(
+                              selectedGoal,
+                              activeTargetBenchmark,
+                              "reinforcementTypes",
+                              item
+                            )
+                          }
+                        >
+                          {item}
+                        </button>
+                      ))}
+                    </div>
+
+                    {(currentSession.reinforcementTypes || []).includes("Other") && (
+                      <div style={{ marginTop: "10px" }}>
+                        <label style={styles.label}>Other Reinforcement</label>
+                        <input
+                          type="text"
+                          value={currentSession.reinforcementOther || ""}
+                          onChange={(e) =>
+                            handleSessionChange(
+                              selectedGoal,
+                              activeTargetBenchmark,
+                              "reinforcementOther",
+                              e.target.value
+                            )
+                          }
+                          style={styles.input}
+                          placeholder="Describe reinforcement used"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div style={{ marginBottom: "12px" }}>
                 <label style={styles.label}>Notes</label>
                 <textarea
                   value={currentSession.notes}
@@ -2596,7 +2812,7 @@ export default function App() {
                   </select>
                 </div>
 
-                {currentSession.score === "1" && (
+                {(currentSession.score === "1" || (currentSession.strategiesUsed || []).includes("Prompting")) && (
                   <div>
                     <label style={styles.label}>Prompt Level</label>
                     <select
@@ -2668,12 +2884,22 @@ export default function App() {
             <h2 style={{ ...styles.cardTitle, marginBottom: 0 }}>
               Progress Monitoring
             </h2>
-            <button
-              onClick={() => setShowGoalDetails((prev) => !prev)}
-              style={styles.buttonLight}
-            >
-              {showGoalDetails ? "Hide Details" : "Show Details"}
-            </button>
+            <div style={styles.rowGap}>
+              <button
+                onClick={() =>
+                  window.alert("ABC/FBA data collection will live in a separate workflow so the progress-monitoring screen stays clean.")
+                }
+                style={styles.buttonSecondary}
+              >
+                Conduct FBA / ABC Data
+              </button>
+              <button
+                onClick={() => setShowGoalDetails((prev) => !prev)}
+                style={styles.buttonLight}
+              >
+                {showGoalDetails ? "Hide Details" : "Show Details"}
+              </button>
+            </div>
           </div>
 
           {selectedStudent.goals.length === 0 ? (
@@ -2908,6 +3134,7 @@ export default function App() {
                       <th style={styles.th}>Method</th>
                       <th style={styles.th}>Score / %</th>
                       <th style={styles.th}>Prompt / Interval</th>
+                      <th style={styles.th}>RaMP Strategy</th>
                       <th style={styles.th}>Notes</th>
                     </tr>
                   </thead>
@@ -2935,6 +3162,22 @@ export default function App() {
                           {entry.collectionMethod === "interval"
                             ? `${entry.intervalType || "-"} (${entry.yesCount ?? 0}/${entry.totalIntervals ?? 0})`
                             : entry.promptLevel || "-"}
+                        </td>
+                        <td style={styles.td}>
+                          {(entry.strategiesUsed || []).length
+                            ? `${entry.strategiesUsed.join(", ")}${
+                                (entry.reinforcementTypes || []).length || entry.reinforcementOther
+                                  ? ` • ${[
+                                      ...(entry.reinforcementTypes || []),
+                                      entry.reinforcementOther
+                                        ? `Other: ${entry.reinforcementOther}`
+                                        : "",
+                                    ]
+                                      .filter(Boolean)
+                                      .join(", ")}`
+                                  : ""
+                              }`
+                            : "-"}
                         </td>
                         <td style={styles.td}>{entry.notes || "-"}</td>
                       </tr>
@@ -3047,7 +3290,7 @@ export default function App() {
                   Exit Demo
                 </button>
                 <div style={styles.demoHelperText}>
-                  View-only sample — editing and saving are locked in demo mode.
+                  Interactive sample — try scoring and prompts, but demo changes will not be saved.
                 </div>
               </>
             ) : (
