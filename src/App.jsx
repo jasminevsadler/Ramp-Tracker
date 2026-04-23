@@ -235,8 +235,8 @@ const DEFAULT_STUDENTS = [
         collectionMethod: "rating",
       },
       {
-        id: "goal-staying-focused",
-        goalTitle: "Staying Focused",
+        id: "goal-task-completion",
+        goalTitle: "Task Completion",
         fullGoalText:
           "Given an assignment or task, Johnny will remain focused and work toward completion by staying on task, returning to task after redirection, and completing expected parts within the allotted time.",
         benchmarks: [],
@@ -247,6 +247,158 @@ const DEFAULT_STUDENTS = [
         collectionMethod: "interval",
       },
     ],
+  },
+];
+
+const DEMO_HISTORY = [
+  {
+    id: "demo-entry-johnny-1",
+    studentId: "student-johnny",
+    studentName: "Johnny",
+    grade: "3",
+    supportPerson: "Ms. Williams",
+    disabilities: "Autism, ADHD",
+    setting: "School",
+    goalId: "goal-following-directions",
+    goalTitle: "Following Directions",
+    fullGoalText:
+      "When given a reminder, Johnny will follow directions within 30 seconds by saying 'okay,' beginning the task, or moving to the expected location across settings.",
+    targetType: "benchmark",
+    benchmarkId: "benchmark-directions-1",
+    benchmarkText: "Follow 1-step directions within 30 seconds with one reminder.",
+    benchmarkStatus: "Current",
+    date: "2026-04-14",
+    location: "Classroom",
+    collectedBy: "Teacher",
+    collectionMethod: "rating",
+    score: "1",
+    promptLevel: "Verbal",
+    strategiesUsed: ["Prompting", "Reinforcement"],
+    reinforcementTypes: ["Praise"],
+    reinforcementOther: "",
+    notes: "Needed one verbal reminder before starting math.",
+  },
+  {
+    id: "demo-entry-johnny-2",
+    studentId: "student-johnny",
+    studentName: "Johnny",
+    grade: "3",
+    supportPerson: "Ms. Williams",
+    disabilities: "Autism, ADHD",
+    setting: "School",
+    goalId: "goal-following-directions",
+    goalTitle: "Following Directions",
+    fullGoalText:
+      "When given a reminder, Johnny will follow directions within 30 seconds by saying 'okay,' beginning the task, or moving to the expected location across settings.",
+    targetType: "benchmark",
+    benchmarkId: "benchmark-directions-1",
+    benchmarkText: "Follow 1-step directions within 30 seconds with one reminder.",
+    benchmarkStatus: "Current",
+    date: "2026-04-15",
+    location: "Classroom",
+    collectedBy: "Teacher",
+    collectionMethod: "rating",
+    score: "1",
+    promptLevel: "Model",
+    strategiesUsed: ["Prompting", "Modeling"],
+    reinforcementTypes: [],
+    reinforcementOther: "",
+    notes: "Teacher modeled the first step and Johnny followed.",
+  },
+  {
+    id: "demo-entry-johnny-3",
+    studentId: "student-johnny",
+    studentName: "Johnny",
+    grade: "3",
+    supportPerson: "Ms. Williams",
+    disabilities: "Autism, ADHD",
+    setting: "School",
+    goalId: "goal-following-directions",
+    goalTitle: "Following Directions",
+    fullGoalText:
+      "When given a reminder, Johnny will follow directions within 30 seconds by saying 'okay,' beginning the task, or moving to the expected location across settings.",
+    targetType: "benchmark",
+    benchmarkId: "benchmark-directions-1",
+    benchmarkText: "Follow 1-step directions within 30 seconds with one reminder.",
+    benchmarkStatus: "Current",
+    date: "2026-04-16",
+    location: "Classroom",
+    collectedBy: "Teacher",
+    collectionMethod: "rating",
+    score: "2",
+    promptLevel: "",
+    strategiesUsed: ["Reinforcement"],
+    reinforcementTypes: ["Praise", "Preferred Activity"],
+    reinforcementOther: "",
+    notes: "Began work independently after instruction.",
+  },
+  {
+    id: "demo-entry-johnny-4",
+    studentId: "student-johnny",
+    studentName: "Johnny",
+    grade: "3",
+    supportPerson: "Ms. Williams",
+    disabilities: "Autism, ADHD",
+    setting: "School",
+    goalId: "goal-task-completion",
+    goalTitle: "Task Completion",
+    fullGoalText:
+      "Given an assignment or task, Johnny will remain focused and work toward completion by staying on task, returning to task after redirection, and completing expected parts within the allotted time.",
+    targetType: "goal",
+    benchmarkId: "",
+    benchmarkText: "",
+    benchmarkStatus: "",
+    date: "2026-04-14",
+    location: "Small Group",
+    collectedBy: "Teacher",
+    collectionMethod: "interval",
+    intervalType: "Whole Interval",
+    sessionLength: 10,
+    intervalLength: 1,
+    totalIntervals: 10,
+    intervalResults: ["yes", "yes", "no", "yes", "yes", "no", "yes", "yes", "yes", "no"],
+    yesCount: 7,
+    percent: 70,
+    score: "",
+    promptLevel: "",
+    strategiesUsed: ["Prompting", "Reinforcement"],
+    reinforcementTypes: ["Praise", "Break"],
+    reinforcementOther: "",
+    notes: "Returned to task after two brief reminders.",
+  },
+  {
+    id: "demo-entry-johnny-5",
+    studentId: "student-johnny",
+    studentName: "Johnny",
+    grade: "3",
+    supportPerson: "Ms. Williams",
+    disabilities: "Autism, ADHD",
+    setting: "School",
+    goalId: "goal-task-completion",
+    goalTitle: "Task Completion",
+    fullGoalText:
+      "Given an assignment or task, Johnny will remain focused and work toward completion by staying on task, returning to task after redirection, and completing expected parts within the allotted time.",
+    targetType: "goal",
+    benchmarkId: "",
+    benchmarkText: "",
+    benchmarkStatus: "",
+    date: "2026-04-16",
+    location: "Small Group",
+    collectedBy: "Teacher",
+    collectionMethod: "interval",
+    intervalType: "Whole Interval",
+    sessionLength: 10,
+    intervalLength: 1,
+    totalIntervals: 10,
+    intervalResults: ["yes", "yes", "yes", "yes", "yes", "no", "yes", "yes", "yes", "yes"],
+    yesCount: 9,
+    percent: 90,
+    score: "",
+    promptLevel: "",
+    strategiesUsed: ["Reinforcement"],
+    reinforcementTypes: ["Praise", "Token"],
+    reinforcementOther: "",
+    notes: "Completed the task with only one brief redirection.",
   },
 ];
 
@@ -567,12 +719,12 @@ export default function App() {
     loadFromStorage(storageKey("session_data"), {})
   );
   const [history, setHistory] = useState(() =>
-    loadFromStorage(storageKey("session_history"), [])
+    loadFromStorage(storageKey("session_history"), isDemoMode ? DEMO_HISTORY : [])
   );
   const [activeTab, setActiveTab] = useState(() =>
     loadFromStorage(storageKey("active_tab"), "studentDashboard")
   );
-  const [showAddStudentForm, setShowAddStudentForm] = useState(false);
+  const [showAddStudentForm, setShowAddStudentForm] = useState(isDemoMode);
   const [studentForm, setStudentForm] = useState({
     name: "",
     grade: "",
@@ -580,6 +732,8 @@ export default function App() {
     disabilities: [],
     setting: "",
   });
+
+  const [previewTemplateLabel, setPreviewTemplateLabel] = useState("");
 
   useEffect(() => {
     localStorage.setItem(storageKey("students"), JSON.stringify(students));
@@ -1940,14 +2094,19 @@ export default function App() {
             }}
             style={styles.buttonPrimary}
           >
-            {showAddStudentForm ? "Hide Add Student" : "Add Student"}
+            {showAddStudentForm ? (isDemoMode ? "Hide Student Preview" : "Hide Add Student") : (isDemoMode ? "Preview Add Student" : "Add Student")}
           </button>
         </div>
       </div>
 
       {showAddStudentForm && (
         <div style={styles.card}>
-          <h3 style={styles.subTitle}>Add Student</h3>
+          <h3 style={styles.subTitle}>{isDemoMode ? "Add Student Preview" : "Add Student"}</h3>
+          {isDemoMode && (
+            <div style={{ ...styles.smallText, marginBottom: "12px" }}>
+              You can explore the form in demo mode, but creating a student requires an account.
+            </div>
+          )}
           <form onSubmit={addStudent}>
             <div style={{ marginBottom: "14px" }}>
               <label style={styles.label}>Student Name</label>
@@ -2025,7 +2184,7 @@ export default function App() {
             </div>
 
             <button type="submit" style={styles.buttonPrimary}>
-              Save Student
+              {isDemoMode ? "Create account to save student" : "Save Student"}
             </button>
           </form>
         </div>
@@ -2108,21 +2267,45 @@ export default function App() {
             <label style={styles.label}>Quick Add Goal Template</label>
             <select
               style={styles.input}
-              defaultValue=""
+              value={previewTemplateLabel}
               onChange={(e) => {
-                if (e.target.value) {
-                  addGoalFromTemplate(e.target.value);
-                  e.target.value = "";
+                const value = e.target.value;
+                if (isDemoMode) {
+                  setPreviewTemplateLabel(value);
+                } else if (value) {
+                  addGoalFromTemplate(value);
+                  setPreviewTemplateLabel("");
+                } else {
+                  setPreviewTemplateLabel("");
                 }
               }}
             >
-              <option value="">Choose a template</option>
+              <option value="">{isDemoMode ? "Choose a sample to preview" : "Choose a template"}</option>
               {GOAL_TEMPLATE_OPTIONS.map((template) => (
                 <option key={template.label} value={template.label}>
                   {template.label}
                 </option>
               ))}
             </select>
+            {isDemoMode && previewTemplateLabel && (() => {
+              const template = GOAL_TEMPLATE_OPTIONS.find((item) => item.label === previewTemplateLabel);
+              if (!template) return null;
+              return (
+                <div style={{ ...styles.infoBlock, marginTop: "12px" }}>
+                  <div style={{ fontWeight: 800, color: "#1e3a8a", marginBottom: "8px" }}>
+                    {template.goalTitle}
+                  </div>
+                  <div style={{ marginBottom: "10px", lineHeight: 1.6 }}>{template.fullGoalText}</div>
+                  <div style={{ marginBottom: "8px" }}><strong>Examples:</strong> {template.examplesDefinition}</div>
+                  <div style={{ marginBottom: "8px" }}><strong>Baseline:</strong> {template.baseline}</div>
+                  <div style={{ marginBottom: "8px" }}><strong>Mastery:</strong> {template.mastery}</div>
+                  <div><strong>Method:</strong> {template.collectionMethod === "interval" ? "Interval Data" : "Rating Scale"}</div>
+                  <div style={{ ...styles.smallText, marginTop: "10px" }}>
+                    Demo preview only. Create an account to add this goal to a student.
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           {selectedStudent.goals.length === 0 ? (
@@ -2563,74 +2746,6 @@ export default function App() {
                     </div>
                   ))}
                 </div>
-              </div>
-
-              <div style={{ marginBottom: "12px" }}>
-                <label style={styles.label}>Strategy Used (RaMP)</label>
-                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "10px" }}>
-                  {["Reinforcement", "Modeling", "Prompting"].map((strategy) => (
-                    <button
-                      key={strategy}
-                      type="button"
-                      style={styles.checkPill((currentSession.strategiesUsed || []).includes(strategy))}
-                      onClick={() =>
-                        toggleSessionArrayValue(
-                          selectedGoal,
-                          activeTargetBenchmark,
-                          "strategiesUsed",
-                          strategy
-                        )
-                      }
-                    >
-                      {strategy}
-                    </button>
-                  ))}
-                </div>
-
-                {(currentSession.strategiesUsed || []).includes("Reinforcement") && (
-                  <div style={{ marginBottom: "10px" }}>
-                    <div style={styles.smallText}>Select reinforcement used during the session.</div>
-                    <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "8px" }}>
-                      {REINFORCEMENT_OPTIONS.map((item) => (
-                        <button
-                          key={item}
-                          type="button"
-                          style={styles.checkPill((currentSession.reinforcementTypes || []).includes(item))}
-                          onClick={() =>
-                            toggleSessionArrayValue(
-                              selectedGoal,
-                              activeTargetBenchmark,
-                              "reinforcementTypes",
-                              item
-                            )
-                          }
-                        >
-                          {item}
-                        </button>
-                      ))}
-                    </div>
-
-                    {(currentSession.reinforcementTypes || []).includes("Other") && (
-                      <div style={{ marginTop: "10px" }}>
-                        <label style={styles.label}>Other Reinforcement</label>
-                        <input
-                          type="text"
-                          value={currentSession.reinforcementOther || ""}
-                          onChange={(e) =>
-                            handleSessionChange(
-                              selectedGoal,
-                              activeTargetBenchmark,
-                              "reinforcementOther",
-                              e.target.value
-                            )
-                          }
-                          style={styles.input}
-                          placeholder="Describe reinforcement used"
-                        />
-                      </div>
-                    )}
-                  </div>
-                )}
               </div>
 
               <div style={{ marginBottom: "12px" }}>
