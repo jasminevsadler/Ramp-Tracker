@@ -494,6 +494,44 @@ export default function App() {
   const [isDemoMode] = useState(() => isDemoUrl());
 
   const storageKey = (name) => buildStorageKey(isDemoMode, name);
+  const isReadOnlyDemo = isDemoMode;
+  const demoTheme = isDemoMode
+    ? {
+        pageBackground: "linear-gradient(180deg, #f6f0ff 0%, #fbf7ff 40%, #ffffff 100%)",
+        heroBackground: "linear-gradient(135deg, #8b5cf6 0%, #a855f7 55%, #c084fc 100%)",
+        heroShadow: "0 20px 50px rgba(168, 85, 247, 0.22)",
+        focusBorder: "#a855f7",
+        focusShadow: "rgba(168,85,247,0.18)",
+        accent: "#7c3aed",
+        accentDark: "#6d28d9",
+        accentSoft: "#ede9fe",
+        accentBorder: "#d8b4fe",
+        accentText: "#5b21b6",
+        cardBorder: "#ddd6fe",
+        tabBorder: "#d8b4fe",
+        selectedBorder: "#8b5cf6",
+      }
+    : {
+        pageBackground: "linear-gradient(180deg, #edf4ff 0%, #f6fbff 40%, #ffffff 100%)",
+        heroBackground: "linear-gradient(135deg, #1d4ed8 0%, #2563eb 55%, #60a5fa 100%)",
+        heroShadow: "0 20px 50px rgba(37, 99, 235, 0.20)",
+        focusBorder: "#3b82f6",
+        focusShadow: "rgba(59,130,246,0.15)",
+        accent: "#2563eb",
+        accentDark: "#1d4ed8",
+        accentSoft: "#eff6ff",
+        accentBorder: "#bfdbfe",
+        accentText: "#1e3a8a",
+        cardBorder: "#dbeafe",
+        tabBorder: "#bfdbfe",
+        selectedBorder: "#2563eb",
+      };
+
+  const showDemoReadOnlyMessage = () => {
+    if (typeof window !== "undefined") {
+      window.alert("Demo mode is view-only. You can click through the app, but you cannot add, edit, delete, or save data.");
+    }
+  };
 
   const [students, setStudents] = useState(() =>
     normalizeStudents(loadFromStorage(storageKey("students"), DEFAULT_STUDENTS))
@@ -734,6 +772,10 @@ export default function App() {
   };
 
   const handleStudentFormChange = (e) => {
+    if (isReadOnlyDemo) {
+      showDemoReadOnlyMessage();
+      return;
+    }
     const { name, value, options } = e.target;
 
     if (name === "disabilities") {
@@ -754,6 +796,11 @@ export default function App() {
   };
 
   const addStudent = (e) => {
+    if (isReadOnlyDemo) {
+      e.preventDefault();
+      showDemoReadOnlyMessage();
+      return;
+    }
     e.preventDefault();
     if (!studentForm.name.trim()) return;
 
@@ -783,6 +830,10 @@ export default function App() {
   };
 
   const deleteStudent = (studentId) => {
+    if (isReadOnlyDemo) {
+      showDemoReadOnlyMessage();
+      return;
+    }
     const student = students.find((s) => s.id === studentId);
     if (!student) return;
 
@@ -799,6 +850,10 @@ export default function App() {
   };
 
   const addGoalCustom = () => {
+    if (isReadOnlyDemo) {
+      showDemoReadOnlyMessage();
+      return;
+    }
     if (!selectedStudent) return;
 
     const goalTitle = window.prompt("Enter goal title:");
@@ -842,6 +897,10 @@ export default function App() {
   };
 
   const addGoalFromTemplate = (templateLabel) => {
+    if (isReadOnlyDemo) {
+      showDemoReadOnlyMessage();
+      return;
+    }
     if (!selectedStudent || !templateLabel) return;
 
     const template = GOAL_TEMPLATE_OPTIONS.find(
@@ -877,6 +936,10 @@ export default function App() {
   };
 
   const removeGoal = (goalId) => {
+    if (isReadOnlyDemo) {
+      showDemoReadOnlyMessage();
+      return;
+    }
     if (!selectedStudent) return;
 
     const goal = selectedStudent.goals.find((g) => g.id === goalId);
@@ -904,6 +967,10 @@ export default function App() {
   };
 
   const updateGoalField = (goalId, field, value) => {
+    if (isReadOnlyDemo) {
+      showDemoReadOnlyMessage();
+      return;
+    }
     if (!selectedStudent) return;
 
     setStudents((prev) =>
@@ -921,6 +988,10 @@ export default function App() {
   };
 
   const editGoal = (goal) => {
+    if (isReadOnlyDemo) {
+      showDemoReadOnlyMessage();
+      return;
+    }
     if (!selectedStudent || !goal) return;
 
     const goalTitle = window.prompt("Edit goal title:", goal.goalTitle);
@@ -963,6 +1034,10 @@ export default function App() {
   };
 
   const addBenchmark = (goalId) => {
+    if (isReadOnlyDemo) {
+      showDemoReadOnlyMessage();
+      return;
+    }
     if (!selectedStudent) return;
     const text = window.prompt("Enter short-term benchmark/objective:");
     if (!text) return;
@@ -996,6 +1071,10 @@ export default function App() {
   };
 
   const editBenchmark = (goalId, benchmark) => {
+    if (isReadOnlyDemo) {
+      showDemoReadOnlyMessage();
+      return;
+    }
     if (!selectedStudent || !benchmark) return;
     const text = window.prompt(
       "Edit short-term benchmark/objective:",
@@ -1027,6 +1106,10 @@ export default function App() {
   };
 
   const updateBenchmarkStatus = (goalId, benchmarkId, status) => {
+    if (isReadOnlyDemo) {
+      showDemoReadOnlyMessage();
+      return;
+    }
     if (!selectedStudent) return;
 
     setStudents((prev) =>
@@ -1053,6 +1136,10 @@ export default function App() {
   };
 
   const removeBenchmark = (goalId, benchmarkId) => {
+    if (isReadOnlyDemo) {
+      showDemoReadOnlyMessage();
+      return;
+    }
     if (!selectedStudent) return;
 
     const goal = selectedStudent.goals.find((g) => g.id === goalId);
@@ -1093,6 +1180,10 @@ export default function App() {
   };
 
   const handleSessionChange = (goal, benchmark, field, value) => {
+    if (isReadOnlyDemo) {
+      showDemoReadOnlyMessage();
+      return;
+    }
     if (!selectedStudent || !goal) return;
 
     const key = getGoalSessionKey(selectedStudent.id, goal.id, benchmark?.id);
@@ -1134,6 +1225,10 @@ export default function App() {
   };
 
   const handleIntervalResultChange = (goal, benchmark, index, value) => {
+    if (isReadOnlyDemo) {
+      showDemoReadOnlyMessage();
+      return;
+    }
     if (!selectedStudent || !goal) return;
 
     const key = getGoalSessionKey(selectedStudent.id, goal.id, benchmark?.id);
@@ -1154,6 +1249,10 @@ export default function App() {
   };
 
   const saveSessionEntry = (goal, benchmark = null) => {
+    if (isReadOnlyDemo) {
+      showDemoReadOnlyMessage();
+      return;
+    }
     if (!selectedStudent || !goal) return;
 
     const key = getGoalSessionKey(selectedStudent.id, goal.id, benchmark?.id);
@@ -1327,6 +1426,10 @@ export default function App() {
   };
 
   const clearAllSavedSessions = () => {
+    if (isReadOnlyDemo) {
+      showDemoReadOnlyMessage();
+      return;
+    }
     const confirmed = window.confirm(
       "Are you sure you want to delete all saved session history?"
     );
@@ -1339,8 +1442,7 @@ export default function App() {
   const styles = {
     page: {
       minHeight: "100vh",
-      background:
-        "linear-gradient(180deg, #edf4ff 0%, #f6fbff 40%, #ffffff 100%)",
+      background: demoTheme.pageBackground,
       color: "#1e293b",
       fontFamily:
         'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
@@ -1351,11 +1453,11 @@ export default function App() {
       margin: "0 auto",
     },
     hero: {
-      background: "linear-gradient(135deg, #1d4ed8 0%, #2563eb 55%, #60a5fa 100%)",
+      background: demoTheme.heroBackground,
       color: "white",
       borderRadius: "24px",
       padding: "28px",
-      boxShadow: "0 20px 50px rgba(37, 99, 235, 0.20)",
+      boxShadow: demoTheme.heroShadow,
       marginBottom: "20px",
     },
     heroTitle: {
@@ -1388,9 +1490,9 @@ export default function App() {
     tab: {
       padding: "12px 18px",
       borderRadius: "14px",
-      border: "1px solid #bfdbfe",
+      border: `1px solid ${demoTheme.tabBorder}`,
       background: "white",
-      color: "#1e3a8a",
+      color: demoTheme.accentText,
       fontWeight: 700,
       cursor: "pointer",
       boxShadow: "0 6px 16px rgba(15, 23, 42, 0.05)",
@@ -1398,8 +1500,8 @@ export default function App() {
     activeTab: {
       padding: "12px 18px",
       borderRadius: "14px",
-      border: "1px solid #2563eb",
-      background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+      border: `1px solid ${demoTheme.selectedBorder}`,
+      background: `linear-gradient(135deg, ${demoTheme.accent} 0%, ${demoTheme.accentDark} 100%)`,
       color: "white",
       fontWeight: 700,
       cursor: "pointer",
@@ -1424,7 +1526,7 @@ export default function App() {
       borderRadius: "22px",
       padding: "20px",
       boxShadow: "0 10px 30px rgba(15, 23, 42, 0.08)",
-      border: "1px solid #dbeafe",
+      border: `1px solid ${demoTheme.cardBorder}`,
       marginBottom: "20px",
     },
     cardTitle: {
@@ -1481,7 +1583,7 @@ export default function App() {
       outline: "none",
     },
     buttonPrimary: {
-      background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+      background: `linear-gradient(135deg, ${demoTheme.accent} 0%, ${demoTheme.accentDark} 100%)`,
       color: "white",
       border: "none",
       borderRadius: "14px",
@@ -1489,7 +1591,7 @@ export default function App() {
       fontSize: "15px",
       fontWeight: 700,
       cursor: "pointer",
-      boxShadow: "0 10px 18px rgba(37, 99, 235, 0.20)",
+      boxShadow: isDemoMode ? "0 10px 18px rgba(168, 85, 247, 0.20)" : "0 10px 18px rgba(37, 99, 235, 0.20)",
     },
     buttonSecondary: {
       background: "#0f172a",
@@ -1524,9 +1626,9 @@ export default function App() {
       boxShadow: "0 10px 18px rgba(239, 68, 68, 0.18)",
     },
     buttonLight: {
-      background: "#eff6ff",
-      color: "#1d4ed8",
-      border: "1px solid #bfdbfe",
+      background: demoTheme.accentSoft,
+      color: demoTheme.accentDark,
+      border: `1px solid ${demoTheme.tabBorder}`,
       borderRadius: "14px",
       padding: "10px 14px",
       fontSize: "14px",
@@ -1550,7 +1652,7 @@ export default function App() {
     },
     statCard: {
       background: "linear-gradient(180deg, #f8fbff 0%, #ffffff 100%)",
-      border: "1px solid #bfdbfe",
+      border: `1px solid ${demoTheme.tabBorder}`,
       borderRadius: "18px",
       padding: "18px",
       boxShadow: "0 8px 25px rgba(15, 23, 42, 0.05)",
@@ -1558,13 +1660,19 @@ export default function App() {
     statNumber: {
       fontSize: "32px",
       fontWeight: 800,
-      color: "#1d4ed8",
+      color: demoTheme.accentDark,
       marginBottom: "4px",
     },
     statLabel: {
       fontSize: "14px",
       color: "#475569",
       fontWeight: 600,
+    },
+    demoHelperText: {
+      fontSize: "13px",
+      fontWeight: 700,
+      color: "rgba(255,255,255,0.95)",
+      padding: "4px 2px 0 2px",
     },
     rowGap: {
       display: "flex",
@@ -1578,43 +1686,43 @@ export default function App() {
       gap: "16px",
     },
     studentCard: {
-      border: "1px solid #bfdbfe",
+      border: `1px solid ${demoTheme.tabBorder}`,
       borderRadius: "18px",
       padding: "16px",
-      background: "linear-gradient(180deg, #f8fbff 0%, #ffffff 100%)",
+      background: isDemoMode ? "linear-gradient(180deg, #fbf7ff 0%, #ffffff 100%)" : "linear-gradient(180deg, #f8fbff 0%, #ffffff 100%)",
       boxShadow: "0 8px 25px rgba(15, 23, 42, 0.05)",
       cursor: "pointer",
     },
     selectedStudentCard: {
-      border: "2px solid #2563eb",
+      border: `2px solid ${demoTheme.selectedBorder}`,
       borderRadius: "18px",
       padding: "16px",
-      background: "linear-gradient(180deg, #eff6ff 0%, #ffffff 100%)",
+      background: isDemoMode ? "linear-gradient(180deg, #f3e8ff 0%, #ffffff 100%)" : "linear-gradient(180deg, #eff6ff 0%, #ffffff 100%)",
       boxShadow: "0 8px 25px rgba(15, 23, 42, 0.05)",
       cursor: "pointer",
     },
     goalCard: {
-      border: "1px solid #bfdbfe",
+      border: `1px solid ${demoTheme.tabBorder}`,
       borderRadius: "20px",
       padding: "16px",
-      background: "linear-gradient(180deg, #f8fbff 0%, #ffffff 100%)",
+      background: isDemoMode ? "linear-gradient(180deg, #fbf7ff 0%, #ffffff 100%)" : "linear-gradient(180deg, #f8fbff 0%, #ffffff 100%)",
       boxShadow: "0 8px 25px rgba(15, 23, 42, 0.05)",
       marginBottom: "16px",
     },
     goalListCard: {
-      border: "1px solid #bfdbfe",
+      border: `1px solid ${demoTheme.tabBorder}`,
       borderRadius: "18px",
       padding: "14px",
-      background: "linear-gradient(180deg, #f8fbff 0%, #ffffff 100%)",
+      background: isDemoMode ? "linear-gradient(180deg, #fbf7ff 0%, #ffffff 100%)" : "linear-gradient(180deg, #f8fbff 0%, #ffffff 100%)",
       boxShadow: "0 8px 25px rgba(15, 23, 42, 0.05)",
       cursor: "pointer",
       marginBottom: "14px",
     },
     selectedGoalListCard: {
-      border: "2px solid #2563eb",
+      border: `2px solid ${demoTheme.selectedBorder}`,
       borderRadius: "18px",
       padding: "14px",
-      background: "linear-gradient(180deg, #eff6ff 0%, #ffffff 100%)",
+      background: isDemoMode ? "linear-gradient(180deg, #f3e8ff 0%, #ffffff 100%)" : "linear-gradient(180deg, #eff6ff 0%, #ffffff 100%)",
       boxShadow: "0 8px 25px rgba(15, 23, 42, 0.05)",
       cursor: "pointer",
       marginBottom: "14px",
@@ -1627,10 +1735,10 @@ export default function App() {
       marginBottom: "10px",
     },
     selectedBenchmarkCard: {
-      border: "2px solid #2563eb",
+      border: `2px solid ${demoTheme.selectedBorder}`,
       borderRadius: "14px",
       padding: "12px",
-      background: "#eff6ff",
+      background: demoTheme.accentSoft,
       marginBottom: "10px",
       cursor: "pointer",
     },
@@ -1650,15 +1758,15 @@ export default function App() {
       marginBottom: "12px",
     },
     sessionBox: {
-      background: "#eff6ff",
-      border: "1px solid #bfdbfe",
+      background: demoTheme.accentSoft,
+      border: `1px solid ${demoTheme.tabBorder}`,
       borderRadius: "18px",
       padding: "16px",
       marginTop: "18px",
     },
     quickRecordBox: {
-      background: "#eff6ff",
-      border: "1px solid #bfdbfe",
+      background: demoTheme.accentSoft,
+      border: `1px solid ${demoTheme.tabBorder}`,
       borderRadius: "18px",
       padding: "16px",
       marginTop: "14px",
@@ -1684,10 +1792,10 @@ export default function App() {
     th: {
       textAlign: "left",
       padding: "14px",
-      background: "#dbeafe",
-      color: "#1e3a8a",
+      background: demoTheme.accentSoft,
+      color: demoTheme.accentText,
       fontWeight: 700,
-      borderBottom: "1px solid #bfdbfe",
+      borderBottom: `1px solid ${demoTheme.tabBorder}`,
     },
     td: {
       padding: "14px",
@@ -1704,9 +1812,9 @@ export default function App() {
       minWidth: "44px",
       padding: "10px 12px",
       borderRadius: "12px",
-      border: selected ? "1px solid #2563eb" : "1px solid #cbd5e1",
-      background: selected ? "#dbeafe" : "white",
-      color: selected ? "#1d4ed8" : "#334155",
+      border: selected ? `1px solid ${demoTheme.selectedBorder}` : "1px solid #cbd5e1",
+      background: selected ? demoTheme.accentSoft : "white",
+      color: selected ? demoTheme.accentDark : "#334155",
       fontWeight: 700,
       cursor: "pointer",
     }),
@@ -2882,8 +2990,8 @@ export default function App() {
         body { margin: 0; }
         input, select, textarea, button { font: inherit; }
         input:focus, select:focus, textarea:focus {
-          border-color: #3b82f6 !important;
-          box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+          border-color: ${demoTheme.focusBorder} !important;
+          box-shadow: 0 0 0 3px ${demoTheme.focusShadow};
         }
         button:hover { filter: brightness(0.98); }
 
@@ -2924,7 +3032,7 @@ export default function App() {
                   style={{
                     padding: "10px 14px",
                     borderRadius: "999px",
-                    background: "rgba(255,255,255,0.2)",
+                    background: isDemoMode ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.2)",
                     border: "1px solid rgba(255,255,255,0.35)",
                     fontSize: "14px",
                     fontWeight: 700,
@@ -2938,6 +3046,9 @@ export default function App() {
                 <button style={styles.secondaryHeroButton} onClick={exitDemoMode}>
                   Exit Demo
                 </button>
+                <div style={styles.demoHelperText}>
+                  View-only sample — editing and saving are locked in demo mode.
+                </div>
               </>
             ) : (
               <button style={styles.secondaryHeroButton} onClick={openDemoMode}>
