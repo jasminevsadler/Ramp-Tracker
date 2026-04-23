@@ -753,7 +753,8 @@ function GraphCard({ title, points, mode, targetValue = null, targetLabel = "Goa
 
 export default function App() {
   const [showGate, setShowGate] = useState(() => {
-  if (typeof window === "undefined") return true;
+  if (typeof window === "undefined") const hasAccount = localStorage.getItem("ramp_user") === "true";
+return !hasAccount;
 
   const params = new URLSearchParams(window.location.search);
   const isDemo = params.get("demo") === "1";
