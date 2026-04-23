@@ -752,6 +752,18 @@ function GraphCard({ title, points, mode, targetValue = null, targetLabel = "Goa
 }
 
 export default function App() {
+  const [showGate, setShowGate] = useState(() => {
+  if (typeof window === "undefined") return true;
+
+  const params = new URLSearchParams(window.location.search);
+  const isDemo = params.get("demo") === "1";
+
+  // If demo → skip gate
+  if (isDemo) return false;
+
+  // Otherwise show gate first
+  return true;
+});
   const [isDemoMode] = useState(() => isDemoUrl());
 
   const storageKey = (name) => buildStorageKey(isDemoMode, name);
@@ -838,6 +850,72 @@ export default function App() {
   });
 
   const [previewTemplateLabel, setPreviewTemplateLabel] = useState("");
+
+  if (showGate) {
+  return (
+    <div style={{
+      minHeight: "100vh",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      background: "linear-gradient(180deg, #edf4ff 0%, #ffffff 100%)",
+      fontFamily: "Inter, sans-serif"
+    }}>
+      <div style={{
+        background: "white",
+        padding: "40px",
+        borderRadius: "20px",
+        boxShadow: "0 20px 50px rgba(0,0,0,0.1)",
+        textAlign: "center",
+        maxWidth: "420px",
+        width: "100%"
+      }}>
+        <h1 style={{ fontSize: "28px", marginBottom: "10px" }}>
+          RaMP Tracker
+        </h1>
+
+        <p style={{ marginBottom: "25px", color: "#475569" }}>
+          Track progress. Build independence. See real growth in action.
+        </p>
+
+        <button
+          onClick={() => {
+            window.location.search = "?demo=1";
+          }}
+          style={{
+            width: "100%",
+            padding: "14px",
+            borderRadius: "12px",
+            background: "#8b5cf6",
+            color: "white",
+            fontWeight: "700",
+            border: "none",
+            marginBottom: "12px",
+            cursor: "pointer"
+          }}
+        >
+          Try Demo
+        </button>
+
+        <button
+          onClick={() => setShowGate(false)}
+          style={{
+            width: "100%",
+            padding: "14px",
+            borderRadius: "12px",
+            background: "#1e3a8a",
+            color: "white",
+            fontWeight: "700",
+            border: "none",
+            cursor: "pointer"
+          }}
+        >
+          Login / Sign Up
+        </button>
+      </div>
+    </div>
+  );
+}
 
   useEffect(() => {
     if (isDemoMode) return;
