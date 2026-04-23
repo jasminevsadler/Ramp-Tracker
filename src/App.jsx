@@ -701,28 +701,32 @@ export default function App() {
   };
 
   const [students, setStudents] = useState(() =>
-    normalizeStudents(loadFromStorage(storageKey("students"), DEFAULT_STUDENTS))
+    isDemoMode
+      ? normalizeStudents(DEFAULT_STUDENTS)
+      : normalizeStudents(loadFromStorage(storageKey("students"), DEFAULT_STUDENTS))
   );
   const [selectedStudentId, setSelectedStudentId] = useState(() =>
-    loadFromStorage(storageKey("selected_student"), DEFAULT_STUDENTS[0]?.id || "")
+    isDemoMode
+      ? DEFAULT_STUDENTS[0]?.id || ""
+      : loadFromStorage(storageKey("selected_student"), DEFAULT_STUDENTS[0]?.id || "")
   );
   const [selectedGoalId, setSelectedGoalId] = useState(() =>
-    loadFromStorage(storageKey("selected_goal"), "")
+    isDemoMode ? "goal-following-directions" : loadFromStorage(storageKey("selected_goal"), "")
   );
   const [selectedBenchmarkId, setSelectedBenchmarkId] = useState(() =>
-    loadFromStorage(storageKey("selected_benchmark"), "")
+    isDemoMode ? "benchmark-directions-1" : loadFromStorage(storageKey("selected_benchmark"), "")
   );
   const [showGoalDetails, setShowGoalDetails] = useState(() =>
-    loadFromStorage(storageKey("show_goal_details"), false)
+    isDemoMode ? true : loadFromStorage(storageKey("show_goal_details"), false)
   );
   const [sessionData, setSessionData] = useState(() =>
-    loadFromStorage(storageKey("session_data"), {})
+    isDemoMode ? {} : loadFromStorage(storageKey("session_data"), {})
   );
   const [history, setHistory] = useState(() =>
-    loadFromStorage(storageKey("session_history"), isDemoMode ? DEMO_HISTORY : [])
+    isDemoMode ? DEMO_HISTORY : loadFromStorage(storageKey("session_history"), [])
   );
   const [activeTab, setActiveTab] = useState(() =>
-    loadFromStorage(storageKey("active_tab"), "studentDashboard")
+    isDemoMode ? "studentDashboard" : loadFromStorage(storageKey("active_tab"), "studentDashboard")
   );
   const [showAddStudentForm, setShowAddStudentForm] = useState(isDemoMode);
   const [studentForm, setStudentForm] = useState({
@@ -736,36 +740,44 @@ export default function App() {
   const [previewTemplateLabel, setPreviewTemplateLabel] = useState("");
 
   useEffect(() => {
+    if (isDemoMode) return;
     localStorage.setItem(storageKey("students"), JSON.stringify(students));
-  }, [students]);
+  }, [students, isDemoMode]);
 
   useEffect(() => {
+    if (isDemoMode) return;
     localStorage.setItem(storageKey("session_data"), JSON.stringify(sessionData));
-  }, [sessionData]);
+  }, [sessionData, isDemoMode]);
 
   useEffect(() => {
+    if (isDemoMode) return;
     localStorage.setItem(storageKey("session_history"), JSON.stringify(history));
-  }, [history]);
+  }, [history, isDemoMode]);
 
   useEffect(() => {
+    if (isDemoMode) return;
     localStorage.setItem(storageKey("selected_student"), JSON.stringify(selectedStudentId));
-  }, [selectedStudentId]);
+  }, [selectedStudentId, isDemoMode]);
 
   useEffect(() => {
+    if (isDemoMode) return;
     localStorage.setItem(storageKey("selected_goal"), JSON.stringify(selectedGoalId));
-  }, [selectedGoalId]);
+  }, [selectedGoalId, isDemoMode]);
 
   useEffect(() => {
+    if (isDemoMode) return;
     localStorage.setItem(storageKey("selected_benchmark"), JSON.stringify(selectedBenchmarkId));
-  }, [selectedBenchmarkId]);
+  }, [selectedBenchmarkId, isDemoMode]);
 
   useEffect(() => {
+    if (isDemoMode) return;
     localStorage.setItem(storageKey("show_goal_details"), JSON.stringify(showGoalDetails));
-  }, [showGoalDetails]);
+  }, [showGoalDetails, isDemoMode]);
 
   useEffect(() => {
+    if (isDemoMode) return;
     localStorage.setItem(storageKey("active_tab"), JSON.stringify(activeTab));
-  }, [activeTab]);
+  }, [activeTab, isDemoMode]);
 
   const selectedStudent = useMemo(
     () => students.find((student) => student.id === selectedStudentId) || students[0],
@@ -2949,6 +2961,74 @@ export default function App() {
                         </option>
                       ))}
                     </select>
+                  </div>
+                )}
+              </div>
+
+              <div style={{ marginBottom: "12px" }}>
+                <label style={styles.label}>Strategy Used (RaMP)</label>
+                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "10px" }}>
+                  {["Reinforcement", "Modeling", "Prompting"].map((strategy) => (
+                    <button
+                      key={strategy}
+                      type="button"
+                      style={styles.checkPill((currentSession.strategiesUsed || []).includes(strategy))}
+                      onClick={() =>
+                        toggleSessionArrayValue(
+                          selectedGoal,
+                          activeTargetBenchmark,
+                          "strategiesUsed",
+                          strategy
+                        )
+                      }
+                    >
+                      {strategy}
+                    </button>
+                  ))}
+                </div>
+
+                {(currentSession.strategiesUsed || []).includes("Reinforcement") && (
+                  <div style={{ marginBottom: "10px" }}>
+                    <div style={styles.smallText}>Select reinforcement used during the session.</div>
+                    <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "8px" }}>
+                      {REINFORCEMENT_OPTIONS.map((item) => (
+                        <button
+                          key={item}
+                          type="button"
+                          style={styles.checkPill((currentSession.reinforcementTypes || []).includes(item))}
+                          onClick={() =>
+                            toggleSessionArrayValue(
+                              selectedGoal,
+                              activeTargetBenchmark,
+                              "reinforcementTypes",
+                              item
+                            )
+                          }
+                        >
+                          {item}
+                        </button>
+                      ))}
+                    </div>
+
+                    {(currentSession.reinforcementTypes || []).includes("Other") && (
+                      <div style={{ marginTop: "10px" }}>
+                        <label style={styles.label}>Other Reinforcement</label>
+                        <input
+                          type="text"
+                          value={currentSession.reinforcementOther || ""}
+                          onChange={(e) =>
+                            handleSessionChange(
+                              selectedGoal,
+                              activeTargetBenchmark,
+                              "reinforcementOther",
+                              e.target.value
+                            )
+                          }
+                          style={styles.input}
+                          placeholder="Describe reinforcement used"
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
