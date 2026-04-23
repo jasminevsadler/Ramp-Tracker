@@ -898,7 +898,11 @@ export default function App() {
         </button>
 
         <button
-          onClick={() => setShowGate(false)}
+         onClick={() => {
+  localStorage.setItem("ramp_user", "true");
+  setShowGate(false);
+}}
+          
           style={{
             width: "100%",
             padding: "14px",
