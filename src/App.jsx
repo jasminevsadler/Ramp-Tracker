@@ -241,6 +241,28 @@ const DEFAULT_STUDENTS = [
   },
 ];
 
+const DEMO_URL_KEYS = ["demo", "mode"]
+
+function isDemoUrl() {
+  if (typeof window === "undefined") return false;
+
+  const params = new URLSearchParams(window.location.search);
+  const demoParam = params.get("demo");
+  const modeParam = params.get("mode");
+  const hash = window.location.hash.toLowerCase();
+
+  return (
+    demoParam === "1" ||
+    demoParam === "true" ||
+    modeParam === "demo" ||
+    hash.includes("demo")
+  );
+}
+
+function buildStorageKey(isDemoMode, name) {
+  return `${isDemoMode ? "ramp_demo" : "ramp"}_${name}`;
+}
+
 function loadFromStorage(key, fallback) {
   try {
     const raw = localStorage.getItem(key);
@@ -469,29 +491,33 @@ function GraphCard({ title, points, mode }) {
 }
 
 export default function App() {
+  const [isDemoMode] = useState(() => isDemoUrl());
+
+  const storageKey = (name) => buildStorageKey(isDemoMode, name);
+
   const [students, setStudents] = useState(() =>
-    normalizeStudents(loadFromStorage("ramp_students", DEFAULT_STUDENTS))
+    normalizeStudents(loadFromStorage(storageKey("students"), DEFAULT_STUDENTS))
   );
   const [selectedStudentId, setSelectedStudentId] = useState(() =>
-    loadFromStorage("ramp_selected_student", DEFAULT_STUDENTS[0]?.id || "")
+    loadFromStorage(storageKey("selected_student"), DEFAULT_STUDENTS[0]?.id || "")
   );
   const [selectedGoalId, setSelectedGoalId] = useState(() =>
-    loadFromStorage("ramp_selected_goal", "")
+    loadFromStorage(storageKey("selected_goal"), "")
   );
   const [selectedBenchmarkId, setSelectedBenchmarkId] = useState(() =>
-    loadFromStorage("ramp_selected_benchmark", "")
+    loadFromStorage(storageKey("selected_benchmark"), "")
   );
   const [showGoalDetails, setShowGoalDetails] = useState(() =>
-    loadFromStorage("ramp_show_goal_details", false)
+    loadFromStorage(storageKey("show_goal_details"), false)
   );
   const [sessionData, setSessionData] = useState(() =>
-    loadFromStorage("ramp_session_data", {})
+    loadFromStorage(storageKey("session_data"), {})
   );
   const [history, setHistory] = useState(() =>
-    loadFromStorage("ramp_session_history", [])
+    loadFromStorage(storageKey("session_history"), [])
   );
   const [activeTab, setActiveTab] = useState(() =>
-    loadFromStorage("ramp_active_tab", "studentDashboard")
+    loadFromStorage(storageKey("active_tab"), "studentDashboard")
   );
   const [showAddStudentForm, setShowAddStudentForm] = useState(false);
   const [studentForm, setStudentForm] = useState({
@@ -503,44 +529,35 @@ export default function App() {
   });
 
   useEffect(() => {
-    localStorage.setItem("ramp_students", JSON.stringify(students));
+    localStorage.setItem(storageKey("students"), JSON.stringify(students));
   }, [students]);
 
   useEffect(() => {
-    localStorage.setItem("ramp_session_data", JSON.stringify(sessionData));
+    localStorage.setItem(storageKey("session_data"), JSON.stringify(sessionData));
   }, [sessionData]);
 
   useEffect(() => {
-    localStorage.setItem("ramp_session_history", JSON.stringify(history));
+    localStorage.setItem(storageKey("session_history"), JSON.stringify(history));
   }, [history]);
 
   useEffect(() => {
-    localStorage.setItem(
-      "ramp_selected_student",
-      JSON.stringify(selectedStudentId)
-    );
+    localStorage.setItem(storageKey("selected_student"), JSON.stringify(selectedStudentId));
   }, [selectedStudentId]);
 
   useEffect(() => {
-    localStorage.setItem("ramp_selected_goal", JSON.stringify(selectedGoalId));
+    localStorage.setItem(storageKey("selected_goal"), JSON.stringify(selectedGoalId));
   }, [selectedGoalId]);
 
   useEffect(() => {
-    localStorage.setItem(
-      "ramp_selected_benchmark",
-      JSON.stringify(selectedBenchmarkId)
-    );
+    localStorage.setItem(storageKey("selected_benchmark"), JSON.stringify(selectedBenchmarkId));
   }, [selectedBenchmarkId]);
 
   useEffect(() => {
-    localStorage.setItem(
-      "ramp_show_goal_details",
-      JSON.stringify(showGoalDetails)
-    );
+    localStorage.setItem(storageKey("show_goal_details"), JSON.stringify(showGoalDetails));
   }, [showGoalDetails]);
 
   useEffect(() => {
-    localStorage.setItem("ramp_active_tab", JSON.stringify(activeTab));
+    localStorage.setItem(storageKey("active_tab"), JSON.stringify(activeTab));
   }, [activeTab]);
 
   const selectedStudent = useMemo(
@@ -1352,6 +1369,15 @@ export default function App() {
       fontSize: "16px",
       opacity: 0.95,
       lineHeight: 1.5,
+    },
+    secondaryHeroButton: {
+      border: "1px solid rgba(255,255,255,0.35)",
+      background: "rgba(255,255,255,0.18)",
+      color: "#ffffff",
+      borderRadius: "999px",
+      padding: "10px 14px",
+      fontWeight: 700,
+      cursor: "pointer",
     },
     tabsWrap: {
       display: "flex",
@@ -2815,6 +2841,40 @@ export default function App() {
     </>
   );
 
+  const openDemoMode = () => {
+    if (typeof window === "undefined") return;
+
+    const url = new URL(window.location.href);
+    url.searchParams.set("demo", "1");
+    window.location.href = url.toString();
+  };
+
+  const exitDemoMode = () => {
+    if (typeof window === "undefined") return;
+
+    const url = new URL(window.location.href);
+    DEMO_URL_KEYS.forEach((key) => url.searchParams.delete(key));
+    url.hash = "";
+    window.location.href = url.toString();
+  };
+
+  const resetDemoData = () => {
+    if (typeof window === "undefined") return;
+
+    [
+      "students",
+      "selected_student",
+      "selected_goal",
+      "selected_benchmark",
+      "show_goal_details",
+      "session_data",
+      "session_history",
+      "active_tab",
+    ].forEach((name) => localStorage.removeItem(buildStorageKey(true, name)));
+
+    window.location.reload();
+  };
+
   return (
     <div style={styles.page}>
       <style>{`
@@ -2847,6 +2907,43 @@ export default function App() {
           <div style={styles.heroText}>
             Track progress. Build skills. Support growth across school, home,
             and therapy using clear prompt-level and interval data.
+          </div>
+
+          <div
+            style={{
+              marginTop: "14px",
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "10px",
+              alignItems: "center",
+            }}
+          >
+            {isDemoMode ? (
+              <>
+                <div
+                  style={{
+                    padding: "10px 14px",
+                    borderRadius: "999px",
+                    background: "rgba(255,255,255,0.2)",
+                    border: "1px solid rgba(255,255,255,0.35)",
+                    fontSize: "14px",
+                    fontWeight: 700,
+                  }}
+                >
+                  Demo Mode is on
+                </div>
+                <button style={styles.secondaryHeroButton} onClick={resetDemoData}>
+                  Reset Demo Data
+                </button>
+                <button style={styles.secondaryHeroButton} onClick={exitDemoMode}>
+                  Exit Demo
+                </button>
+              </>
+            ) : (
+              <button style={styles.secondaryHeroButton} onClick={openDemoMode}>
+                Open Demo Mode
+              </button>
+            )}
           </div>
         </div>
 
