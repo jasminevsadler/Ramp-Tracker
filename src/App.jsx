@@ -3572,7 +3572,7 @@ export default function App() {
             </h1>
 
             <p style={{ marginBottom: "25px", color: "#475569", lineHeight: 1.5 }}>
-              Track progress. Build independence. See real student growth in action.
+              Track progress. Build independence. See real growth in action.
             </p>
 
             <button
@@ -3614,7 +3614,7 @@ export default function App() {
             </button>
 
             <div style={{ marginTop: "16px", color: "#475569", fontSize: "14px", lineHeight: 1.5 }}>
-              🎉 Free Early Access through June 15 — limited founding user access
+              🎉 Free Early Access through June 15 
             </div>
           </div>
         </div>
