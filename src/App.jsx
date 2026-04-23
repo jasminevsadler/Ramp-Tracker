@@ -753,18 +753,15 @@ function GraphCard({ title, points, mode, targetValue = null, targetLabel = "Goa
 
 export default function App() {
   const [showGate, setShowGate] = useState(() => {
-  if (typeof window === "undefined") const hasAccount = localStorage.getItem("ramp_user") === "true";
-return !hasAccount;
+    if (typeof window === "undefined") return true;
 
-  const params = new URLSearchParams(window.location.search);
-  const isDemo = params.get("demo") === "1";
+    const params = new URLSearchParams(window.location.search);
+    const isDemo = params.get("demo") === "1";
+    if (isDemo) return false;
 
-  // If demo → skip gate
-  if (isDemo) return false;
-
-  // Otherwise show gate first
-  return true;
-});
+    const hasAccount = localStorage.getItem("ramp_user") === "true";
+    return !hasAccount;
+  });
   const [isDemoMode] = useState(() => isDemoUrl());
 
   const storageKey = (name) => buildStorageKey(isDemoMode, name);
@@ -851,76 +848,6 @@ return !hasAccount;
   });
 
   const [previewTemplateLabel, setPreviewTemplateLabel] = useState("");
-
-  if (showGate) {
-  return (
-    <div style={{
-      minHeight: "100vh",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      background: "linear-gradient(180deg, #edf4ff 0%, #ffffff 100%)",
-      fontFamily: "Inter, sans-serif"
-    }}>
-      <div style={{
-        background: "white",
-        padding: "40px",
-        borderRadius: "20px",
-        boxShadow: "0 20px 50px rgba(0,0,0,0.1)",
-        textAlign: "center",
-        maxWidth: "420px",
-        width: "100%"
-      }}>
-        <h1 style={{ fontSize: "28px", marginBottom: "10px" }}>
-          RaMP Tracker
-        </h1>
-
-        <p style={{ marginBottom: "25px", color: "#475569" }}>
-          Track progress. Build independence. See real growth in action.
-        </p>
-
-        <button
-          onClick={() => {
-            window.location.search = "?demo=1";
-          }}
-          style={{
-            width: "100%",
-            padding: "14px",
-            borderRadius: "12px",
-            background: "#8b5cf6",
-            color: "white",
-            fontWeight: "700",
-            border: "none",
-            marginBottom: "12px",
-            cursor: "pointer"
-          }}
-        >
-          Try Demo
-        </button>
-
-        <button
-         onClick={() => {
-  localStorage.setItem("ramp_user", "true");
-  setShowGate(false);
-}}
-          
-          style={{
-            width: "100%",
-            padding: "14px",
-            borderRadius: "12px",
-            background: "#1e3a8a",
-            color: "white",
-            fontWeight: "700",
-            border: "none",
-            cursor: "pointer"
-          }}
-        >
-          Login / Sign Up
-        </button>
-      </div>
-    </div>
-  );
-}
 
   useEffect(() => {
     if (isDemoMode) return;
@@ -3618,6 +3545,80 @@ return !hasAccount;
         }
       `}</style>
 
+      {showGate ? (
+        <div
+          style={{
+            minHeight: "100vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "24px",
+          }}
+        >
+          <div
+            style={{
+              background: "white",
+              padding: "40px",
+              borderRadius: "20px",
+              boxShadow: "0 20px 50px rgba(0,0,0,0.1)",
+              textAlign: "center",
+              maxWidth: "420px",
+              width: "100%",
+              border: `1px solid ${demoTheme.cardBorder}`,
+            }}
+          >
+            <h1 style={{ fontSize: "28px", marginBottom: "10px", color: "#1e3a8a" }}>
+              RaMP Tracker
+            </h1>
+
+            <p style={{ marginBottom: "25px", color: "#475569", lineHeight: 1.5 }}>
+              Track progress. Build independence. See real student growth in action.
+            </p>
+
+            <button
+              onClick={() => {
+                window.location.search = "?demo=1";
+              }}
+              style={{
+                width: "100%",
+                padding: "14px",
+                borderRadius: "12px",
+                background: "#8b5cf6",
+                color: "white",
+                fontWeight: "700",
+                border: "none",
+                marginBottom: "12px",
+                cursor: "pointer",
+              }}
+            >
+              Try Demo
+            </button>
+
+            <button
+              onClick={() => {
+                localStorage.setItem("ramp_user", "true");
+                setShowGate(false);
+              }}
+              style={{
+                width: "100%",
+                padding: "14px",
+                borderRadius: "12px",
+                background: "#1e3a8a",
+                color: "white",
+                fontWeight: "700",
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              Create Free Account
+            </button>
+
+            <div style={{ marginTop: "16px", color: "#475569", fontSize: "14px", lineHeight: 1.5 }}>
+              🎉 Free Early Access through June 15 — limited founding user access
+            </div>
+          </div>
+        </div>
+      ) : (
       <div style={styles.container}>
         <div style={styles.hero}>
           <h1 style={styles.heroTitle}>RaMP Tracker</h1>
@@ -3700,6 +3701,7 @@ return !hasAccount;
           {activeTab === "studentProgress" && renderStudentProgress()}
         </div>
       </div>
+      )}
     </div>
   );
 }
