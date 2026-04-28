@@ -43,34 +43,35 @@ const DISABILITY_OPTIONS = [
 const SETTING_OPTIONS = ["School", "Home", "Therapy", "Community", "Other"];
 
 const SESSION_LOCATION_OPTIONS = [
-  "Classroom",
-  "Cafeteria",
-  "Gym",
-  "Hallway",
-  "Bathroom",
-  "Playground",
-  "Bus",
-  "Therapy Room",
-  "Resource Room",
-  "Small Group",
-  "Specials",
-  "Home",
-  "Community",
+  "at home",
+  "at specials",
+  "in the cafeteria",
+  "in the classroom",
+  "in the community",
+  "in the crisis room",
+  "in the gym",
+  "in the hallway",
+  "in the resource room",
+  "in the small group setting",
+  "in the therapy room",
+  "on the bus",
+  "on the playground",
   "Other",
 ];
 
 const COLLECTED_BY_OPTIONS = [
-  "Teacher",
+  "Administrator",
+  "BCBA",
+  "Behavior Specialist",
+  "Counselor",
+  "OT",
   "Parent/Caregiver",
   "Paraprofessional",
-  "Behavior Specialist",
-  "BCBA",
-  "SLP",
-  "OT",
   "PT",
-  "Counselor",
-  "Administrator",
+  "RBT",
+  "SLP",
   "Student",
+  "Teacher",
   "Other",
 ];
 
@@ -91,11 +92,7 @@ const REINFORCEMENT_OPTIONS = [
   "Other",
 ];
 
-const INTERVAL_TYPES = [
-  "Whole Interval",
-  "Partial Interval",
-  "Momentary Time Sampling",
-];
+const INTERVAL_TYPES = ["Whole Interval"];
 
 const BENCHMARK_STATUS_OPTIONS = ["Not Started", "Current", "Mastered"];
 
@@ -268,8 +265,10 @@ const DEMO_HISTORY = [
     benchmarkText: "Follow 1-step directions within 30 seconds with one reminder.",
     benchmarkStatus: "Current",
     date: "2026-04-14",
-    location: "Classroom",
+    location: "in the classroom",
+    customLocation: "",
     collectedBy: "Teacher",
+    customCollectedBy: "",
     collectionMethod: "rating",
     score: "1",
     promptLevel: "Verbal",
@@ -538,7 +537,7 @@ function normalizeStudents(students) {
           baseline: goal.baseline || "",
           mastery: goal.mastery || "",
           collectionMethod:
-            goal.collectionMethod === "interval" ? "interval" : "rating",
+            ["interval", "duration"].includes(goal.collectionMethod) ? goal.collectionMethod : "rating",
         }))
       : [],
   }));
@@ -582,7 +581,7 @@ function GraphCard({ title, points, mode, targetValue = null, targetLabel = "Goa
   }
 
   const sorted = [...points].sort((a, b) => a.date.localeCompare(b.date));
-  const maxY = mode === "interval" ? 100 : 2;
+  const maxY = mode === "interval" ? 100 : mode === "duration" ? Math.max(10, ...sorted.map((point) => Number(point.value || 0))) : 2;
 
   const xForIndex = (index) => {
     if (sorted.length === 1) return padLeft + chartWidth / 2;
@@ -602,7 +601,7 @@ function GraphCard({ title, points, mode, targetValue = null, targetLabel = "Goa
     })
     .join(" ");
 
-  const ticks = mode === "interval" ? [0, 25, 50, 75, 100] : [0, 1, 2];
+  const ticks = mode === "interval" ? [0, 25, 50, 75, 100] : mode === "duration" ? [0, Math.round(maxY / 2), maxY] : [0, 1, 2];
   const showTargetLine =
     targetValue !== null &&
     targetValue !== undefined &&
@@ -752,17 +751,13 @@ function GraphCard({ title, points, mode, targetValue = null, targetLabel = "Goa
 }
 
 export default function App() {
-  const [showGate, setShowGate] = useState(() => {
+  // Demo-first launch: visitors see the sample app immediately instead of a white gate screen.
+  const [showGate, setShowGate] = useState(false);
+  const [isDemoMode] = useState(() => {
     if (typeof window === "undefined") return true;
-
-    const params = new URLSearchParams(window.location.search);
-    const isDemo = params.get("demo") === "1";
-    if (isDemo) return false;
-
     const hasAccount = localStorage.getItem("ramp_user") === "true";
-    return !hasAccount;
+    return !hasAccount || isDemoUrl();
   });
-  const [isDemoMode] = useState(() => isDemoUrl());
 
   const storageKey = (name) => buildStorageKey(isDemoMode, name);
   const isReadOnlyDemo = isDemoMode;
@@ -838,6 +833,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState(() =>
     isDemoMode ? "studentDashboard" : loadFromStorage(storageKey("active_tab"), "studentDashboard")
   );
+  const [progressDateRange, setProgressDateRange] = useState({ start: "", end: "" });
   const [showAddStudentForm, setShowAddStudentForm] = useState(isDemoMode);
   const [studentForm, setStudentForm] = useState({
     name: "",
@@ -889,9 +885,14 @@ export default function App() {
     localStorage.setItem(storageKey("active_tab"), JSON.stringify(activeTab));
   }, [activeTab, isDemoMode]);
 
+  const sortedStudents = useMemo(
+    () => [...students].sort((a, b) => (a.name || "").localeCompare(b.name || "")),
+    [students]
+  );
+
   const selectedStudent = useMemo(
-    () => students.find((student) => student.id === selectedStudentId) || students[0],
-    [students, selectedStudentId]
+    () => students.find((student) => student.id === selectedStudentId) || sortedStudents[0],
+    [students, selectedStudentId, sortedStudents]
   );
 
   const selectedGoal = useMemo(() => {
@@ -945,11 +946,63 @@ export default function App() {
     return history.filter((entry) => entry.studentId === selectedStudent.id);
   }, [history, selectedStudent]);
 
+  const filteredSavedHistory = useMemo(() => {
+    return savedHistory.filter((entry) => {
+      if (!progressDateRange.start && !progressDateRange.end) return true;
+      if (!entry.date) return false;
+
+      const entryDate = new Date(`${entry.date}T00:00:00`);
+      if (progressDateRange.start) {
+        const startDate = new Date(`${progressDateRange.start}T00:00:00`);
+        if (entryDate < startDate) return false;
+      }
+      if (progressDateRange.end) {
+        const endDate = new Date(`${progressDateRange.end}T23:59:59`);
+        if (entryDate > endDate) return false;
+      }
+      return true;
+    });
+  }, [savedHistory, progressDateRange]);
+
+  const progressSummary = useMemo(() => {
+    const values = filteredSavedHistory
+      .map((entry) =>
+        entry.collectionMethod === "interval"
+          ? Number(entry.percent ?? 0)
+          : entry.collectionMethod === "duration"
+            ? Number(entry.durationValue ?? 0)
+            : Number(entry.score ?? 0)
+      )
+      .filter((value) => Number.isFinite(value));
+
+    const lastEntry = [...filteredSavedHistory].sort((a, b) =>
+      (a.date || "").localeCompare(b.date || "")
+    ).at(-1);
+
+    const lastValue = lastEntry
+      ? lastEntry.collectionMethod === "interval"
+        ? `${lastEntry.percent ?? 0}%`
+        : lastEntry.collectionMethod === "duration"
+          ? `${lastEntry.durationValue ?? 0} ${lastEntry.durationUnit ?? ""}`
+          : `${lastEntry.score ?? 0}/2`
+      : "—";
+
+    const averageValue = values.length
+      ? Math.round((values.reduce((sum, value) => sum + value, 0) / values.length) * 10) / 10
+      : null;
+
+    return {
+      totalEntries: filteredSavedHistory.length,
+      lastValue,
+      averageValue: averageValue === null ? "—" : averageValue,
+    };
+  }, [filteredSavedHistory]);
+
   const goalProgressSections = useMemo(() => {
     if (!selectedStudent) return [];
 
     return (selectedStudent.goals || []).map((goal) => {
-      const relatedEntries = savedHistory
+      const relatedEntries = filteredSavedHistory
         .filter((entry) => entry.goalId === goal.id)
         .sort((a, b) => a.date.localeCompare(b.date));
 
@@ -958,23 +1011,29 @@ export default function App() {
         value:
           entry.collectionMethod === "interval"
             ? Number(entry.percent || 0)
-            : Number(entry.score || 0),
+            : entry.collectionMethod === "duration"
+              ? Number(entry.durationValue || 0)
+              : Number(entry.score || 0),
       }));
+
+      const sortedEntries = [...relatedEntries].sort((a, b) => b.date.localeCompare(a.date));
 
       return {
         id: goal.id,
         title: goal.goalTitle,
-        mode: goal.collectionMethod === "interval" ? "interval" : "rating",
-        targetValue: goal.collectionMethod === "interval" ? 80 : 2,
+        mode: goal.collectionMethod === "interval" ? "interval" : goal.collectionMethod === "duration" ? "duration" : "rating",
+        targetValue: goal.collectionMethod === "interval" ? 80 : null,
         targetLabel:
           goal.collectionMethod === "interval"
             ? "Goal Line: 80%"
-            : "Goal Line: Independent",
+            : goal.collectionMethod === "duration"
+              ? "Duration"
+              : "Goal Line: Independent",
         points,
-        entries: [...relatedEntries].sort((a, b) => b.date.localeCompare(a.date)),
+        entries: sortedEntries,
       };
     });
-  }, [selectedStudent, savedHistory]);
+  }, [selectedStudent, filteredSavedHistory]);
 
   const totalGoals = students.reduce(
     (sum, student) => sum + (student.goals?.length || 0),
@@ -1014,8 +1073,10 @@ export default function App() {
 
   const getDefaultSessionForGoal = () => ({
     date: new Date().toISOString().slice(0, 10),
-    location: "Classroom",
+    location: "in the classroom",
+    customLocation: "",
     collectedBy: "Teacher",
+    customCollectedBy: "",
     score: "",
     promptLevel: "",
     strategiesUsed: [],
@@ -1026,6 +1087,10 @@ export default function App() {
     sessionLength: 10,
     intervalLength: 1,
     intervalResults: Array(10).fill(""),
+    durationValue: "",
+    durationUnit: "minutes",
+    durationBehavior: "",
+    generatedNote: "",
   });
 
   const syncIntervalArray = (existing, sessionLength, intervalLength) => {
@@ -1039,6 +1104,205 @@ export default function App() {
       return [...current, ...Array(totalIntervals - current.length).fill("")];
     }
     return current.slice(0, totalIntervals);
+  };
+
+  const formatNoteDate = (dateString) => {
+    if (!dateString) return "this date";
+    const [year, month, day] = dateString.split("-");
+    if (!year || !month || !day) return dateString;
+    return Number(month) + "/" + Number(day) + "/" + String(year).slice(-2);
+  };
+
+  const cleanLower = (value) => String(value || "").trim().toLowerCase();
+
+  const getResolvedLocation = (entry) => {
+    const selected = String(entry?.location || "").trim();
+    if (selected === "Other") return String(entry?.customLocation || "the session setting").trim();
+    return selected || "the session setting";
+  };
+
+  const getResolvedCollectedBy = (entry) => {
+    const selected = String(entry?.collectedBy || "").trim();
+    if (selected === "Other") return String(entry?.customCollectedBy || "staff").trim();
+    return selected || "staff";
+  };
+
+  const formatLocationForNote = (location) => {
+    const text = String(location || "the session setting").trim();
+    const lower = text.toLowerCase();
+    if (lower.startsWith("in ") || lower.startsWith("on ") || lower.startsWith("at ")) {
+      return lower;
+    }
+    if (lower === "home") return "at home";
+    return "in the " + lower;
+  };
+
+  const buildAutoSessionNote = (student, goal, entry) => {
+    if (!student || !goal || !entry) return "";
+
+    const name = student.name || "the student";
+    const dateText = formatNoteDate(entry.date);
+    const person = getResolvedCollectedBy(entry);
+    const locationText = formatLocationForNote(getResolvedLocation(entry));
+    const goalText = cleanLower(goal.goalTitle || "the selected skill");
+
+    if (goal.collectionMethod === "interval") {
+      const sessionLength = Number(entry.sessionLength || 0);
+      const intervalLength = Number(entry.intervalLength || 0);
+      const intervalResults = syncIntervalArray(
+        entry.intervalResults,
+        sessionLength,
+        intervalLength
+      );
+      const totalIntervals = intervalResults.length;
+      const yesCount = intervalResults.filter((x) => x === "yes").length;
+      const minuteText = sessionLength === 1 ? "1 minute" : (sessionLength || 0) + " minutes";
+
+      return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " demonstrated " + goalText + " during " + yesCount + "/" + totalIntervals + " whole intervals over a " + minuteText + " period, indicating " + Math.round((yesCount / Math.max(totalIntervals, 1)) * 100) + "% engagement across the session.";
+    }
+
+    if (goal.collectionMethod === "duration") {
+      const value = entry.durationValue || "___";
+      const unit = entry.durationUnit || "minutes";
+      const behaviorText = cleanLower(entry.durationBehavior || goalText);
+      return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " engaged in " + behaviorText + " for a total duration of " + value + " " + unit + ".";
+    }
+
+    if (String(entry.score) === "0") {
+      return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " was presented with " + goalText + " and demonstrated 0% accuracy, indicating the skill was not demonstrated.";
+    }
+
+    if (String(entry.score) === "1") {
+      const promptText = cleanLower(entry.promptLevel || "selected");
+      return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " engaged in " + goalText + " and required " + promptText + " prompting to complete the task.";
+    }
+
+    if (String(entry.score) === "2") {
+      return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " engaged in " + goalText + " and completed the task independently with 100% accuracy.";
+    }
+
+    return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " worked on " + goalText + ".";
+  };
+
+  const formatDateRangeText = (entries) => {
+    const dates = entries
+      .map((entry) => entry.date)
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b));
+
+    if (!dates.length) return "During the selected date range";
+
+    const firstDate = formatNoteDate(dates[0]);
+    const lastDate = formatNoteDate(dates[dates.length - 1]);
+
+    if (firstDate === lastDate) return "On " + firstDate;
+    return "From " + firstDate + "-" + lastDate;
+  };
+
+  const getEntryPercentValue = (entry) => {
+    if (!entry) return null;
+
+    if (entry.collectionMethod === "interval") {
+      const value = Number(entry.percent);
+      return Number.isFinite(value) ? value : null;
+    }
+
+    if (entry.collectionMethod === "rating") {
+      const score = Number(entry.score);
+      if (!Number.isFinite(score)) return null;
+      return Math.round((score / 2) * 100);
+    }
+
+    return null;
+  };
+
+  const buildGoalProgressNote = (student, section) => {
+    const entries = section?.entries || [];
+    if (!student || !section || !entries.length) {
+      return "No data points are available for this goal in the selected date range.";
+    }
+
+    const studentName = student.name || "The student";
+    const goalText = cleanLower(section.title || "the selected goal");
+    const dateRangeText = formatDateRangeText(entries);
+    const percentValues = entries
+      .map(getEntryPercentValue)
+      .filter((value) => Number.isFinite(value));
+
+    const averagePercent = percentValues.length
+      ? Math.round(percentValues.reduce((sum, value) => sum + value, 0) / percentValues.length)
+      : null;
+
+    const rangeText = percentValues.length
+      ? Math.min(...percentValues) + "-" + Math.max(...percentValues) + "%"
+      : "not available";
+
+    if (section.mode === "duration") {
+      const durationEntries = entries
+        .map((entry) => Number(entry.durationValue))
+        .filter((value) => Number.isFinite(value));
+      const averageDuration = durationEntries.length
+        ? Math.round((durationEntries.reduce((sum, value) => sum + value, 0) / durationEntries.length) * 10) / 10
+        : null;
+      const unit = entries.find((entry) => entry.durationUnit)?.durationUnit || "minutes";
+      const durationRange = durationEntries.length
+        ? Math.min(...durationEntries) + "-" + Math.max(...durationEntries) + " " + unit
+        : "not available";
+
+      return dateRangeText + ", " + studentName + " engaged in " + goalText + " for an average duration of " + (averageDuration ?? "___") + " " + unit + ", with durations ranging from " + durationRange + ".";
+    }
+
+    const promptCounts = {};
+    let independentCount = 0;
+    let notDemonstratingCount = 0;
+
+    entries.forEach((entry) => {
+      if (entry.collectionMethod === "rating") {
+        if (String(entry.score) === "2") {
+          independentCount += 1;
+        } else if (String(entry.score) === "1") {
+          const promptLabel = entry.promptLevel || "Prompted";
+          promptCounts[promptLabel] = (promptCounts[promptLabel] || 0) + 1;
+        } else if (String(entry.score) === "0") {
+          notDemonstratingCount += 1;
+        }
+      }
+    });
+
+    const totalEntries = entries.length || 1;
+    const scoreParts = Object.entries(promptCounts).map(([prompt, count]) => {
+      const percent = Math.round((count / totalEntries) * 100);
+      return percent + "% " + cleanLower(prompt) + " prompts";
+    });
+
+    if (independentCount) {
+      scoreParts.push(Math.round((independentCount / totalEntries) * 100) + "% independent");
+    }
+
+    if (notDemonstratingCount) {
+      scoreParts.push(Math.round((notDemonstratingCount / totalEntries) * 100) + "% not demonstrating");
+    }
+
+    const scoreBreakdown = scoreParts.length
+      ? " Performance included " + scoreParts.join(", ") + "."
+      : "";
+
+    return dateRangeText + ", " + studentName + " demonstrated an average accuracy of " + (averagePercent ?? "___") + "%, with performance ranging from " + rangeText + " on " + goalText + "." + scoreBreakdown;
+  };
+
+  const applyAutoNoteIfNeeded = (student, goal, current, updated) => {
+    const previousGeneratedNote = current.generatedNote || "";
+    const userHasEditedNote =
+      current.notes && previousGeneratedNote && current.notes !== previousGeneratedNote;
+
+    if (userHasEditedNote) return updated;
+
+    const nextGeneratedNote = buildAutoSessionNote(student, goal, updated);
+    return {
+      ...updated,
+      notes: nextGeneratedNote,
+      generatedNote: nextGeneratedNote,
+    };
   };
 
   const handleStudentFormChange = (e) => {
@@ -1134,13 +1398,13 @@ export default function App() {
     const baseline = window.prompt("Enter baseline:");
     const mastery = window.prompt("Enter mastery:");
     const methodPrompt = window.prompt(
-      "Enter collection method: rating or interval",
+      "Enter collection method: rating, interval, or duration",
       "rating"
     );
 
     const collectionMethod =
-      methodPrompt && methodPrompt.toLowerCase() === "interval"
-        ? "interval"
+      methodPrompt && ["interval", "duration"].includes(methodPrompt.toLowerCase())
+        ? methodPrompt.toLowerCase()
         : "rating";
 
     const newGoal = {
@@ -1286,7 +1550,7 @@ export default function App() {
     if (mastery === null) return;
 
     const methodPrompt = window.prompt(
-      "Edit collection method: rating or interval",
+      "Edit collection method: rating, interval, or duration",
       goal.collectionMethod
     );
     if (methodPrompt === null) return;
@@ -1299,7 +1563,7 @@ export default function App() {
     updateGoalField(
       goal.id,
       "collectionMethod",
-      methodPrompt.toLowerCase() === "interval" ? "interval" : "rating"
+      ["interval", "duration"].includes(methodPrompt.toLowerCase()) ? methodPrompt.toLowerCase() : "rating"
     );
   };
 
@@ -1483,9 +1747,14 @@ export default function App() {
         );
       }
 
+      const finalSession =
+        field === "notes"
+          ? { ...updated, generatedNote: current.generatedNote || "" }
+          : applyAutoNoteIfNeeded(selectedStudent, goal, current, updated);
+
       return {
         ...prev,
-        [key]: updated,
+        [key]: finalSession,
       };
     });
   };
@@ -1500,14 +1769,26 @@ export default function App() {
       const nextResults = [...(current.intervalResults || [])];
       nextResults[index] = value;
 
+      const updated = {
+        ...current,
+        intervalResults: nextResults,
+      };
+      const finalSession = applyAutoNoteIfNeeded(selectedStudent, goal, current, updated);
+
       return {
         ...prev,
-        [key]: {
-          ...current,
-          intervalResults: nextResults,
-        },
+        [key]: finalSession,
       };
     });
+  };
+
+  const clearSessionEntryForm = (goal, benchmark = null) => {
+    if (!selectedStudent || !goal) return;
+    const key = getGoalSessionKey(selectedStudent.id, goal.id, benchmark?.id);
+    setSessionData((prev) => ({
+      ...prev,
+      [key]: getDefaultSessionForGoal(),
+    }));
   };
 
   const saveSessionEntry = (goal, benchmark = null) => {
@@ -1522,6 +1803,8 @@ export default function App() {
 
     const targetType = benchmark ? "benchmark" : "goal";
     const targetName = benchmark ? benchmark.text : goal.goalTitle;
+    const resolvedLocation = getResolvedLocation(entry);
+    const resolvedCollectedBy = getResolvedCollectedBy(entry);
 
     if (goal.collectionMethod === "interval") {
       const sessionLength = Number(entry.sessionLength || 0);
@@ -1560,8 +1843,8 @@ export default function App() {
         benchmarkText: benchmark?.text || "",
         benchmarkStatus: benchmark?.status || "",
         date: entry.date || "",
-        location: entry.location || "",
-        collectedBy: entry.collectedBy || "",
+        location: resolvedLocation,
+        collectedBy: resolvedCollectedBy,
         collectionMethod: "interval",
         intervalType: entry.intervalType || "Whole Interval",
         sessionLength,
@@ -1573,11 +1856,52 @@ export default function App() {
         strategiesUsed: entry.strategiesUsed || [],
         reinforcementTypes: entry.reinforcementTypes || [],
         reinforcementOther: entry.reinforcementOther || "",
-        notes: entry.notes || "",
+        notes: entry.notes || buildAutoSessionNote(selectedStudent, goal, entry),
       };
 
       setHistory((prev) => [...prev, record]);
+      clearSessionEntryForm(goal, benchmark);
       alert(`Saved interval data for ${targetName}: ${percent}%`);
+      return;
+    }
+
+    if (goal.collectionMethod === "duration") {
+      if (!entry.durationValue) {
+        alert("Please enter the duration before saving.");
+        return;
+      }
+
+      const record = {
+        id: makeId("entry"),
+        studentId: selectedStudent.id,
+        studentName: selectedStudent.name,
+        grade: selectedStudent.grade || "",
+        supportPerson: selectedStudent.supportPerson || "",
+        disabilities: (selectedStudent.disabilities || []).join(", "),
+        setting: selectedStudent.setting || "",
+        goalId: goal.id,
+        goalTitle: goal.goalTitle,
+        fullGoalText: goal.fullGoalText,
+        targetType,
+        benchmarkId: benchmark?.id || "",
+        benchmarkText: benchmark?.text || "",
+        benchmarkStatus: benchmark?.status || "",
+        date: entry.date || "",
+        location: resolvedLocation,
+        collectedBy: resolvedCollectedBy,
+        collectionMethod: "duration",
+        durationValue: entry.durationValue || "",
+        durationUnit: entry.durationUnit || "minutes",
+        durationBehavior: entry.durationBehavior || "",
+        strategiesUsed: entry.strategiesUsed || [],
+        reinforcementTypes: entry.reinforcementTypes || [],
+        reinforcementOther: entry.reinforcementOther || "",
+        notes: entry.notes || buildAutoSessionNote(selectedStudent, goal, entry),
+      };
+
+      setHistory((prev) => [...prev, record]);
+      clearSessionEntryForm(goal, benchmark);
+      alert(`Saved duration data for ${targetName}.`);
       return;
     }
 
@@ -1613,11 +1937,25 @@ export default function App() {
       strategiesUsed: entry.strategiesUsed || [],
       reinforcementTypes: entry.reinforcementTypes || [],
       reinforcementOther: entry.reinforcementOther || "",
-      notes: entry.notes || "",
+      notes: entry.notes || buildAutoSessionNote(selectedStudent, goal, entry),
     };
 
     setHistory((prev) => [...prev, record]);
+    clearSessionEntryForm(goal, benchmark);
     alert(`Saved data for ${targetName}.`);
+  };
+
+  const updateSavedEntryNote = (entryId, noteText) => {
+    if (isReadOnlyDemo) {
+      showDemoUnsavedMessage();
+      return;
+    }
+
+    setHistory((prev) =>
+      prev.map((entry) =>
+        entry.id === entryId ? { ...entry, notes: noteText } : entry
+      )
+    );
   };
 
   const exportCSV = () => {
@@ -1645,6 +1983,9 @@ export default function App() {
       "Location",
       "Collected By",
       "Collection Method",
+      "Duration",
+      "Duration Unit",
+      "Duration Behavior",
       "Score",
       "Prompt Level",
       "Strategy Used",
@@ -1673,6 +2014,9 @@ export default function App() {
       item.location ?? "",
       item.collectedBy ?? "",
       item.collectionMethod || "rating",
+      item.durationValue ?? "",
+      item.durationUnit ?? "",
+      item.durationBehavior ?? "",
       item.score ?? "",
       item.promptLevel ?? "",
       (item.strategiesUsed || []).join("; "),
@@ -2168,7 +2512,7 @@ export default function App() {
         }}
         style={styles.input}
       >
-        {students.map((student) => (
+        {sortedStudents.map((student) => (
           <option key={student.id} value={student.id}>
             {student.name}
           </option>
@@ -2294,7 +2638,7 @@ export default function App() {
           <div>No students added yet.</div>
         ) : (
           <div style={styles.studentGrid}>
-            {students.map((student) => {
+            {sortedStudents.map((student) => {
               const isSelected = selectedStudent?.id === student.id;
               const cardStyle = isSelected
                 ? styles.selectedStudentCard
@@ -2433,7 +2777,9 @@ export default function App() {
                       Method:{" "}
                       {goal.collectionMethod === "interval"
                         ? "Interval Data"
-                        : "Rating Scale"}
+                        : goal.collectionMethod === "duration"
+                          ? "Duration"
+                          : "Rating Scale"}
                     </div>
                   </div>
 
@@ -2683,6 +3029,21 @@ export default function App() {
                       </option>
                     ))}
                   </select>
+                  {currentSession.location === "Other" && (
+                    <input
+                      value={currentSession.customLocation || ""}
+                      onChange={(e) =>
+                        handleSessionChange(
+                          selectedGoal,
+                          activeTargetBenchmark,
+                          "customLocation",
+                          e.target.value
+                        )
+                      }
+                      style={{ ...styles.input, marginTop: "8px" }}
+                      placeholder="Enter location"
+                    />
+                  )}
                 </div>
 
                 <div>
@@ -2705,6 +3066,21 @@ export default function App() {
                       </option>
                     ))}
                   </select>
+                  {currentSession.collectedBy === "Other" && (
+                    <input
+                      value={currentSession.customCollectedBy || ""}
+                      onChange={(e) =>
+                        handleSessionChange(
+                          selectedGoal,
+                          activeTargetBenchmark,
+                          "customCollectedBy",
+                          e.target.value
+                        )
+                      }
+                      style={{ ...styles.input, marginTop: "8px" }}
+                      placeholder="Enter person or role"
+                    />
+                  )}
                 </div>
 
                 <div>
@@ -2940,6 +3316,207 @@ export default function App() {
                 Save Interval Session
               </button>
             </>
+          ) : selectedGoal.collectionMethod === "duration" ? (
+            <>
+              <div style={styles.sessionGrid}>
+                <div>
+                  <label style={styles.label}>Date</label>
+                  <input
+                    type="date"
+                    value={currentSession.date}
+                    onChange={(e) =>
+                      handleSessionChange(
+                        selectedGoal,
+                        activeTargetBenchmark,
+                        "date",
+                        e.target.value
+                      )
+                    }
+                    style={styles.input}
+                  />
+                </div>
+
+                <div>
+                  <label style={styles.label}>Location</label>
+                  <select
+                    value={currentSession.location}
+                    onChange={(e) =>
+                      handleSessionChange(
+                        selectedGoal,
+                        activeTargetBenchmark,
+                        "location",
+                        e.target.value
+                      )
+                    }
+                    style={styles.input}
+                  >
+                    {SESSION_LOCATION_OPTIONS.map((location) => (
+                      <option key={location} value={location}>
+                        {location}
+                      </option>
+                    ))}
+                  </select>
+                  {currentSession.location === "Other" && (
+                    <input
+                      value={currentSession.customLocation || ""}
+                      onChange={(e) =>
+                        handleSessionChange(
+                          selectedGoal,
+                          activeTargetBenchmark,
+                          "customLocation",
+                          e.target.value
+                        )
+                      }
+                      style={{ ...styles.input, marginTop: "8px" }}
+                      placeholder="Enter location"
+                    />
+                  )}
+                </div>
+
+                <div>
+                  <label style={styles.label}>Collected By</label>
+                  <select
+                    value={currentSession.collectedBy}
+                    onChange={(e) =>
+                      handleSessionChange(
+                        selectedGoal,
+                        activeTargetBenchmark,
+                        "collectedBy",
+                        e.target.value
+                      )
+                    }
+                    style={styles.input}
+                  >
+                    {COLLECTED_BY_OPTIONS.map((person) => (
+                      <option key={person} value={person}>
+                        {person}
+                      </option>
+                    ))}
+                  </select>
+                  {currentSession.collectedBy === "Other" && (
+                    <input
+                      value={currentSession.customCollectedBy || ""}
+                      onChange={(e) =>
+                        handleSessionChange(
+                          selectedGoal,
+                          activeTargetBenchmark,
+                          "customCollectedBy",
+                          e.target.value
+                        )
+                      }
+                      style={{ ...styles.input, marginTop: "8px" }}
+                      placeholder="Enter person or role"
+                    />
+                  )}
+                </div>
+
+                <div>
+                  <label style={styles.label}>Duration</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={currentSession.durationValue || ""}
+                    onChange={(e) =>
+                      handleSessionChange(
+                        selectedGoal,
+                        activeTargetBenchmark,
+                        "durationValue",
+                        e.target.value
+                      )
+                    }
+                    style={styles.input}
+                    placeholder="Enter number"
+                  />
+                </div>
+
+                <div>
+                  <label style={styles.label}>Duration Unit</label>
+                  <select
+                    value={currentSession.durationUnit || "minutes"}
+                    onChange={(e) =>
+                      handleSessionChange(
+                        selectedGoal,
+                        activeTargetBenchmark,
+                        "durationUnit",
+                        e.target.value
+                      )
+                    }
+                    style={styles.input}
+                  >
+                    <option value="seconds">seconds</option>
+                    <option value="minutes">minutes</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={styles.label}>Behavior / Skill Observed</label>
+                  <input
+                    type="text"
+                    value={currentSession.durationBehavior || ""}
+                    onChange={(e) =>
+                      handleSessionChange(
+                        selectedGoal,
+                        activeTargetBenchmark,
+                        "durationBehavior",
+                        e.target.value
+                      )
+                    }
+                    style={styles.input}
+                    placeholder="Enter behavior (e.g., on-task, tantrum, elopement)"
+                  />
+                </div>
+              </div>
+
+              <div style={{ marginBottom: "12px" }}>
+                <label style={styles.label}>Strategy Used (RaMP)</label>
+                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "10px" }}>
+                  {["Reinforcement", "Modeling", "Prompting"].map((strategy) => (
+                    <button
+                      key={strategy}
+                      type="button"
+                      style={styles.checkPill((currentSession.strategiesUsed || []).includes(strategy))}
+                      onClick={() =>
+                        toggleSessionArrayValue(
+                          selectedGoal,
+                          activeTargetBenchmark,
+                          "strategiesUsed",
+                          strategy
+                        )
+                      }
+                    >
+                      {strategy}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ marginBottom: "12px" }}>
+                <label style={styles.label}>Notes</label>
+                <textarea
+                  value={currentSession.notes}
+                  onChange={(e) =>
+                    handleSessionChange(
+                      selectedGoal,
+                      activeTargetBenchmark,
+                      "notes",
+                      e.target.value
+                    )
+                  }
+                  style={styles.textarea}
+                  placeholder="Session note will auto-fill here and can be edited."
+                />
+              </div>
+
+              <button
+                onClick={() =>
+                  saveSessionEntry(selectedGoal, activeTargetBenchmark)
+                }
+                style={styles.buttonPrimary}
+              >
+                Save Duration Session
+              </button>
+            </>
           ) : (
             <>
               <div style={styles.sessionGrid}>
@@ -2980,6 +3557,21 @@ export default function App() {
                       </option>
                     ))}
                   </select>
+                  {currentSession.location === "Other" && (
+                    <input
+                      value={currentSession.customLocation || ""}
+                      onChange={(e) =>
+                        handleSessionChange(
+                          selectedGoal,
+                          activeTargetBenchmark,
+                          "customLocation",
+                          e.target.value
+                        )
+                      }
+                      style={{ ...styles.input, marginTop: "8px" }}
+                      placeholder="Enter location"
+                    />
+                  )}
                 </div>
 
                 <div>
@@ -3002,6 +3594,21 @@ export default function App() {
                       </option>
                     ))}
                   </select>
+                  {currentSession.collectedBy === "Other" && (
+                    <input
+                      value={currentSession.customCollectedBy || ""}
+                      onChange={(e) =>
+                        handleSessionChange(
+                          selectedGoal,
+                          activeTargetBenchmark,
+                          "customCollectedBy",
+                          e.target.value
+                        )
+                      }
+                      style={{ ...styles.input, marginTop: "8px" }}
+                      placeholder="Enter person or role"
+                    />
+                  )}
                 </div>
 
                 <div>
@@ -3300,7 +3907,9 @@ export default function App() {
                 <div>
                   {selectedGoal.collectionMethod === "interval"
                     ? "Interval Data"
-                    : "Rating Scale"}
+                    : selectedGoal.collectionMethod === "duration"
+                      ? "Duration"
+                      : "Rating Scale"}
                 </div>
               </div>
             </div>
@@ -3384,6 +3993,76 @@ export default function App() {
       <div style={styles.card}>
         <h2 style={styles.cardTitle}>Student Progress</h2>
 
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+            gap: "12px",
+            marginBottom: "16px",
+            padding: "14px",
+            borderRadius: "16px",
+            background: demoTheme.accentSoft,
+            border: `1px solid ${demoTheme.accentBorder}`,
+          }}
+        >
+          <div>
+            <label style={styles.label}>Start Date</label>
+            <input
+              type="date"
+              value={progressDateRange.start}
+              onChange={(event) =>
+                setProgressDateRange((prev) => ({ ...prev, start: event.target.value }))
+              }
+              style={styles.input}
+            />
+          </div>
+          <div>
+            <label style={styles.label}>End Date</label>
+            <input
+              type="date"
+              value={progressDateRange.end}
+              onChange={(event) =>
+                setProgressDateRange((prev) => ({ ...prev, end: event.target.value }))
+              }
+              style={styles.input}
+            />
+          </div>
+          <div style={{ alignSelf: "end", display: "flex", gap: "8px", flexWrap: "wrap" }}>
+            <button
+              type="button"
+              onClick={() => setProgressDateRange({ start: "", end: "" })}
+              style={styles.secondaryButton}
+            >
+              Clear Dates
+            </button>
+            <button type="button" onClick={() => window.print()} style={styles.primaryButton}>
+              Print Filtered Report
+            </button>
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+            gap: "12px",
+            marginBottom: "18px",
+          }}
+        >
+          <div style={styles.metricCard}>
+            <div style={styles.metricLabel}>Entries in Range</div>
+            <div style={styles.metricValue}>{progressSummary.totalEntries}</div>
+          </div>
+          <div style={styles.metricCard}>
+            <div style={styles.metricLabel}>Last Score / Percent</div>
+            <div style={styles.metricValue}>{progressSummary.lastValue}</div>
+          </div>
+          <div style={styles.metricCard}>
+            <div style={styles.metricLabel}>Average Score / Percent</div>
+            <div style={styles.metricValue}>{progressSummary.averageValue}</div>
+          </div>
+        </div>
+
         {!selectedStudent ? (
           <div>No student selected.</div>
         ) : !goalProgressSections.length ? (
@@ -3409,7 +4088,7 @@ export default function App() {
                     marginBottom: "10px",
                   }}
                 >
-                  Saved Entries for This Goal
+                  Saved Entries for This Goal (Filtered Date Range)
                 </div>
 
                 {!section.entries.length ? (
@@ -3442,17 +4121,21 @@ export default function App() {
                             <td style={styles.td}>{entry.location || "-"}</td>
                             <td style={styles.td}>{entry.collectedBy || "-"}</td>
                             <td style={styles.td}>
-                              {entry.collectionMethod === "interval" ? "Interval" : "Rating"}
+                              {entry.collectionMethod === "interval" ? "Interval" : entry.collectionMethod === "duration" ? "Duration" : "Rating"}
                             </td>
                             <td style={styles.td}>
                               {entry.collectionMethod === "interval"
                                 ? `${entry.percent ?? 0}%`
-                                : entry.score}
+                                : entry.collectionMethod === "duration"
+                                  ? `${entry.durationValue ?? "-"} ${entry.durationUnit ?? ""}`
+                                  : entry.score}
                             </td>
                             <td style={styles.td}>
                               {entry.collectionMethod === "interval"
                                 ? `${entry.intervalType || "-"} (${entry.yesCount ?? 0}/${entry.totalIntervals ?? 0})`
-                                : entry.promptLevel || "-"}
+                                : entry.collectionMethod === "duration"
+                                  ? entry.durationBehavior || "-"
+                                  : entry.promptLevel || "-"}
                             </td>
                             <td style={styles.td}>
                               {(entry.strategiesUsed || []).length
@@ -3475,6 +4158,29 @@ export default function App() {
                         ))}
                       </tbody>
                     </table>
+                  </div>
+                )}
+
+                {!!section.entries.length && (
+                  <div style={{ marginTop: "16px" }}>
+                    <div
+                      style={{
+                        fontWeight: 800,
+                        color: "#1e3a8a",
+                        fontSize: "16px",
+                        marginBottom: "10px",
+                      }}
+                    >
+                      Progress Summary Note
+                    </div>
+
+                    <textarea
+                      value={buildGoalProgressNote(selectedStudent, section)}
+                      readOnly
+                      rows={4}
+                      style={{ ...styles.textarea, marginBottom: 0 }}
+                      placeholder="A summary note will appear here when data is available for the selected date range."
+                    />
                   </div>
                 )}
               </div>
@@ -3530,6 +4236,11 @@ export default function App() {
           box-shadow: 0 0 0 3px ${demoTheme.focusShadow};
         }
         button:hover { filter: brightness(0.98); }
+
+        @media print {
+          button, .ramp-tabs, .no-print { display: none !important; }
+          body { background: white !important; }
+        }
 
         @media (max-width: 1100px) {
           .ramp-layout {
@@ -3653,8 +4364,23 @@ export default function App() {
                 <button style={styles.secondaryHeroButton} onClick={resetDemoData}>
                   Reset Demo Data
                 </button>
+                <button
+                  style={styles.secondaryHeroButton}
+                  onClick={() => {
+                    localStorage.setItem("ramp_user", "true");
+                    setShowGate(false);
+                    if (typeof window !== "undefined") {
+                      const url = new URL(window.location.href);
+                      DEMO_URL_KEYS.forEach((key) => url.searchParams.delete(key));
+                      url.hash = "";
+                      window.history.replaceState({}, "", url.toString());
+                    }
+                  }}
+                >
+                  Create Free Account — Free through June 15
+                </button>
                 <button style={styles.secondaryHeroButton} onClick={exitDemoMode}>
-                  Exit Demo
+                  Log In / Exit Demo
                 </button>
                 <div style={styles.demoHelperText}>
                   Interactive sample — try scoring and prompts, but demo changes will not be saved.
@@ -3668,7 +4394,7 @@ export default function App() {
           </div>
         </div>
 
-        <div style={styles.tabsWrap}>
+        <div className="ramp-tabs" style={styles.tabsWrap}>
           <button
             style={
               activeTab === "studentDashboard" ? styles.activeTab : styles.tab
