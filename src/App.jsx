@@ -1137,6 +1137,31 @@ export default function App() {
     return "in the " + lower;
   };
 
+  const getReinforcementList = (entry) => {
+    const items = [
+      ...(entry?.reinforcementTypes || []),
+      entry?.reinforcementOther ? entry.reinforcementOther : "",
+    ]
+      .map((item) => String(item || "").trim())
+      .filter(Boolean);
+
+    return [...new Set(items)];
+  };
+
+  const formatListForSentence = (items) => {
+    const list = (items || []).filter(Boolean);
+    if (!list.length) return "";
+    if (list.length === 1) return cleanLower(list[0]);
+    if (list.length === 2) return cleanLower(list[0]) + " and " + cleanLower(list[1]);
+    return list.slice(0, -1).map(cleanLower).join(", ") + ", and " + cleanLower(list[list.length - 1]);
+  };
+
+  const buildReinforcementSentence = (entry) => {
+    const reinforcements = getReinforcementList(entry);
+    if (!reinforcements.length) return "";
+    return " Reinforcement used during the session included " + formatListForSentence(reinforcements) + ".";
+  };
+
   const buildAutoSessionNote = (student, goal, entry) => {
     if (!student || !goal || !entry) return "";
 
@@ -1158,30 +1183,30 @@ export default function App() {
       const yesCount = intervalResults.filter((x) => x === "yes").length;
       const minuteText = sessionLength === 1 ? "1 minute" : (sessionLength || 0) + " minutes";
 
-      return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " demonstrated " + goalText + " during " + yesCount + "/" + totalIntervals + " whole intervals over a " + minuteText + " period, indicating " + Math.round((yesCount / Math.max(totalIntervals, 1)) * 100) + "% engagement across the session.";
+      return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " demonstrated " + goalText + " during " + yesCount + "/" + totalIntervals + " whole intervals over a " + minuteText + " period, indicating " + Math.round((yesCount / Math.max(totalIntervals, 1)) * 100) + "% engagement across the session." + buildReinforcementSentence(entry);
     }
 
     if (goal.collectionMethod === "duration") {
       const value = entry.durationValue || "___";
       const unit = entry.durationUnit || "minutes";
       const behaviorText = cleanLower(entry.durationBehavior || goalText);
-      return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " engaged in " + behaviorText + " for a total duration of " + value + " " + unit + ".";
+      return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " engaged in " + behaviorText + " for a total duration of " + value + " " + unit + "." + buildReinforcementSentence(entry);
     }
 
     if (String(entry.score) === "0") {
-      return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " was presented with " + goalText + " and demonstrated 0% accuracy, indicating the skill was not demonstrated.";
+      return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " was presented with " + goalText + " and demonstrated 0% accuracy, indicating the skill was not demonstrated." + buildReinforcementSentence(entry);
     }
 
     if (String(entry.score) === "1") {
       const promptText = cleanLower(entry.promptLevel || "selected");
-      return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " engaged in " + goalText + " and required " + promptText + " prompting to complete the task.";
+      return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " engaged in " + goalText + " and required " + promptText + " prompting to complete the task." + buildReinforcementSentence(entry);
     }
 
     if (String(entry.score) === "2") {
-      return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " engaged in " + goalText + " and completed the task independently with 100% accuracy.";
+      return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " engaged in " + goalText + " and completed the task independently with 100% accuracy." + buildReinforcementSentence(entry);
     }
 
-    return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " worked on " + goalText + ".";
+    return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " worked on " + goalText + "." + buildReinforcementSentence(entry);
   };
 
   const formatDateRangeText = (entries) => {
@@ -1249,7 +1274,18 @@ export default function App() {
         ? Math.min(...durationEntries) + "-" + Math.max(...durationEntries) + " " + unit
         : "not available";
 
-      return dateRangeText + ", " + studentName + " engaged in " + goalText + " for an average duration of " + (averageDuration ?? "___") + " " + unit + ", with durations ranging from " + durationRange + ".";
+      const reinforcementCounts = {};
+      entries.forEach((entry) => {
+        getReinforcementList(entry).forEach((item) => {
+          reinforcementCounts[item] = (reinforcementCounts[item] || 0) + 1;
+        });
+      });
+      const reinforcementParts = Object.entries(reinforcementCounts).map(([item, count]) => cleanLower(item) + " (" + Math.round((count / entries.length) * 100) + "% of sessions)");
+      const reinforcementBreakdown = reinforcementParts.length
+        ? " Reinforcement used during this period included " + reinforcementParts.join(", ") + "."
+        : "";
+
+      return dateRangeText + ", " + studentName + " engaged in " + goalText + " for an average duration of " + (averageDuration ?? "___") + " " + unit + ", with durations ranging from " + durationRange + "." + reinforcementBreakdown;
     }
 
     const promptCounts = {};
@@ -1287,7 +1323,23 @@ export default function App() {
       ? " Performance included " + scoreParts.join(", ") + "."
       : "";
 
-    return dateRangeText + ", " + studentName + " demonstrated an average accuracy of " + (averagePercent ?? "___") + "%, with performance ranging from " + rangeText + " on " + goalText + "." + scoreBreakdown;
+    const reinforcementCounts = {};
+    entries.forEach((entry) => {
+      getReinforcementList(entry).forEach((item) => {
+        reinforcementCounts[item] = (reinforcementCounts[item] || 0) + 1;
+      });
+    });
+
+    const reinforcementParts = Object.entries(reinforcementCounts).map(([item, count]) => {
+      const percent = Math.round((count / totalEntries) * 100);
+      return cleanLower(item) + " (" + percent + "% of sessions)";
+    });
+
+    const reinforcementBreakdown = reinforcementParts.length
+      ? " Reinforcement used during this period included " + reinforcementParts.join(", ") + "."
+      : "";
+
+    return dateRangeText + ", " + studentName + " demonstrated an average accuracy of " + (averagePercent ?? "___") + "%, with performance ranging from " + rangeText + " on " + goalText + "." + scoreBreakdown + reinforcementBreakdown;
   };
 
   const applyAutoNoteIfNeeded = (student, goal, current, updated) => {
@@ -1956,6 +2008,111 @@ export default function App() {
         entry.id === entryId ? { ...entry, notes: noteText } : entry
       )
     );
+  };
+
+  const escapeHtml = (value) =>
+    String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+  const generatePrintableSessionReport = () => {
+    if (!selectedStudent) {
+      alert("Please select a student before generating a report.");
+      return;
+    }
+
+    const includedSections = goalProgressSections.filter((section) => section.entries.length);
+    if (!includedSections.length) {
+      alert("No data is available for the selected student and date range.");
+      return;
+    }
+
+    const rangeLabel = progressDateRange.start || progressDateRange.end
+      ? `${progressDateRange.start || "Beginning"} to ${progressDateRange.end || "Today"}`
+      : "All available dates";
+
+    const sectionHtml = includedSections.map((section) => {
+      const rows = section.entries.map((entry) => {
+        const scoreText = entry.collectionMethod === "interval"
+          ? `${entry.percent ?? 0}% (${entry.yesCount ?? 0}/${entry.totalIntervals ?? 0})`
+          : entry.collectionMethod === "duration"
+            ? `${entry.durationValue ?? "-"} ${entry.durationUnit ?? ""}`
+            : `${entry.score ?? "-"}/2${entry.promptLevel ? `, ${entry.promptLevel} prompt` : ""}`;
+        const reinforcements = getReinforcementList(entry).join(", ") || "-";
+        return `
+          <tr>
+            <td>${escapeHtml(entry.date)}</td>
+            <td>${escapeHtml(entry.location || "-")}</td>
+            <td>${escapeHtml(entry.collectedBy || "-")}</td>
+            <td>${escapeHtml(entry.collectionMethod || "-")}</td>
+            <td>${escapeHtml(scoreText)}</td>
+            <td>${escapeHtml(reinforcements)}</td>
+            <td>${escapeHtml(entry.notes || "-")}</td>
+          </tr>`;
+      }).join("");
+
+      return `
+        <section class="goal-section">
+          <h2>${escapeHtml(section.title)}</h2>
+          <div class="summary-note">${escapeHtml(buildGoalProgressNote(selectedStudent, section))}</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Location</th>
+                <th>Collected By</th>
+                <th>Method</th>
+                <th>Score / Data</th>
+                <th>Reinforcement</th>
+                <th>Session Note</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </section>`;
+    }).join("");
+
+    const reportWindow = window.open("", "_blank");
+    if (!reportWindow) {
+      alert("Please allow pop-ups to generate the printable report.");
+      return;
+    }
+
+    reportWindow.document.write(`
+      <!doctype html>
+      <html>
+        <head>
+          <title>RaMP Tracker Session Report</title>
+          <style>
+            body { font-family: Arial, sans-serif; color: #172554; margin: 32px; line-height: 1.45; }
+            h1 { margin-bottom: 4px; }
+            h2 { color: #1e3a8a; margin-top: 28px; }
+            .meta { color: #475569; margin-bottom: 18px; }
+            .summary-note { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 12px; margin: 10px 0 14px; color: #1e293b; }
+            table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+            th, td { border: 1px solid #cbd5e1; padding: 8px; vertical-align: top; text-align: left; }
+            th { background: #dbeafe; color: #1e3a8a; }
+            .footer { margin-top: 28px; font-size: 12px; color: #64748b; }
+            @media print { body { margin: 18px; } .goal-section { break-inside: avoid; } }
+          </style>
+        </head>
+        <body>
+          <h1>RaMP Tracker Session Report</h1>
+          <div class="meta">
+            <strong>Student:</strong> ${escapeHtml(selectedStudent.name)}<br />
+            <strong>Date Range:</strong> ${escapeHtml(rangeLabel)}<br />
+            <strong>Entries Included:</strong> ${escapeHtml(filteredSavedHistory.length)}
+          </div>
+          ${sectionHtml}
+          <div class="footer">Generated from RaMP Tracker. Use your browser print menu to save this report as a PDF.</div>
+          <script>window.onload = function(){ window.print(); };</script>
+        </body>
+      </html>
+    `);
+    reportWindow.document.close();
   };
 
   const exportCSV = () => {
@@ -4035,8 +4192,11 @@ export default function App() {
             >
               Clear Dates
             </button>
-            <button type="button" onClick={() => window.print()} style={styles.primaryButton}>
-              Print Filtered Report
+            <button type="button" onClick={() => window.print()} style={styles.secondaryButton}>
+              Print Page
+            </button>
+            <button type="button" onClick={generatePrintableSessionReport} style={styles.primaryButton}>
+              Generate Session Report
             </button>
           </div>
         </div>
@@ -4106,6 +4266,7 @@ export default function App() {
                           <th style={styles.th}>Score / %</th>
                           <th style={styles.th}>Prompt / Interval</th>
                           <th style={styles.th}>RaMP Strategy</th>
+                          <th style={styles.th}>Reinforcement</th>
                           <th style={styles.th}>Notes</th>
                         </tr>
                       </thead>
@@ -4139,18 +4300,12 @@ export default function App() {
                             </td>
                             <td style={styles.td}>
                               {(entry.strategiesUsed || []).length
-                                ? `${entry.strategiesUsed.join(", ")}${
-                                    (entry.reinforcementTypes || []).length || entry.reinforcementOther
-                                      ? ` • ${[
-                                          ...(entry.reinforcementTypes || []),
-                                          entry.reinforcementOther
-                                            ? `Other: ${entry.reinforcementOther}`
-                                            : "",
-                                        ]
-                                          .filter(Boolean)
-                                          .join(", ")}`
-                                      : ""
-                                  }`
+                                ? entry.strategiesUsed.join(", ")
+                                : "-"}
+                            </td>
+                            <td style={styles.td}>
+                              {getReinforcementList(entry).length
+                                ? getReinforcementList(entry).join(", ")
                                 : "-"}
                             </td>
                             <td style={styles.td}>{entry.notes || "-"}</td>
