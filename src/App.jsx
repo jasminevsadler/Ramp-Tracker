@@ -1,7 +1,9 @@
+const [showAccessScreen, setShowAccessScreen] = useState(true);
+
 import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "./supabaseClient";
 
-const [showAccessScreen, setShowAccessScreen] = useState(true);
+
 
 const GRADE_OPTIONS = [
   "Preschool",
@@ -4540,6 +4542,35 @@ export default function App() {
     window.location.reload();
   };
 
+// ✅ ACCESS SCREEN (PUT RIGHT ABOVE MAIN RETURN)
+
+if (showAccessScreen) {
+  return (
+    <div style={{ padding: 40, textAlign: "center" }}>
+      <h1>RaMP Tracker</h1>
+      <p>Track data. Generate notes. Print reports.</p>
+
+      <br />
+
+      <button onClick={() => {
+        setIsDemoMode(false);
+        setShowAccessScreen(false);
+      }}>
+        Login / Sign Up
+      </button>
+
+      <br /><br />
+
+      <button onClick={() => {
+        setIsDemoMode(true);
+        setShowAccessScreen(false);
+      }}>
+        Try Demo
+      </button>
+    </div>
+  );
+}
+  
   return (
     <div style={styles.page}>
       <style>{`
