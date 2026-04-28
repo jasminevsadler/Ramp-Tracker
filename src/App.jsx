@@ -4732,31 +4732,51 @@ export default function App() {
                     setShowGate(true);
                   }}
                 >
-                  Log In / Exit Demo
-                </button>
-                <div style={styles.demoHelperText}>
-                  Interactive sample — try scoring and prompts, but demo changes will not be saved.
-                </div>
-              </>
-            ) : (
-              <>
-                <div
-                  style={{
-                    padding: "10px 14px",
-                    borderRadius: "999px",
-                    background: "rgba(255,255,255,0.2)",
-                    border: "1px solid rgba(255,255,255,0.35)",
-                    fontSize: "14px",
-                    fontWeight: 700,
-                  }}
-                >
-                  {cloudStatus || "Cloud saving on"}
-                </div>
-                <button style={styles.secondaryHeroButton} onClick={openDemoMode}>
-                  Open Demo Mode
-                </button>
-                <button style={styles.secondaryHeroButton} onClick={handleLogout}>
-                  Log Out
+
+                  
+{isDemoMode ? (
+  <>
+    <button
+      style={styles.secondaryHeroButton}
+      onClick={() => {
+        setIsDemoMode(false);
+        setShowGate(true);
+        setAuthMode("login");
+      }}
+    >
+      Log In / Exit Demo
+    </button>
+
+    <div style={styles.demoHelperText}>
+      Interactive sample — try scoring and prompts, but demo changes will not be saved.
+    </div>
+  </>
+) : (
+  <>
+    <div
+      style={{
+        padding: "10px 14px",
+        borderRadius: "999px",
+        background: "rgba(255,255,255,0.2)",
+        border: "1px solid rgba(255,255,255,0.35)",
+        fontSize: "14px",
+        fontWeight: 700,
+      }}
+    >
+      {cloudStatus || "Cloud saving on"}
+    </div>
+
+    <button style={styles.secondaryHeroButton} onClick={openDemoMode}>
+      Open Demo Mode
+    </button>
+
+    <button style={styles.secondaryHeroButton} onClick={handleLogout}>
+      Log Out
+    </button>
+  </>
+)}
+
+                  
                 </button>
               </>
             )}
