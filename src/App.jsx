@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "./supabaseClient";
 
+const [showAccessScreen, setShowAccessScreen] = useState(true);
 
 const GRADE_OPTIONS = [
   "Preschool",
