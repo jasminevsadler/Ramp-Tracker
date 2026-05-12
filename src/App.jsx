@@ -1740,7 +1740,9 @@ function GraphCard({ title, points, mode, targetValue = null, targetLabel = "Goa
       >
         {mode === "interval"
           ? "Graph shows percent of intervals scored yes."
-          : "0 = Not demonstrating • 1 = With prompts • 2 = Independent"}
+          : mode === "duration"
+            ? "Graph shows total duration recorded for each session."
+            : "0 = Not demonstrating • 1 = With prompts • 2 = Independent"}
         {showTargetLine ? ` Goal line: ${targetLabel}.` : ""}
       </div>
     </div>
@@ -2330,13 +2332,18 @@ export default function App() {
         id: goal.id,
         title: goal.goalTitle,
         mode: goal.collectionMethod === "interval" ? "interval" : goal.collectionMethod === "duration" ? "duration" : "rating",
-        targetValue: goal.collectionMethod === "interval" ? 80 : null,
+        targetValue:
+          goal.collectionMethod === "interval"
+            ? 80
+            : goal.collectionMethod === "duration"
+              ? null
+              : 2,
         targetLabel:
           goal.collectionMethod === "interval"
             ? "Goal Line: 80%"
             : goal.collectionMethod === "duration"
               ? "Duration"
-              : "Goal Line: Independent",
+              : "Goal Line: 2 = Independent",
         points,
         entries: sortedEntries,
       };
@@ -2502,16 +2509,16 @@ export default function App() {
     }
 
     if (String(entry.score) === "0") {
-      return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " was presented with " + goalText + " and demonstrated 0% accuracy, indicating the skill was not demonstrated." + buildReinforcementSentence(entry);
+      return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " worked on " + goalText + " and received a score of 0, indicating the skill was not demonstrated during this session." + buildReinforcementSentence(entry);
     }
 
     if (String(entry.score) === "1") {
       const promptText = cleanLower(entry.promptLevel || "selected");
-      return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " engaged in " + goalText + " and required " + promptText + " prompting to complete the task." + buildReinforcementSentence(entry);
+      return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " worked on " + goalText + " and received a score of 1, completing the task with " + promptText + " prompting." + buildReinforcementSentence(entry);
     }
 
     if (String(entry.score) === "2") {
-      return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " engaged in " + goalText + " and completed the task independently with 100% accuracy." + buildReinforcementSentence(entry);
+      return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " worked on " + goalText + " and received a score of 2, completing the task independently." + buildReinforcementSentence(entry);
     }
 
     return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " worked on " + goalText + "." + buildReinforcementSentence(entry);
@@ -2647,7 +2654,18 @@ export default function App() {
       ? " Reinforcement used during this period included " + reinforcementParts.join(", ") + "."
       : "";
 
-    return dateRangeText + ", " + studentName + " demonstrated an average accuracy of " + (averagePercent ?? "___") + "%, with performance ranging from " + rangeText + " on " + goalText + "." + scoreBreakdown + reinforcementBreakdown;
+    const ratingEntries = entries.filter((entry) => entry.collectionMethod === "rating");
+    const ratingScores = ratingEntries
+      .map((entry) => Number(entry.score))
+      .filter((value) => Number.isFinite(value));
+    const averageRating = ratingScores.length
+      ? Math.round((ratingScores.reduce((sum, value) => sum + value, 0) / ratingScores.length) * 10) / 10
+      : null;
+    const ratingAverageText = section.mode === "rating" && averageRating !== null
+      ? " The average rating was " + averageRating + "/2, with 2 representing independent performance."
+      : "";
+
+    return dateRangeText + ", " + studentName + " demonstrated an average accuracy of " + (averagePercent ?? "___") + "%, with performance ranging from " + rangeText + " on " + goalText + "." + ratingAverageText + scoreBreakdown + reinforcementBreakdown;
   };
 
   const applyAutoNoteIfNeeded = (student, goal, current, updated) => {
@@ -5597,7 +5615,13 @@ export default function App() {
                                 ? `${entry.percent ?? 0}%`
                                 : entry.collectionMethod === "duration"
                                   ? `${entry.durationValue ?? "-"} ${entry.durationUnit ?? ""}`
-                                  : entry.score}
+                                  : String(entry.score) === "2"
+                                    ? "2 - Independent"
+                                    : String(entry.score) === "1"
+                                      ? "1 - Prompted"
+                                      : String(entry.score) === "0"
+                                        ? "0 - Not demonstrating"
+                                        : entry.score}
                             </td>
                             <td style={styles.td}>
                               {entry.collectionMethod === "interval"
