@@ -751,9 +751,162 @@ function GraphCard({ title, points, mode, targetValue = null, targetLabel = "Goa
   );
 }
 
+
+function LandingScreen({
+  onDemo,
+  onLogin,
+  onWatchTour
+}) {
+  return (
+    <div style={{
+      minHeight: "100vh",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      background: "linear-gradient(180deg, #edf4ff 0%, #ffffff 100%)",
+      padding: "20px",
+      fontFamily: "Inter, sans-serif"
+    }}>
+      <div style={{
+        width: "100%",
+        maxWidth: "500px",
+        background: "white",
+        borderRadius: "24px",
+        padding: "40px",
+        boxShadow: "0 20px 50px rgba(0,0,0,0.08)",
+        textAlign: "center"
+      }}>
+
+        <h1 style={{
+          fontSize: "38px",
+          marginBottom: "10px",
+          color: "#1f2937"
+        }}>
+          RaMP Tracker
+        </h1>
+
+        <p style={{
+          fontSize: "18px",
+          lineHeight: "1.5",
+          color: "#4b5563",
+          marginBottom: "30px"
+        }}>
+          Track IEP goals, prompting, behavior,
+          and progress in seconds.
+        </p>
+
+        <button
+          onClick={onLogin}
+          style={{
+            width: "100%",
+            padding: "16px",
+            borderRadius: "14px",
+            border: "none",
+            background: "#7c3aed",
+            color: "white",
+            fontSize: "18px",
+            fontWeight: "600",
+            cursor: "pointer",
+            marginBottom: "10px"
+          }}
+        >
+          Start Free 14-Day Trial
+        </button>
+
+        <p style={{
+          fontSize: "13px",
+          color: "#6b7280",
+          marginBottom: "24px"
+        }}>
+          Full access • No credit card required
+        </p>
+
+        <button
+          onClick={onDemo}
+          style={{
+            width: "100%",
+            padding: "14px",
+            borderRadius: "14px",
+            border: "2px solid #7c3aed",
+            background: "white",
+            color: "#7c3aed",
+            fontSize: "16px",
+            fontWeight: "600",
+            cursor: "pointer",
+            marginBottom: "14px"
+          }}
+        >
+          Try Demo
+        </button>
+
+        <button
+          onClick={onWatchTour}
+          style={{
+            background: "transparent",
+            border: "none",
+            color: "#2563eb",
+            fontSize: "15px",
+            cursor: "pointer",
+            textDecoration: "underline"
+          }}
+        >
+          Watch 60-Second Tour
+        </button>
+
+        <div style={{
+          marginTop: "40px",
+          textAlign: "left"
+        }}>
+
+          <div style={{ marginBottom: "18px" }}>
+            <h3 style={{ marginBottom: "5px" }}>
+              Record Data Fast
+            </h3>
+            <p style={{ color: "#6b7280", margin: 0 }}>
+              Track prompts, intervals, duration,
+              and behaviors quickly.
+            </p>
+          </div>
+
+          <div style={{ marginBottom: "18px" }}>
+            <h3 style={{ marginBottom: "5px" }}>
+              Auto-Generate Notes
+            </h3>
+            <p style={{ color: "#6b7280", margin: 0 }}>
+              Turn session data into documentation instantly.
+            </p>
+          </div>
+
+          <div style={{ marginBottom: "18px" }}>
+            <h3 style={{ marginBottom: "5px" }}>
+              Monitor Progress
+            </h3>
+            <p style={{ color: "#6b7280", margin: 0 }}>
+              View graphs, trends, and mastery over time.
+            </p>
+          </div>
+
+          <div>
+            <h3 style={{ marginBottom: "5px" }}>
+              Organize Everything
+            </h3>
+            <p style={{ color: "#6b7280", margin: 0 }}>
+              Students, goals, benchmarks,
+              and history all in one place.
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   // Demo-first launch: visitors can explore first, then log in to save real data.
   const [showGate, setShowGate] = useState(false);
+  const [showLandingScreen, setShowLandingScreen] = useState(true);
   const [user, setUser] = useState(null);
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
@@ -4538,6 +4691,27 @@ export default function App() {
 
     window.location.reload();
   };
+
+
+  if (showLandingScreen) {
+    return (
+      <LandingScreen
+        onDemo={() => {
+          setShowLandingScreen(false);
+          setIsDemoMode(true);
+        }}
+        onLogin={() => {
+          setShowLandingScreen(false);
+          setIsDemoMode(false);
+          setAuthMode("signup");
+          setShowGate(true);
+        }}
+        onWatchTour={() =>
+          window.open("YOUR_VIDEO_LINK", "_blank")
+        }
+      />
+    );
+  }
 
   return (
     <div style={styles.page}>
