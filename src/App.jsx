@@ -1955,16 +1955,12 @@ export default function App() {
       };
 
   const showDemoStructureLockedMessage = () => {
-    if (typeof window !== "undefined") {
-      window.alert("Demo mode lets you explore sample students and enter practice data, but you cannot add, edit, delete, or permanently save account content.");
-    }
-  };
+  setShowUpgradePopup(true);
+};
 
-  const showDemoUnsavedMessage = () => {
-    if (typeof window !== "undefined") {
-      window.alert("Demo changes are temporary. Create an account to save progress.");
-    }
-  };
+const showDemoUnsavedMessage = () => {
+  setShowUpgradePopup(true);
+};
 
   const handleAuth = async () => {
     setAuthMessage("");
