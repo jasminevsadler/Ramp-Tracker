@@ -1908,6 +1908,7 @@ export default function App() {
   const [showUpgradePopup, setShowUpgradePopup] = useState(false);
   const [trialDaysLeft, setTrialDaysLeft] = useState(null);
   const [isTrialExpired, setIsTrialExpired] = useState(false);
+  const [progressFilterResetKey, setProgressFilterResetKey] = useState(0);
   const [user, setUser] = useState(null);
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
@@ -2327,9 +2328,23 @@ const showDemoUnsavedMessage = () => {
 
       const sortedEntries = [...relatedEntries].sort((a, b) => b.date.localeCompare(a.date));
 
+      const activeObjectives = Array.from(
+        new Set(
+          relatedEntries
+            .map((entry) =>
+              entry.targetType === "benchmark" && entry.benchmarkText
+                ? entry.benchmarkText
+                : ""
+            )
+            .filter(Boolean)
+        )
+      );
+
       return {
         id: goal.id,
         title: goal.goalTitle,
+        fullGoalText: goal.fullGoalText || goal.goalTitle,
+        objectiveText: activeObjectives.length ? activeObjectives.join(" | ") : "Goal-level data",
         mode: goal.collectionMethod === "interval" ? "interval" : goal.collectionMethod === "duration" ? "duration" : "rating",
         targetValue:
           goal.collectionMethod === "interval"
@@ -3370,10 +3385,9 @@ const showDemoUnsavedMessage = () => {
         return `
           <tr>
             <td>${escapeHtml(entry.date)}</td>
+            <td>${escapeHtml(scoreText)}</td>
             <td>${escapeHtml(entry.location || "-")}</td>
             <td>${escapeHtml(entry.collectedBy || "-")}</td>
-            <td>${escapeHtml(entry.collectionMethod || "-")}</td>
-            <td>${escapeHtml(scoreText)}</td>
             <td>${escapeHtml(reinforcements)}</td>
             <td>${escapeHtml(entry.notes || "-")}</td>
           </tr>`;
@@ -3382,15 +3396,18 @@ const showDemoUnsavedMessage = () => {
       return `
         <section class="goal-section">
           <h2>${escapeHtml(section.title)}</h2>
+          <div class="context-box">
+            <strong>Goal:</strong> ${escapeHtml(section.fullGoalText || section.title)}<br />
+            <strong>Benchmark / Objective:</strong> ${escapeHtml(section.objectiveText || "Goal-level data")}
+          </div>
           <div class="summary-note">${escapeHtml(buildGoalProgressNote(selectedStudent, section))}</div>
           <table>
             <thead>
               <tr>
                 <th>Date</th>
+                <th>Score / Data</th>
                 <th>Location</th>
                 <th>Collected By</th>
-                <th>Method</th>
-                <th>Score / Data</th>
                 <th>Reinforcement</th>
                 <th>Session Note</th>
               </tr>
@@ -3415,16 +3432,35 @@ const showDemoUnsavedMessage = () => {
             body { font-family: Arial, sans-serif; color: #172554; margin: 32px; line-height: 1.45; }
             h1 { margin-bottom: 4px; }
             h2 { color: #1e3a8a; margin-top: 28px; }
+            .report-actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 0 0 18px; }
+            .report-actions button { border: 0; border-radius: 999px; padding: 10px 14px; font-weight: 700; cursor: pointer; }
+            .print-btn { background: #7c3aed; color: white; }
+            .close-btn { background: #e5e7eb; color: #111827; }
             .meta { color: #475569; margin-bottom: 18px; }
+            .context-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 12px; margin: 10px 0 12px; color: #1e293b; }
             .summary-note { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 12px; margin: 10px 0 14px; color: #1e293b; }
             table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
             th, td { border: 1px solid #cbd5e1; padding: 8px; vertical-align: top; text-align: left; }
             th { background: #dbeafe; color: #1e3a8a; }
             .footer { margin-top: 28px; font-size: 12px; color: #64748b; }
-            @media print { body { margin: 18px; } .goal-section { break-inside: avoid; } }
+            @media (max-width: 700px) {
+              body { margin: 16px; }
+              table { display: block; overflow-x: auto; white-space: normal; font-size: 11px; }
+              th, td { padding: 7px; }
+              td:last-child { min-width: 220px; }
+            }
+            @media print {
+              body { margin: 18px; }
+              .goal-section { break-inside: avoid; }
+              .report-actions { display: none; }
+            }
           </style>
         </head>
         <body>
+          <div class="report-actions">
+            <button class="print-btn" onclick="window.print()">Print / Save PDF</button>
+            <button class="close-btn" onclick="window.close()">Close Report</button>
+          </div>
           <h1>RaMP Tracker Session Report</h1>
           <div class="meta">
             <strong>Student:</strong> ${escapeHtml(selectedStudent.name)}<br />
@@ -3432,8 +3468,7 @@ const showDemoUnsavedMessage = () => {
             <strong>Entries Included:</strong> ${escapeHtml(filteredSavedHistory.length)}
           </div>
           ${sectionHtml}
-          <div class="footer">Generated from RaMP Tracker. Use your browser print menu to save this report as a PDF.</div>
-          <script>window.onload = function(){ window.print(); };</script>
+          <div class="footer">Generated from RaMP Tracker. Use the Print / Save PDF button to save this report.</div>
         </body>
       </html>
     `);
@@ -5476,6 +5511,7 @@ const showDemoUnsavedMessage = () => {
         <h2 style={styles.cardTitle}>Student Progress</h2>
 
         <div
+          key={progressFilterResetKey}
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
@@ -5512,7 +5548,10 @@ const showDemoUnsavedMessage = () => {
           <div style={{ alignSelf: "end", display: "flex", gap: "8px", flexWrap: "wrap" }}>
             <button
               type="button"
-              onClick={() => setProgressDateRange({ start: "", end: "" })}
+              onClick={() => {
+                setProgressDateRange({ start: "", end: "" });
+                setProgressFilterResetKey((prev) => prev + 1);
+              }}
               style={styles.secondaryButton}
             >
               Clear Dates
@@ -5565,6 +5604,19 @@ const showDemoUnsavedMessage = () => {
                   targetLabel={section.targetLabel}
                 />
 
+                <div style={{
+                  background: "#f8fafc",
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "14px",
+                  padding: "12px",
+                  marginBottom: "14px",
+                  color: "#374151",
+                  lineHeight: 1.5
+                }}>
+                  <div><strong>Goal:</strong> {section.fullGoalText || section.title}</div>
+                  <div><strong>Benchmark / Objective:</strong> {section.objectiveText || "Goal-level data"}</div>
+                </div>
+
                 <div
                   style={{
                     fontWeight: 800,
@@ -5584,7 +5636,6 @@ const showDemoUnsavedMessage = () => {
                       <thead>
                         <tr>
                           <th style={styles.th}>Date</th>
-                          <th style={styles.th}>Benchmark / Objective</th>
                           <th style={styles.th}>Location</th>
                           <th style={styles.th}>Collected By</th>
                           <th style={styles.th}>Method</th>
@@ -5599,11 +5650,6 @@ const showDemoUnsavedMessage = () => {
                         {section.entries.map((entry) => (
                           <tr key={entry.id}>
                             <td style={styles.td}>{entry.date}</td>
-                            <td style={styles.td}>
-                              {entry.targetType === "benchmark"
-                                ? entry.benchmarkText
-                                : "Goal Level"}
-                            </td>
                             <td style={styles.td}>{entry.location || "-"}</td>
                             <td style={styles.td}>{entry.collectedBy || "-"}</td>
                             <td style={styles.td}>
