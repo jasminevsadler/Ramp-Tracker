@@ -1762,21 +1762,21 @@ function LandingScreen({
       alignItems: "center",
       justifyContent: "center",
       background: "linear-gradient(180deg, #edf4ff 0%, #ffffff 100%)",
-      padding: "24px",
+      padding: "20px",
       fontFamily: "Inter, sans-serif"
     }}>
       <div style={{
         width: "100%",
-        maxWidth: "520px",
+        maxWidth: "500px",
         background: "white",
         borderRadius: "24px",
         padding: "40px",
-        boxShadow: "0 18px 40px rgba(124,58,237,0.12)",
+        boxShadow: "0 20px 50px rgba(0,0,0,0.08)",
         textAlign: "center"
       }}>
 
         <h1 style={{
-          fontSize: "42px",
+          fontSize: "38px",
           marginBottom: "10px",
           color: "#1f2937"
         }}>
@@ -1790,7 +1790,7 @@ function LandingScreen({
           marginBottom: "30px"
         }}>
           Track IEP goals, prompting, behavior,
-          and student progress in seconds.
+          and progress in seconds.
         </p>
 
         <button
@@ -1798,7 +1798,7 @@ function LandingScreen({
           style={{
             width: "100%",
             padding: "16px",
-            borderRadius: "18px",
+            borderRadius: "14px",
             border: "none",
             background: "#7c3aed",
             color: "white",
@@ -1824,7 +1824,7 @@ function LandingScreen({
           style={{
             width: "100%",
             padding: "14px",
-            borderRadius: "18px",
+            borderRadius: "14px",
             border: "2px solid #7c3aed",
             background: "white",
             color: "#7c3aed",
@@ -1894,9 +1894,12 @@ function LandingScreen({
             </p>
           </div>
 
-      
+        </div>
 
-       
+      </div>
+    </div>
+  );
+}
 
 export default function App() {
   // Demo-first launch: visitors can explore first, then log in to save real data.
@@ -3594,7 +3597,7 @@ const showDemoUnsavedMessage = () => {
     },
     tab: {
       padding: "12px 18px",
-      borderRadius: "18px",
+      borderRadius: "14px",
       border: `1px solid ${demoTheme.tabBorder}`,
       background: "white",
       color: demoTheme.accentText,
@@ -3604,7 +3607,7 @@ const showDemoUnsavedMessage = () => {
     },
     activeTab: {
       padding: "12px 18px",
-      borderRadius: "18px",
+      borderRadius: "14px",
       border: `1px solid ${demoTheme.selectedBorder}`,
       background: `linear-gradient(135deg, ${demoTheme.accent} 0%, ${demoTheme.accentDark} 100%)`,
       color: "white",
@@ -3629,7 +3632,7 @@ const showDemoUnsavedMessage = () => {
     card: {
       background: "white",
       borderRadius: "22px",
-      padding: "24px",
+      padding: "20px",
       boxShadow: "0 10px 30px rgba(15, 23, 42, 0.08)",
       border: `1px solid ${demoTheme.cardBorder}`,
       marginBottom: "20px",
@@ -3691,7 +3694,7 @@ const showDemoUnsavedMessage = () => {
       background: `linear-gradient(135deg, ${demoTheme.accent} 0%, ${demoTheme.accentDark} 100%)`,
       color: "white",
       border: "none",
-      borderRadius: "18px",
+      borderRadius: "14px",
       padding: "12px 16px",
       fontSize: "15px",
       fontWeight: 700,
@@ -3702,7 +3705,7 @@ const showDemoUnsavedMessage = () => {
       background: "#0f172a",
       color: "white",
       border: "none",
-      borderRadius: "18px",
+      borderRadius: "14px",
       padding: "12px 16px",
       fontSize: "14px",
       fontWeight: 700,
@@ -3712,7 +3715,7 @@ const showDemoUnsavedMessage = () => {
       background: "linear-gradient(135deg, #059669 0%, #10b981 100%)",
       color: "white",
       border: "none",
-      borderRadius: "18px",
+      borderRadius: "14px",
       padding: "12px 16px",
       fontSize: "15px",
       fontWeight: 700,
@@ -3723,7 +3726,7 @@ const showDemoUnsavedMessage = () => {
       background: "linear-gradient(135deg, #dc2626 0%, #ef4444 100%)",
       color: "white",
       border: "none",
-      borderRadius: "18px",
+      borderRadius: "14px",
       padding: "12px 16px",
       fontSize: "15px",
       fontWeight: 700,
@@ -3734,7 +3737,7 @@ const showDemoUnsavedMessage = () => {
       background: demoTheme.accentSoft,
       color: demoTheme.accentDark,
       border: `1px solid ${demoTheme.tabBorder}`,
-      borderRadius: "18px",
+      borderRadius: "14px",
       padding: "10px 14px",
       fontSize: "14px",
       fontWeight: 700,
@@ -3834,14 +3837,14 @@ const showDemoUnsavedMessage = () => {
     },
     benchmarkCard: {
       border: "1px solid #dbeafe",
-      borderRadius: "18px",
+      borderRadius: "14px",
       padding: "12px",
       background: "white",
       marginBottom: "10px",
     },
     selectedBenchmarkCard: {
       border: `2px solid ${demoTheme.selectedBorder}`,
-      borderRadius: "18px",
+      borderRadius: "14px",
       padding: "12px",
       background: demoTheme.accentSoft,
       marginBottom: "10px",
@@ -3849,7 +3852,7 @@ const showDemoUnsavedMessage = () => {
     },
     benchmarkCardClickable: {
       border: "1px solid #dbeafe",
-      borderRadius: "18px",
+      borderRadius: "14px",
       padding: "12px",
       background: "white",
       marginBottom: "10px",
@@ -3858,7 +3861,7 @@ const showDemoUnsavedMessage = () => {
     infoBlock: {
       background: "#ffffff",
       border: "1px solid #dbeafe",
-      borderRadius: "18px",
+      borderRadius: "14px",
       padding: "14px",
       marginBottom: "12px",
     },
@@ -5769,7 +5772,7 @@ const showDemoUnsavedMessage = () => {
       alignItems: "center",
       justifyContent: "center",
       zIndex: 9999,
-      padding: "24px"
+      padding: "20px"
     }}>
       <div style={{
         background: "white",
@@ -5806,7 +5809,7 @@ const showDemoUnsavedMessage = () => {
             width: "100%",
             padding: "14px",
             border: "none",
-            borderRadius: "18px",
+            borderRadius: "14px",
             background: "#7c3aed",
             color: "white",
             fontSize: "16px",
@@ -5815,7 +5818,7 @@ const showDemoUnsavedMessage = () => {
             marginBottom: "12px"
           }}
         >
-          Start Your Free Trial
+          Start Free Trial
         </button>
 
         <button
@@ -5823,7 +5826,7 @@ const showDemoUnsavedMessage = () => {
           style={{
             width: "100%",
             padding: "12px",
-            borderRadius: "18px",
+            borderRadius: "14px",
             border: "1px solid #d1d5db",
             background: "white",
             color: "#374151",
@@ -5866,7 +5869,7 @@ const showDemoUnsavedMessage = () => {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          padding: "24px"
+          padding: "20px"
         }}>
           <div style={{
             maxWidth: "420px",
@@ -5893,7 +5896,7 @@ const showDemoUnsavedMessage = () => {
                 width: "100%",
                 padding: "14px",
                 border: "none",
-                borderRadius: "18px",
+                borderRadius: "14px",
                 background: "#7c3aed",
                 color: "white",
                 fontWeight: "600",
