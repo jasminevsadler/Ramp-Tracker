@@ -4849,7 +4849,7 @@ export default function App() {
             </button>
 
             <div style={{ marginTop: "16px", color: "#475569", fontSize: "14px", lineHeight: 1.5 }}>
-              🎉 Free Early Access through June 15
+              🎉 Free 14 Day Trial
             </div>
           </div>
         </div>
@@ -4898,7 +4898,7 @@ export default function App() {
                     setShowGate(true);
                   }}
                 >
-                  Create Free Account — Free through June 15
+                  Create Free Account — Free 14 Day Trial
                 </button>
 
                 <button
