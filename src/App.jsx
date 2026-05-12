@@ -2054,74 +2054,7 @@ function LandingScreen({
 
         </div>
 
-        <div style={{
-          marginTop: "36px",
-          display: "grid",
-          gap: "14px"
-        }}>
-          <div style={{
-            background: "#f8fafc",
-            borderRadius: "18px",
-            padding: "16px",
-            border: "1px solid #e5e7eb"
-          }}>
-            <div style={{
-              fontWeight: "700",
-              marginBottom: "6px"
-            }}>
-              Student Dashboard
-            </div>
-
-            <div style={{
-              color: "#6b7280",
-              fontSize: "14px"
-            }}>
-              Organize students, goals, and progress in one place.
-            </div>
-          </div>
-
-          <div style={{
-            background: "#f8fafc",
-            borderRadius: "18px",
-            padding: "16px",
-            border: "1px solid #e5e7eb"
-          }}>
-            <div style={{
-              fontWeight: "700",
-              marginBottom: "6px"
-            }}>
-              Progress Monitoring
-            </div>
-
-            <div style={{
-              color: "#6b7280",
-              fontSize: "14px"
-            }}>
-              Track prompting, intervals, duration, and mastery trends.
-            </div>
-          </div>
-
-          <div style={{
-            background: "#f8fafc",
-            borderRadius: "18px",
-            padding: "16px",
-            border: "1px solid #e5e7eb"
-          }}>
-            <div style={{
-              fontWeight: "700",
-              marginBottom: "6px"
-            }}>
-              Auto-Generated Notes
-            </div>
-
-            <div style={{
-              color: "#6b7280",
-              fontSize: "14px"
-            }}>
-              Instantly turn session data into professional documentation.
-            </div>
-          </div>
-        </div>
+       
 
         <div style={{
           marginTop: "42px"
