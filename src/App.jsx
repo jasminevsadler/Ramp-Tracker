@@ -1744,164 +1744,6 @@ function GraphCard({ title, points, mode, targetValue = null, targetLabel = "Goa
             ? "Graph shows total duration recorded for each session."
             : "0 = Not demonstrating • 1 = With prompts • 2 = Independent"}
         {showTargetLine ? ` Goal line: ${targetLabel}.` : ""}
-        <div style={{
-          marginTop: "42px"
-        }}>
-          <h2 style={{
-            fontSize: "22px",
-            marginBottom: "18px",
-            color: "#111827"
-          }}>
-            See RaMP Tracker in Action
-          </h2>
-
-          <div style={{
-            display: "grid",
-            gap: "16px"
-          }}>
-
-            <div style={{
-              background: "white",
-              borderRadius: "22px",
-              padding: "18px",
-              border: "1px solid #e5e7eb",
-              boxShadow: "0 12px 30px rgba(0,0,0,0.06)"
-            }}>
-              <div style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginBottom: "14px"
-              }}>
-                <div>
-                  <div style={{
-                    fontWeight: "700",
-                    fontSize: "17px"
-                  }}>
-                    Liam Carter
-                  </div>
-
-                  <div style={{
-                    fontSize: "13px",
-                    color: "#6b7280"
-                  }}>
-                    Task Completion Goal
-                  </div>
-                </div>
-
-                <div style={{
-                  background: "#dcfce7",
-                  color: "#166534",
-                  padding: "6px 10px",
-                  borderRadius: "999px",
-                  fontSize: "12px",
-                  fontWeight: "600",
-                  height: "fit-content"
-                }}>
-                  Improving
-                </div>
-              </div>
-
-              <div style={{
-                height: "8px",
-                borderRadius: "999px",
-                background: "#ede9fe",
-                overflow: "hidden",
-                marginBottom: "12px"
-              }}>
-                <div style={{
-                  width: "78%",
-                  height: "100%",
-                  background: "#7c3aed"
-                }} />
-              </div>
-
-              <div style={{
-                display: "flex",
-                justifyContent: "space-between",
-                fontSize: "13px",
-                color: "#6b7280"
-              }}>
-                <span>Current Average</span>
-                <span>1.8 / 2 Independent</span>
-              </div>
-            </div>
-
-            <div style={{
-              background: "white",
-              borderRadius: "22px",
-              padding: "18px",
-              border: "1px solid #e5e7eb",
-              boxShadow: "0 12px 30px rgba(0,0,0,0.06)"
-            }}>
-              <div style={{
-                fontWeight: "700",
-                marginBottom: "10px",
-                fontSize: "17px"
-              }}>
-                Auto-Generated Session Note
-              </div>
-
-              <div style={{
-                background: "#f8fafc",
-                borderRadius: "16px",
-                padding: "14px",
-                color: "#374151",
-                lineHeight: "1.6",
-                fontSize: "14px"
-              }}>
-                On April 18, during small group instruction in the classroom,
-                Liam worked on beginning tasks independently and completed the
-                activity with verbal prompting and praise reinforcement.
-              </div>
-            </div>
-
-            <div style={{
-              background: "white",
-              borderRadius: "22px",
-              padding: "18px",
-              border: "1px solid #e5e7eb",
-              boxShadow: "0 12px 30px rgba(0,0,0,0.06)"
-            }}>
-              <div style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginBottom: "12px"
-              }}>
-                <div style={{
-                  fontWeight: "700",
-                  fontSize: "17px"
-                }}>
-                  Progress Monitoring
-                </div>
-
-                <div style={{
-                  color: "#7c3aed",
-                  fontWeight: "600",
-                  fontSize: "13px"
-                }}>
-                  Goal Line: 2
-                </div>
-              </div>
-
-              <div style={{
-                display: "flex",
-                alignItems: "flex-end",
-                gap: "10px",
-                height: "90px",
-                marginTop: "10px"
-              }}>
-                <div style={{ width: "18%", height: "35%", background: "#c4b5fd", borderRadius: "10px 10px 0 0" }} />
-                <div style={{ width: "18%", height: "48%", background: "#a78bfa", borderRadius: "10px 10px 0 0" }} />
-                <div style={{ width: "18%", height: "62%", background: "#8b5cf6", borderRadius: "10px 10px 0 0" }} />
-                <div style={{ width: "18%", height: "78%", background: "#7c3aed", borderRadius: "10px 10px 0 0" }} />
-                <div style={{ width: "18%", height: "88%", background: "#6d28d9", borderRadius: "10px 10px 0 0" }} />
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-
       </div>
     </div>
   );
@@ -2054,165 +1896,74 @@ function LandingScreen({
 
         </div>
 
-       
-
         <div style={{
-          marginTop: "42px"
+          marginTop: "36px",
+          display: "grid",
+          gap: "14px"
         }}>
-          <h2 style={{
-            fontSize: "22px",
-            marginBottom: "18px",
-            color: "#111827"
+          <div style={{
+            background: "#f8fafc",
+            borderRadius: "18px",
+            padding: "16px",
+            border: "1px solid #e5e7eb"
           }}>
-            See RaMP Tracker in Action
-          </h2>
+            <div style={{
+              fontWeight: "700",
+              marginBottom: "6px"
+            }}>
+              Student Dashboard
+            </div>
+
+            <div style={{
+              color: "#6b7280",
+              fontSize: "14px"
+            }}>
+              Organize students, goals, and progress in one place.
+            </div>
+          </div>
 
           <div style={{
-            display: "grid",
-            gap: "16px"
+            background: "#f8fafc",
+            borderRadius: "18px",
+            padding: "16px",
+            border: "1px solid #e5e7eb"
           }}>
-
             <div style={{
-              background: "white",
-              borderRadius: "22px",
-              padding: "18px",
-              border: "1px solid #e5e7eb",
-              boxShadow: "0 12px 30px rgba(0,0,0,0.06)"
+              fontWeight: "700",
+              marginBottom: "6px"
             }}>
-              <div style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginBottom: "14px"
-              }}>
-                <div>
-                  <div style={{
-                    fontWeight: "700",
-                    fontSize: "17px"
-                  }}>
-                    Liam Carter
-                  </div>
-
-                  <div style={{
-                    fontSize: "13px",
-                    color: "#6b7280"
-                  }}>
-                    Task Completion Goal
-                  </div>
-                </div>
-
-                <div style={{
-                  background: "#dcfce7",
-                  color: "#166534",
-                  padding: "6px 10px",
-                  borderRadius: "999px",
-                  fontSize: "12px",
-                  fontWeight: "600",
-                  height: "fit-content"
-                }}>
-                  Improving
-                </div>
-              </div>
-
-              <div style={{
-                height: "8px",
-                borderRadius: "999px",
-                background: "#ede9fe",
-                overflow: "hidden",
-                marginBottom: "12px"
-              }}>
-                <div style={{
-                  width: "78%",
-                  height: "100%",
-                  background: "#7c3aed"
-                }} />
-              </div>
-
-              <div style={{
-                display: "flex",
-                justifyContent: "space-between",
-                fontSize: "13px",
-                color: "#6b7280"
-              }}>
-                <span>Current Average</span>
-                <span>1.8 / 2 Independent</span>
-              </div>
+              Progress Monitoring
             </div>
 
             <div style={{
-              background: "white",
-              borderRadius: "22px",
-              padding: "18px",
-              border: "1px solid #e5e7eb",
-              boxShadow: "0 12px 30px rgba(0,0,0,0.06)"
+              color: "#6b7280",
+              fontSize: "14px"
             }}>
-              <div style={{
-                fontWeight: "700",
-                marginBottom: "10px",
-                fontSize: "17px"
-              }}>
-                Auto-Generated Session Note
-              </div>
+              Track prompting, intervals, duration, and mastery trends.
+            </div>
+          </div>
 
-              <div style={{
-                background: "#f8fafc",
-                borderRadius: "16px",
-                padding: "14px",
-                color: "#374151",
-                lineHeight: "1.6",
-                fontSize: "14px"
-              }}>
-                On April 18, during small group instruction in the classroom,
-                Liam worked on beginning tasks independently and completed the
-                activity with verbal prompting and praise reinforcement.
-              </div>
+          <div style={{
+            background: "#f8fafc",
+            borderRadius: "18px",
+            padding: "16px",
+            border: "1px solid #e5e7eb"
+          }}>
+            <div style={{
+              fontWeight: "700",
+              marginBottom: "6px"
+            }}>
+              Auto-Generated Notes
             </div>
 
             <div style={{
-              background: "white",
-              borderRadius: "22px",
-              padding: "18px",
-              border: "1px solid #e5e7eb",
-              boxShadow: "0 12px 30px rgba(0,0,0,0.06)"
+              color: "#6b7280",
+              fontSize: "14px"
             }}>
-              <div style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginBottom: "12px"
-              }}>
-                <div style={{
-                  fontWeight: "700",
-                  fontSize: "17px"
-                }}>
-                  Progress Monitoring
-                </div>
-
-                <div style={{
-                  color: "#7c3aed",
-                  fontWeight: "600",
-                  fontSize: "13px"
-                }}>
-                  Goal Line: 2
-                </div>
-              </div>
-
-              <div style={{
-                display: "flex",
-                alignItems: "flex-end",
-                gap: "10px",
-                height: "90px",
-                marginTop: "10px"
-              }}>
-                <div style={{ width: "18%", height: "35%", background: "#c4b5fd", borderRadius: "10px 10px 0 0" }} />
-                <div style={{ width: "18%", height: "48%", background: "#a78bfa", borderRadius: "10px 10px 0 0" }} />
-                <div style={{ width: "18%", height: "62%", background: "#8b5cf6", borderRadius: "10px 10px 0 0" }} />
-                <div style={{ width: "18%", height: "78%", background: "#7c3aed", borderRadius: "10px 10px 0 0" }} />
-                <div style={{ width: "18%", height: "88%", background: "#6d28d9", borderRadius: "10px 10px 0 0" }} />
-              </div>
+              Instantly turn session data into professional documentation.
             </div>
-
           </div>
         </div>
-
 
       </div>
     </div>
