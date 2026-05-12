@@ -1894,7 +1894,7 @@ function LandingScreen({
             </p>
           </div>
 
-        </div>
+      
 
        
 
