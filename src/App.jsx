@@ -1905,6 +1905,9 @@ export default function App() {
   // Demo-first launch: visitors can explore first, then log in to save real data.
   const [showGate, setShowGate] = useState(false);
   const [showLandingScreen, setShowLandingScreen] = useState(true);
+  const [showUpgradePopup, setShowUpgradePopup] = useState(false);
+  const [trialDaysLeft, setTrialDaysLeft] = useState(null);
+  const [isTrialExpired, setIsTrialExpired] = useState(false);
   const [user, setUser] = useState(null);
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
@@ -5713,6 +5716,36 @@ export default function App() {
   };
 
 
+
+  useEffect(() => {
+    if (isDemoMode) return;
+
+    const trialStart = localStorage.getItem("ramp_trial_start");
+
+    if (!trialStart) {
+      const today = new Date().toISOString();
+      localStorage.setItem("ramp_trial_start", today);
+      setTrialDaysLeft(14);
+      return;
+    }
+
+    const startDate = new Date(trialStart);
+    const today = new Date();
+
+    const diffTime = today - startDate;
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    const remaining = 14 - diffDays;
+
+    if (remaining <= 0) {
+      setTrialDaysLeft(0);
+      setIsTrialExpired(true);
+    } else {
+      setTrialDaysLeft(remaining);
+    }
+  }, [isDemoMode]);
+
+
   if (showLandingScreen) {
     return (
       <LandingScreen
@@ -5733,8 +5766,153 @@ export default function App() {
     );
   }
 
+
+  const UpgradePopup = () => (
+    <div style={{
+      position: "fixed",
+      inset: 0,
+      background: "rgba(0,0,0,0.45)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: 9999,
+      padding: "20px"
+    }}>
+      <div style={{
+        background: "white",
+        borderRadius: "24px",
+        maxWidth: "420px",
+        width: "100%",
+        padding: "32px",
+        boxShadow: "0 20px 50px rgba(0,0,0,0.15)",
+        textAlign: "center"
+      }}>
+        <h2 style={{
+          marginTop: 0,
+          marginBottom: "12px",
+          color: "#111827"
+        }}>
+          Start Your Free 14-Day Trial
+        </h2>
+
+        <p style={{
+          color: "#6b7280",
+          lineHeight: "1.6",
+          marginBottom: "24px"
+        }}>
+          Save your own students, export reports,
+          track progress, and access all RaMP Tracker features.
+        </p>
+
+        <button
+          onClick={() => {
+            setShowUpgradePopup(false);
+            setShowGate(true);
+          }}
+          style={{
+            width: "100%",
+            padding: "14px",
+            border: "none",
+            borderRadius: "14px",
+            background: "#7c3aed",
+            color: "white",
+            fontSize: "16px",
+            fontWeight: "600",
+            cursor: "pointer",
+            marginBottom: "12px"
+          }}
+        >
+          Start Free Trial
+        </button>
+
+        <button
+          onClick={() => setShowUpgradePopup(false)}
+          style={{
+            width: "100%",
+            padding: "12px",
+            borderRadius: "14px",
+            border: "1px solid #d1d5db",
+            background: "white",
+            color: "#374151",
+            cursor: "pointer"
+          }}
+        >
+          Continue Demo
+        </button>
+      </div>
+    </div>
+  );
+
+
+
   return (
     <div style={styles.page}>
+      {!isDemoMode && trialDaysLeft !== null && (
+        <div style={{
+          background: "#ede9fe",
+          color: "#5b21b6",
+          padding: "10px 16px",
+          textAlign: "center",
+          fontWeight: "600",
+          fontSize: "14px"
+        }}>
+          {isTrialExpired
+            ? "Your free trial has ended."
+            : `${trialDaysLeft} day${trialDaysLeft === 1 ? "" : "s"} left in your free trial`}
+        </div>
+      )}
+
+      {showUpgradePopup && <UpgradePopup />}
+
+      {isTrialExpired && (
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(255,255,255,0.96)",
+          zIndex: 10000,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "20px"
+        }}>
+          <div style={{
+            maxWidth: "420px",
+            background: "white",
+            borderRadius: "24px",
+            padding: "36px",
+            textAlign: "center",
+            boxShadow: "0 20px 50px rgba(0,0,0,0.12)"
+          }}>
+            <h2>Your Free Trial Has Ended</h2>
+
+            <p style={{
+              color: "#6b7280",
+              lineHeight: "1.6",
+              marginBottom: "24px"
+            }}>
+              Continue using RaMP Tracker to save student data,
+              monitor progress, and generate notes.
+            </p>
+
+            <button
+              onClick={() => setShowGate(true)}
+              style={{
+                width: "100%",
+                padding: "14px",
+                border: "none",
+                borderRadius: "14px",
+                background: "#7c3aed",
+                color: "white",
+                fontWeight: "600",
+                cursor: "pointer"
+              }}
+            >
+              Upgrade Account
+            </button>
+          </div>
+        </div>
+      )}
+
       <style>{`
         * { box-sizing: border-box; }
         body { margin: 0; }
