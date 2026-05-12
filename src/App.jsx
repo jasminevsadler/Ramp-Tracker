@@ -1762,21 +1762,21 @@ function LandingScreen({
       alignItems: "center",
       justifyContent: "center",
       background: "linear-gradient(180deg, #edf4ff 0%, #ffffff 100%)",
-      padding: "20px",
+      padding: "24px",
       fontFamily: "Inter, sans-serif"
     }}>
       <div style={{
         width: "100%",
-        maxWidth: "500px",
+        maxWidth: "520px",
         background: "white",
         borderRadius: "24px",
         padding: "40px",
-        boxShadow: "0 20px 50px rgba(0,0,0,0.08)",
+        boxShadow: "0 18px 40px rgba(124,58,237,0.12)",
         textAlign: "center"
       }}>
 
         <h1 style={{
-          fontSize: "38px",
+          fontSize: "42px",
           marginBottom: "10px",
           color: "#1f2937"
         }}>
@@ -1790,7 +1790,7 @@ function LandingScreen({
           marginBottom: "30px"
         }}>
           Track IEP goals, prompting, behavior,
-          and progress in seconds.
+          and student progress in seconds.
         </p>
 
         <button
@@ -1798,7 +1798,7 @@ function LandingScreen({
           style={{
             width: "100%",
             padding: "16px",
-            borderRadius: "14px",
+            borderRadius: "18px",
             border: "none",
             background: "#7c3aed",
             color: "white",
@@ -1824,7 +1824,7 @@ function LandingScreen({
           style={{
             width: "100%",
             padding: "14px",
-            borderRadius: "14px",
+            borderRadius: "18px",
             border: "2px solid #7c3aed",
             background: "white",
             color: "#7c3aed",
@@ -1894,6 +1894,75 @@ function LandingScreen({
             </p>
           </div>
 
+        </div>
+
+        <div style={{
+          marginTop: "36px",
+          display: "grid",
+          gap: "14px"
+        }}>
+          <div style={{
+            background: "#f8fafc",
+            borderRadius: "18px",
+            padding: "16px",
+            border: "1px solid #e5e7eb"
+          }}>
+            <div style={{
+              fontWeight: "700",
+              marginBottom: "6px"
+            }}>
+              Student Dashboard
+            </div>
+
+            <div style={{
+              color: "#6b7280",
+              fontSize: "14px"
+            }}>
+              Organize students, goals, and progress in one place.
+            </div>
+          </div>
+
+          <div style={{
+            background: "#f8fafc",
+            borderRadius: "18px",
+            padding: "16px",
+            border: "1px solid #e5e7eb"
+          }}>
+            <div style={{
+              fontWeight: "700",
+              marginBottom: "6px"
+            }}>
+              Progress Monitoring
+            </div>
+
+            <div style={{
+              color: "#6b7280",
+              fontSize: "14px"
+            }}>
+              Track prompting, intervals, duration, and mastery trends.
+            </div>
+          </div>
+
+          <div style={{
+            background: "#f8fafc",
+            borderRadius: "18px",
+            padding: "16px",
+            border: "1px solid #e5e7eb"
+          }}>
+            <div style={{
+              fontWeight: "700",
+              marginBottom: "6px"
+            }}>
+              Auto-Generated Notes
+            </div>
+
+            <div style={{
+              color: "#6b7280",
+              fontSize: "14px"
+            }}>
+              Instantly turn session data into professional documentation.
+            </div>
+          </div>
         </div>
 
       </div>
@@ -3597,7 +3666,7 @@ const showDemoUnsavedMessage = () => {
     },
     tab: {
       padding: "12px 18px",
-      borderRadius: "14px",
+      borderRadius: "18px",
       border: `1px solid ${demoTheme.tabBorder}`,
       background: "white",
       color: demoTheme.accentText,
@@ -3607,7 +3676,7 @@ const showDemoUnsavedMessage = () => {
     },
     activeTab: {
       padding: "12px 18px",
-      borderRadius: "14px",
+      borderRadius: "18px",
       border: `1px solid ${demoTheme.selectedBorder}`,
       background: `linear-gradient(135deg, ${demoTheme.accent} 0%, ${demoTheme.accentDark} 100%)`,
       color: "white",
@@ -3632,7 +3701,7 @@ const showDemoUnsavedMessage = () => {
     card: {
       background: "white",
       borderRadius: "22px",
-      padding: "20px",
+      padding: "24px",
       boxShadow: "0 10px 30px rgba(15, 23, 42, 0.08)",
       border: `1px solid ${demoTheme.cardBorder}`,
       marginBottom: "20px",
@@ -3694,7 +3763,7 @@ const showDemoUnsavedMessage = () => {
       background: `linear-gradient(135deg, ${demoTheme.accent} 0%, ${demoTheme.accentDark} 100%)`,
       color: "white",
       border: "none",
-      borderRadius: "14px",
+      borderRadius: "18px",
       padding: "12px 16px",
       fontSize: "15px",
       fontWeight: 700,
@@ -3705,7 +3774,7 @@ const showDemoUnsavedMessage = () => {
       background: "#0f172a",
       color: "white",
       border: "none",
-      borderRadius: "14px",
+      borderRadius: "18px",
       padding: "12px 16px",
       fontSize: "14px",
       fontWeight: 700,
@@ -3715,7 +3784,7 @@ const showDemoUnsavedMessage = () => {
       background: "linear-gradient(135deg, #059669 0%, #10b981 100%)",
       color: "white",
       border: "none",
-      borderRadius: "14px",
+      borderRadius: "18px",
       padding: "12px 16px",
       fontSize: "15px",
       fontWeight: 700,
@@ -3726,7 +3795,7 @@ const showDemoUnsavedMessage = () => {
       background: "linear-gradient(135deg, #dc2626 0%, #ef4444 100%)",
       color: "white",
       border: "none",
-      borderRadius: "14px",
+      borderRadius: "18px",
       padding: "12px 16px",
       fontSize: "15px",
       fontWeight: 700,
@@ -3737,7 +3806,7 @@ const showDemoUnsavedMessage = () => {
       background: demoTheme.accentSoft,
       color: demoTheme.accentDark,
       border: `1px solid ${demoTheme.tabBorder}`,
-      borderRadius: "14px",
+      borderRadius: "18px",
       padding: "10px 14px",
       fontSize: "14px",
       fontWeight: 700,
@@ -3837,14 +3906,14 @@ const showDemoUnsavedMessage = () => {
     },
     benchmarkCard: {
       border: "1px solid #dbeafe",
-      borderRadius: "14px",
+      borderRadius: "18px",
       padding: "12px",
       background: "white",
       marginBottom: "10px",
     },
     selectedBenchmarkCard: {
       border: `2px solid ${demoTheme.selectedBorder}`,
-      borderRadius: "14px",
+      borderRadius: "18px",
       padding: "12px",
       background: demoTheme.accentSoft,
       marginBottom: "10px",
@@ -3852,7 +3921,7 @@ const showDemoUnsavedMessage = () => {
     },
     benchmarkCardClickable: {
       border: "1px solid #dbeafe",
-      borderRadius: "14px",
+      borderRadius: "18px",
       padding: "12px",
       background: "white",
       marginBottom: "10px",
@@ -3861,7 +3930,7 @@ const showDemoUnsavedMessage = () => {
     infoBlock: {
       background: "#ffffff",
       border: "1px solid #dbeafe",
-      borderRadius: "14px",
+      borderRadius: "18px",
       padding: "14px",
       marginBottom: "12px",
     },
@@ -5772,7 +5841,7 @@ const showDemoUnsavedMessage = () => {
       alignItems: "center",
       justifyContent: "center",
       zIndex: 9999,
-      padding: "20px"
+      padding: "24px"
     }}>
       <div style={{
         background: "white",
@@ -5809,7 +5878,7 @@ const showDemoUnsavedMessage = () => {
             width: "100%",
             padding: "14px",
             border: "none",
-            borderRadius: "14px",
+            borderRadius: "18px",
             background: "#7c3aed",
             color: "white",
             fontSize: "16px",
@@ -5818,7 +5887,7 @@ const showDemoUnsavedMessage = () => {
             marginBottom: "12px"
           }}
         >
-          Start Free Trial
+          Start Your Free Trial
         </button>
 
         <button
@@ -5826,7 +5895,7 @@ const showDemoUnsavedMessage = () => {
           style={{
             width: "100%",
             padding: "12px",
-            borderRadius: "14px",
+            borderRadius: "18px",
             border: "1px solid #d1d5db",
             background: "white",
             color: "#374151",
@@ -5869,7 +5938,7 @@ const showDemoUnsavedMessage = () => {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          padding: "20px"
+          padding: "24px"
         }}>
           <div style={{
             maxWidth: "420px",
@@ -5896,7 +5965,7 @@ const showDemoUnsavedMessage = () => {
                 width: "100%",
                 padding: "14px",
                 border: "none",
-                borderRadius: "14px",
+                borderRadius: "18px",
                 background: "#7c3aed",
                 color: "white",
                 fontWeight: "600",
