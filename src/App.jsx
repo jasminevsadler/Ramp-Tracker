@@ -1863,7 +1863,7 @@ function LandingScreen({
     marginBottom: "8px",
     color: "#4b2e83"
   }}>
-    Watch the 60-Second Tour
+    Watch the Video Tour
   </h3>
 
   <p style={{
