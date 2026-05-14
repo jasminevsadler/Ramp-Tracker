@@ -1837,16 +1837,6 @@ function LandingScreen({
           Try Demo
         </button>
 
-        <button
-          onClick={onWatchTour}
-          style={{
-            background: "transparent",
-            border: "none",
-            color: "#2563eb",
-            fontSize: "15px",
-            cursor: "pointer",
-            textDecoration: "underline"
-          }}
     
 
 <div style={{
