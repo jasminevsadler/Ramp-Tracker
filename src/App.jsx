@@ -1849,8 +1849,6 @@ function LandingScreen({
           }}
     
 
-</button>
-
 <div style={{
   marginTop: "24px",
   background: "#ffffff",
