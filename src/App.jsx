@@ -1847,8 +1847,7 @@ function LandingScreen({
             cursor: "pointer",
             textDecoration: "underline"
           }}
-        >
-          Watch 60-Second Tour
+    
 
 </button>
 
@@ -1881,9 +1880,11 @@ function LandingScreen({
     preload="metadata"
     style={{
       width: "100%",
-      maxWidth: "520px",
-      borderRadius: "14px",
+      maxWidth: "320px",
+      borderRadius: "20px",
       border: "1px solid #ddd"
+        display: "block",
+    margin: "0 auto"
     }}
   >
     <source src="/ramp-preview.mp4" type="video/mp4" />
