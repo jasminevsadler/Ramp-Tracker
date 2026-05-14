@@ -1849,12 +1849,60 @@ function LandingScreen({
           }}
         >
           Watch 60-Second Tour
-        </button>
 
-        <div style={{
-          marginTop: "40px",
-          textAlign: "left"
-        }}>
+</button>
+
+<div style={{
+  marginTop: "24px",
+  background: "#ffffff",
+  borderRadius: "18px",
+  padding: "16px",
+  boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+  textAlign: "center"
+}}>
+  <h3 style={{
+    marginBottom: "8px",
+    color: "#4b2e83"
+  }}>
+    Watch the 60-Second Tour
+  </h3>
+
+  <p style={{
+    fontSize: "14px",
+    color: "#555",
+    marginBottom: "12px"
+  }}>
+    See how RaMP Tracker helps you record data, monitor progress, and generate notes quickly.
+  </p>
+
+  <video
+    controls
+    playsInline
+    preload="metadata"
+    style={{
+      width: "100%",
+      maxWidth: "520px",
+      borderRadius: "14px",
+      border: "1px solid #ddd"
+    }}
+  >
+    <source src="/ramp-preview.mp4" type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+<div style={{
+  marginTop: "40px",
+  textAlign: "left"
+}}>
+
+
+
+
+
+
+          
+          
 
           <div style={{ marginBottom: "18px" }}>
             <h3 style={{ marginBottom: "5px" }}>
