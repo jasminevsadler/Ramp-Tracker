@@ -1752,8 +1752,7 @@ function GraphCard({ title, points, mode, targetValue = null, targetLabel = "Goa
 
 function LandingScreen({
   onDemo,
-  onLogin,
-  onWatchTour
+  onLogin
 }) {
   return (
     <div style={{
@@ -1871,8 +1870,8 @@ function LandingScreen({
       maxWidth: "320px",
       borderRadius: "20px",
       border: "1px solid #ddd",
-        display: "block",
-    margin: "0 auto"
+      display: "block",
+      margin: "0 auto"
     }}
   >
     <source src="/ramp-preview.mp4" type="video/mp4" />
@@ -5838,9 +5837,6 @@ const showDemoUnsavedMessage = () => {
           setAuthMode("signup");
           setShowGate(true);
         }}
-        onWatchTour={() =>
-          window.open("YOUR_VIDEO_LINK", "_blank")
-        }
       />
     );
   }
