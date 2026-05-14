@@ -1870,7 +1870,7 @@ function LandingScreen({
       width: "100%",
       maxWidth: "320px",
       borderRadius: "20px",
-      border: "1px solid #ddd"
+      border: "1px solid #ddd",
         display: "block",
     margin: "0 auto"
     }}
