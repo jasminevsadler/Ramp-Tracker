@@ -2,6 +2,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "./supabaseClient";
 
+const PAYPAL_ANNUAL_PLAN_URL = "https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-4P8424337N188800HNH5Y36Q";
+const PAYPAL_MONTHLY_PLAN_URL = "https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-3BL42423248618717NH5YUQI";
+
 const GRADE_OPTIONS = [
   "Preschool",
   "Pre-K",
@@ -1780,6 +1783,7 @@ function GraphCard({ title, points, mode, targetValue = null, targetLabel = "Goa
 
 function LandingScreen({
   onDemo,
+  onSignup,
   onLogin
 }) {
   return (
@@ -1821,7 +1825,7 @@ function LandingScreen({
         </p>
 
         <button
-          onClick={onLogin}
+          onClick={onSignup}
           style={{
             width: "100%",
             padding: "16px",
@@ -1841,10 +1845,28 @@ function LandingScreen({
         <p style={{
           fontSize: "13px",
           color: "#6b7280",
-          marginBottom: "24px"
+          marginBottom: "14px"
         }}>
           Full access • No credit card required
         </p>
+
+        <button
+          onClick={onLogin}
+          style={{
+            width: "100%",
+            padding: "14px",
+            borderRadius: "14px",
+            border: "2px solid #1e3a8a",
+            background: "white",
+            color: "#1e3a8a",
+            fontSize: "16px",
+            fontWeight: "600",
+            cursor: "pointer",
+            marginBottom: "10px"
+          }}
+        >
+          Log In
+        </button>
 
         <button
           onClick={onDemo}
@@ -6183,10 +6205,16 @@ const showDemoUnsavedMessage = () => {
           setShowLandingScreen(false);
           setIsDemoMode(true);
         }}
-        onLogin={() => {
+        onSignup={() => {
           setShowLandingScreen(false);
           setIsDemoMode(false);
           setAuthMode("signup");
+          setShowGate(true);
+        }}
+        onLogin={() => {
+          setShowLandingScreen(false);
+          setIsDemoMode(false);
+          setAuthMode("login");
           setShowGate(true);
         }}
       />
@@ -6452,7 +6480,7 @@ const showDemoUnsavedMessage = () => {
     padding: "20px"
   }}>
     <div style={{
-      maxWidth: "420px",
+      maxWidth: "440px",
       background: "white",
       borderRadius: "24px",
       padding: "36px",
@@ -6466,14 +6494,13 @@ const showDemoUnsavedMessage = () => {
         lineHeight: "1.6",
         marginBottom: "24px"
       }}>
-        Continue using RaMP Tracker to save student data,
+        Choose a plan to continue using RaMP Tracker to save student data,
         monitor progress, and generate notes.
       </p>
 
       <button
         onClick={() => {
-          setIsTrialExpired(false);
-          setShowGate(true);
+          window.location.href = PAYPAL_ANNUAL_PLAN_URL;
         }}
         style={{
           width: "100%",
@@ -6482,17 +6509,55 @@ const showDemoUnsavedMessage = () => {
           borderRadius: "14px",
           background: "#7c3aed",
           color: "white",
-          fontWeight: "600",
+          fontWeight: "700",
           cursor: "pointer",
           marginBottom: "12px"
         }}
       >
-        Upgrade Account
+        Upgrade - Annual Plan
       </button>
 
       <button
         onClick={() => {
-          localStorage.removeItem("ramp_trial_start");
+          window.location.href = PAYPAL_MONTHLY_PLAN_URL;
+        }}
+        style={{
+          width: "100%",
+          padding: "14px",
+          borderRadius: "14px",
+          border: "2px solid #7c3aed",
+          background: "white",
+          color: "#7c3aed",
+          fontWeight: "700",
+          cursor: "pointer",
+          marginBottom: "12px"
+        }}
+      >
+        Upgrade - Monthly Plan
+      </button>
+
+      <button
+        onClick={() => {
+          setIsTrialExpired(false);
+          setAuthMode("login");
+          setShowGate(true);
+        }}
+        style={{
+          width: "100%",
+          padding: "12px",
+          borderRadius: "14px",
+          border: "1px solid #d1d5db",
+          background: "white",
+          color: "#374151",
+          cursor: "pointer",
+          marginBottom: "10px"
+        }}
+      >
+        Log In With Another Account
+      </button>
+
+      <button
+        onClick={() => {
           setIsTrialExpired(false);
           setShowLandingScreen(true);
         }}
