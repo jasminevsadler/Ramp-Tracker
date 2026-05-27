@@ -44,36 +44,36 @@ const DISABILITY_OPTIONS = [
 const SETTING_OPTIONS = ["School", "Home", "Therapy", "Community", "Other"];
 
 const SESSION_LOCATION_OPTIONS = [
-  "Classroom",
-  "Resource Room",
-  "Small Group",
-  "Therapy Room",
-  "Hallway",
-  "Cafeteria",
-  "Gym",
-  "Specials",
-  "Playground",
   "Bus",
-  "Home",
+  "Cafeteria",
+  "Classroom",
   "Community",
   "Crisis Room",
+  "Gym",
+  "Hallway",
+  "Home",
+  "Playground",
+  "Resource Room",
+  "Small Group",
+  "Specials",
+  "Therapy Room",
   "Other",
 ];
 
 const COLLECTED_BY_OPTIONS = [
-  "General Education Teacher",
-  "Special Education Teacher",
   "Administrator",
   "Behavior Specialist",
   "Board Certified Behavior Analyst",
-  "Registered Behavior Technician",
-  "Speech-Language Pathologist",
-  "Occupational Therapist",
-  "Physical Therapist",
+  "Caregiver",
   "Counselor",
+  "General Education Teacher",
+  "Occupational Therapist",
   "Paraprofessional",
   "Parent",
-  "Caregiver",
+  "Physical Therapist",
+  "Registered Behavior Technician",
+  "Special Education Teacher",
+  "Speech-Language Pathologist",
   "Student",
   "Other",
 ];
@@ -98,9 +98,9 @@ const ROLE_ABBREVIATIONS = {
 const MODELING_OPTIONS = [
   "Adult Model",
   "Peer Model",
+  "Physical Demonstration",
   "Video Model",
   "Visual Example",
-  "Physical Demonstration",
   "Other",
 ];
 
@@ -113,11 +113,11 @@ const PROMPT_OPTIONS = [
 ];
 
 const REINFORCEMENT_OPTIONS = [
-  "Praise",
-  "Token",
   "Break",
-  "Preferred Item",
+  "Praise",
   "Preferred Activity",
+  "Preferred Item",
+  "Token",
   "Other",
 ];
 
@@ -2099,6 +2099,7 @@ const showDemoUnsavedMessage = () => {
   });
 
   const [previewTemplateLabel, setPreviewTemplateLabel] = useState("");
+  const [editingEntry, setEditingEntry] = useState(null);
 
   useEffect(() => {
     let mounted = true;
@@ -2586,6 +2587,15 @@ const showDemoUnsavedMessage = () => {
     return " Reinforcement used during the session included " + formatListForSentence(reinforcements) + ".";
   };
 
+  const buildModelingSentence = (entry) => {
+    const modeling = getModelingList(entry);
+    if (!modeling.length) return "";
+    return " Modeling used during the session included " + formatListForSentence(modeling) + ".";
+  };
+
+  const buildStrategyDetailSentence = (entry) =>
+    buildReinforcementSentence(entry) + buildModelingSentence(entry);
+
   const buildAutoSessionNote = (student, goal, entry) => {
     if (!student || !goal || !entry) return "";
 
@@ -2607,30 +2617,30 @@ const showDemoUnsavedMessage = () => {
       const yesCount = intervalResults.filter((x) => x === "yes").length;
       const minuteText = sessionLength === 1 ? "1 minute" : (sessionLength || 0) + " minutes";
 
-      return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " demonstrated " + goalText + " during " + yesCount + "/" + totalIntervals + " whole intervals over a " + minuteText + " period, indicating " + Math.round((yesCount / Math.max(totalIntervals, 1)) * 100) + "% engagement across the session." + buildReinforcementSentence(entry);
+      return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " demonstrated " + goalText + " during " + yesCount + "/" + totalIntervals + " whole intervals over a " + minuteText + " period, indicating " + Math.round((yesCount / Math.max(totalIntervals, 1)) * 100) + "% engagement across the session." + buildStrategyDetailSentence(entry);
     }
 
     if (goal.collectionMethod === "duration") {
       const value = entry.durationValue || "___";
       const unit = entry.durationUnit || "minutes";
       const behaviorText = cleanLower(entry.durationBehavior || goalText);
-      return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " engaged in " + behaviorText + " for a total duration of " + value + " " + unit + "." + buildReinforcementSentence(entry);
+      return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " engaged in " + behaviorText + " for a total duration of " + value + " " + unit + "." + buildStrategyDetailSentence(entry);
     }
 
     if (String(entry.score) === "0") {
-      return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " worked on " + goalText + " and received a score of 0, indicating the skill was not demonstrated during this session." + buildReinforcementSentence(entry);
+      return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " worked on " + goalText + " and received a score of 0, indicating the skill was not demonstrated during this session." + buildStrategyDetailSentence(entry);
     }
 
     if (String(entry.score) === "1") {
       const promptText = cleanLower(entry.promptLevel || "selected");
-      return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " worked on " + goalText + " and received a score of 1, completing the task with " + promptText + " prompting." + buildReinforcementSentence(entry);
+      return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " worked on " + goalText + " and received a score of 1, completing the task with " + promptText + " prompting." + buildStrategyDetailSentence(entry);
     }
 
     if (String(entry.score) === "2") {
-      return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " worked on " + goalText + " and received a score of 2, completing the task independently." + buildReinforcementSentence(entry);
+      return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " worked on " + goalText + " and received a score of 2, completing the task independently." + buildStrategyDetailSentence(entry);
     }
 
-    return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " worked on " + goalText + "." + buildReinforcementSentence(entry);
+    return "On " + dateText + ", while working with the " + person + " " + locationText + ", " + name + " worked on " + goalText + "." + buildStrategyDetailSentence(entry);
   };
 
   const formatDateRangeText = (entries) => {
@@ -3425,6 +3435,8 @@ const showDemoUnsavedMessage = () => {
       strategiesUsed: entry.strategiesUsed || [],
       reinforcementTypes: entry.reinforcementTypes || [],
       reinforcementOther: entry.reinforcementOther || "",
+      modelingTypes: entry.modelingTypes || [],
+      modelingOther: entry.modelingOther || "",
       notes: entry.notes || buildAutoSessionNote(selectedStudent, goal, entry),
     };
 
@@ -3444,6 +3456,70 @@ const showDemoUnsavedMessage = () => {
         entry.id === entryId ? { ...entry, notes: noteText } : entry
       )
     );
+  };
+
+  const openEditEntry = (entry) => {
+    setEditingEntry({
+      ...entry,
+      strategiesUsed: Array.isArray(entry.strategiesUsed) ? entry.strategiesUsed : [],
+      reinforcementTypes: Array.isArray(entry.reinforcementTypes) ? entry.reinforcementTypes : [],
+      modelingTypes: Array.isArray(entry.modelingTypes) ? entry.modelingTypes : [],
+      location: displayLocationShort(entry.location) === "-" ? "" : displayLocationShort(entry.location),
+      collectedBy: entry.collectedBy || "",
+    });
+  };
+
+  const updateEditingEntryField = (field, value) => {
+    setEditingEntry((prev) => {
+      if (!prev) return prev;
+      const updated = { ...prev, [field]: value };
+      if (field === "score" && value !== "1") updated.promptLevel = "";
+      return updated;
+    });
+  };
+
+  const toggleEditingEntryArrayValue = (field, value) => {
+    setEditingEntry((prev) => {
+      if (!prev) return prev;
+      const currentArray = Array.isArray(prev[field]) ? prev[field] : [];
+      const nextArray = currentArray.includes(value)
+        ? currentArray.filter((item) => item !== value)
+        : [...currentArray, value];
+      const updated = { ...prev, [field]: nextArray };
+      if (field === "strategiesUsed" && !nextArray.includes("Reinforcement")) {
+        updated.reinforcementTypes = [];
+        updated.reinforcementOther = "";
+      }
+      if (field === "strategiesUsed" && !nextArray.includes("Modeling")) {
+        updated.modelingTypes = [];
+        updated.modelingOther = "";
+      }
+      return updated;
+    });
+  };
+
+  const saveEditedEntry = () => {
+    if (!editingEntry) return;
+    setHistory((prev) =>
+      prev.map((entry) =>
+        entry.id === editingEntry.id
+          ? {
+              ...entry,
+              ...editingEntry,
+              promptLevel: String(editingEntry.score) === "1" ? editingEntry.promptLevel || "" : "",
+            }
+          : entry
+      )
+    );
+    setEditingEntry(null);
+  };
+
+  const deleteEditedEntry = () => {
+    if (!editingEntry) return;
+    const confirmed = window.confirm("Delete this saved data entry? This cannot be undone.");
+    if (!confirmed) return;
+    setHistory((prev) => prev.filter((entry) => entry.id !== editingEntry.id));
+    setEditingEntry(null);
   };
 
   const escapeHtml = (value) =>
@@ -4114,9 +4190,11 @@ const showDemoUnsavedMessage = () => {
         updated.modelingOther = "";
       }
 
+      const finalSession = applyAutoNoteIfNeeded(selectedStudent, goal, current, updated);
+
       return {
         ...prev,
-        [key]: updated,
+        [key]: finalSession,
       };
     });
   };
@@ -5952,7 +6030,12 @@ const showDemoUnsavedMessage = () => {
                       </thead>
                       <tbody>
                         {section.entries.map((entry) => (
-                          <tr key={entry.id}>
+                          <tr
+                            key={entry.id}
+                            onClick={() => openEditEntry(entry)}
+                            style={{ cursor: "pointer" }}
+                            title="Click to edit this entry"
+                          >
                             <td style={styles.td}>{entry.date}</td>
                             <td style={styles.td}>{displayLocationShort(entry.location)}</td>
                             <td style={styles.td}>{displayCollectedByShort(entry.collectedBy)}</td>
@@ -5990,6 +6073,7 @@ const showDemoUnsavedMessage = () => {
                                 : "-"}
                             </td>
                             <td style={styles.td}>{entry.notes || "-"}</td>
+                            <td style={styles.td}>Edit</td>
                           </tr>
                         ))}
                       </tbody>
@@ -6206,6 +6290,155 @@ const showDemoUnsavedMessage = () => {
       )}
 
       {showUpgradePopup && <UpgradePopup />}
+
+      {editingEntry && (
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(15,23,42,0.55)",
+          zIndex: 10001,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "18px"
+        }}>
+          <div style={{
+            background: "white",
+            borderRadius: "22px",
+            maxWidth: "760px",
+            width: "100%",
+            maxHeight: "90vh",
+            overflowY: "auto",
+            padding: "24px",
+            boxShadow: "0 24px 70px rgba(0,0,0,0.22)"
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "center", marginBottom: "16px" }}>
+              <div>
+                <h2 style={{ margin: 0, color: "#1e3a8a" }}>Edit Saved Entry</h2>
+                <div style={styles.smallText}>{editingEntry.goalTitle || "Saved data"}</div>
+              </div>
+              <button type="button" onClick={() => setEditingEntry(null)} style={styles.buttonLight}>Close</button>
+            </div>
+
+            <div style={styles.sessionGrid}>
+              <div>
+                <label style={styles.label}>Date</label>
+                <input type="date" value={editingEntry.date || ""} onChange={(e) => updateEditingEntryField("date", e.target.value)} style={styles.input} />
+              </div>
+              <div>
+                <label style={styles.label}>Location</label>
+                <select value={editingEntry.location || ""} onChange={(e) => updateEditingEntryField("location", e.target.value)} style={styles.input}>
+                  <option value="">Select location</option>
+                  {SESSION_LOCATION_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={styles.label}>Collected By</label>
+                <select value={editingEntry.collectedBy || ""} onChange={(e) => updateEditingEntryField("collectedBy", e.target.value)} style={styles.input}>
+                  <option value="">Select role</option>
+                  {COLLECTED_BY_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
+                </select>
+              </div>
+            </div>
+
+            {editingEntry.collectionMethod === "rating" && (
+              <div style={styles.sessionGrid}>
+                <div>
+                  <label style={styles.label}>Score</label>
+                  <select value={editingEntry.score ?? ""} onChange={(e) => updateEditingEntryField("score", e.target.value)} style={styles.input}>
+                    <option value="">Select score</option>
+                    <option value="0">0 - Not demonstrated</option>
+                    <option value="1">1 - Prompt required</option>
+                    <option value="2">2 - Independent</option>
+                  </select>
+                </div>
+                {String(editingEntry.score) === "1" && (
+                  <div>
+                    <label style={styles.label}>Prompt Level</label>
+                    <select value={editingEntry.promptLevel || ""} onChange={(e) => updateEditingEntryField("promptLevel", e.target.value)} style={styles.input}>
+                      <option value="">Select prompt level</option>
+                      {PROMPT_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
+                    </select>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {editingEntry.collectionMethod === "duration" && (
+              <div style={styles.sessionGrid}>
+                <div>
+                  <label style={styles.label}>Duration</label>
+                  <input value={editingEntry.durationValue || ""} onChange={(e) => updateEditingEntryField("durationValue", e.target.value)} style={styles.input} />
+                </div>
+                <div>
+                  <label style={styles.label}>Unit</label>
+                  <select value={editingEntry.durationUnit || "minutes"} onChange={(e) => updateEditingEntryField("durationUnit", e.target.value)} style={styles.input}>
+                    <option value="seconds">seconds</option>
+                    <option value="minutes">minutes</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={styles.label}>Behavior</label>
+                  <input value={editingEntry.durationBehavior || ""} onChange={(e) => updateEditingEntryField("durationBehavior", e.target.value)} style={styles.input} />
+                </div>
+              </div>
+            )}
+
+            <div style={{ marginBottom: "12px" }}>
+              <label style={styles.label}>Strategy Used (RaMP)</label>
+              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "10px" }}>
+                {["Reinforcement", "Modeling", "Prompting"].map((strategy) => (
+                  <button key={strategy} type="button" style={styles.checkPill((editingEntry.strategiesUsed || []).includes(strategy))} onClick={() => toggleEditingEntryArrayValue("strategiesUsed", strategy)}>
+                    {strategy}
+                  </button>
+                ))}
+              </div>
+
+              {(editingEntry.strategiesUsed || []).includes("Reinforcement") && (
+                <div style={{ marginBottom: "10px" }}>
+                  <div style={styles.smallText}>Select reinforcement used during the session.</div>
+                  <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "8px" }}>
+                    {REINFORCEMENT_OPTIONS.map((item) => (
+                      <button key={item} type="button" style={styles.checkPill((editingEntry.reinforcementTypes || []).includes(item))} onClick={() => toggleEditingEntryArrayValue("reinforcementTypes", item)}>
+                        {item}
+                      </button>
+                    ))}
+                  </div>
+                  {(editingEntry.reinforcementTypes || []).includes("Other") && (
+                    <input value={editingEntry.reinforcementOther || ""} onChange={(e) => updateEditingEntryField("reinforcementOther", e.target.value)} style={{ ...styles.input, marginTop: "10px" }} placeholder="Describe reinforcement used" />
+                  )}
+                </div>
+              )}
+
+              {(editingEntry.strategiesUsed || []).includes("Modeling") && (
+                <div style={{ marginBottom: "10px" }}>
+                  <div style={styles.smallText}>Select modeling used during the session.</div>
+                  <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "8px" }}>
+                    {MODELING_OPTIONS.map((item) => (
+                      <button key={item} type="button" style={styles.checkPill((editingEntry.modelingTypes || []).includes(item))} onClick={() => toggleEditingEntryArrayValue("modelingTypes", item)}>
+                        {item}
+                      </button>
+                    ))}
+                  </div>
+                  {(editingEntry.modelingTypes || []).includes("Other") && (
+                    <input value={editingEntry.modelingOther || ""} onChange={(e) => updateEditingEntryField("modelingOther", e.target.value)} style={{ ...styles.input, marginTop: "10px" }} placeholder="Describe modeling used" />
+                  )}
+                </div>
+              )}
+            </div>
+
+            <label style={styles.label}>Notes</label>
+            <textarea value={editingEntry.notes || ""} onChange={(e) => updateEditingEntryField("notes", e.target.value)} style={styles.textarea} />
+
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "16px" }}>
+              <button type="button" onClick={saveEditedEntry} style={styles.buttonPrimary}>Save Changes</button>
+              <button type="button" onClick={deleteEditedEntry} style={styles.buttonRed}>Delete Entry</button>
+              <button type="button" onClick={() => setEditingEntry(null)} style={styles.buttonLight}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
 
 {isTrialExpired && (
   <div style={{
