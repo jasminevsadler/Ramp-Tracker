@@ -5939,26 +5939,79 @@ const showDemoUnsavedMessage = () => {
 
       {showUpgradePopup && <UpgradePopup />}
 
-      {isTrialExpired && (
-        <div style={{
-          position: "fixed",
-          inset: 0,
-          background: "rgba(255,255,255,0.96)",
-          zIndex: 10000,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "20px"
-        }}>
-          <div style={{
-            maxWidth: "420px",
-            background: "white",
-            borderRadius: "24px",
-            padding: "36px",
-            textAlign: "center",
-            boxShadow: "0 20px 50px rgba(0,0,0,0.12)"
-          }}>
-            <h2>Your Free Trial Has Ended</h2>
+{isTrialExpired && (
+  <div style={{
+    position: "fixed",
+    inset: 0,
+    background: "rgba(255,255,255,0.96)",
+    zIndex: 10000,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "20px"
+  }}>
+    <div style={{
+      maxWidth: "420px",
+      background: "white",
+      borderRadius: "24px",
+      padding: "36px",
+      textAlign: "center",
+      boxShadow: "0 20px 50px rgba(0,0,0,0.12)"
+    }}>
+      <h2>Your Free Trial Has Ended</h2>
+
+      <p style={{
+        color: "#6b7280",
+        lineHeight: "1.6",
+        marginBottom: "24px"
+      }}>
+        Continue using RaMP Tracker to save student data,
+        monitor progress, and generate notes.
+      </p>
+
+      <button
+        onClick={() => {
+          setIsTrialExpired(false);
+          setShowGate(true);
+        }}
+        style={{
+          width: "100%",
+          padding: "14px",
+          border: "none",
+          borderRadius: "14px",
+          background: "#7c3aed",
+          color: "white",
+          fontWeight: "600",
+          cursor: "pointer",
+          marginBottom: "12px"
+        }}
+      >
+        Upgrade Account
+      </button>
+
+      <button
+        onClick={() => {
+          localStorage.removeItem("ramp_trial_start");
+          setIsTrialExpired(false);
+          setShowLandingScreen(true);
+        }}
+        style={{
+          width: "100%",
+          padding: "12px",
+          borderRadius: "14px",
+          border: "1px solid #d1d5db",
+          background: "white",
+          color: "#374151",
+          cursor: "pointer"
+        }}
+      >
+        Back to Home
+      </button>
+    </div>
+  </div>
+)}
+
+      
 
             <p style={{
               color: "#6b7280",
