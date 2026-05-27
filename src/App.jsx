@@ -3679,7 +3679,7 @@ const showDemoUnsavedMessage = () => {
       "Duration Unit",
       "Duration Behavior",
       "Score",
-      "Prompt Level",
+      "Prompt Level (if applicable)",
       "Strategy Used",
       "Reinforcement Used",
       "Modeling Used",
@@ -5484,7 +5484,7 @@ const showDemoUnsavedMessage = () => {
 
                 {currentSession.score === "1" && (
                   <div>
-                    <label style={styles.label}>Prompt Level</label>
+                    <label style={styles.label}>Prompt Level (if applicable)</label>
                     <select
                       value={currentSession.promptLevel}
                       onChange={(e) =>
@@ -6354,7 +6354,7 @@ const showDemoUnsavedMessage = () => {
                 </div>
                 {String(editingEntry.score) === "1" && (
                   <div>
-                    <label style={styles.label}>Prompt Level</label>
+                    <label style={styles.label}>Prompt Level (if applicable)</label>
                     <select value={editingEntry.promptLevel || ""} onChange={(e) => updateEditingEntryField("promptLevel", e.target.value)} style={styles.input}>
                       <option value="">Select prompt level</option>
                       {PROMPT_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
