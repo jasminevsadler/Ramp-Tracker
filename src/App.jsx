@@ -6011,35 +6011,6 @@ const showDemoUnsavedMessage = () => {
   </div>
 )}
 
-      
-
-            <p style={{
-              color: "#6b7280",
-              lineHeight: "1.6",
-              marginBottom: "24px"
-            }}>
-              Continue using RaMP Tracker to save student data,
-              monitor progress, and generate notes.
-            </p>
-
-            <button
-              onClick={() => setShowGate(true)}
-              style={{
-                width: "100%",
-                padding: "14px",
-                border: "none",
-                borderRadius: "14px",
-                background: "#7c3aed",
-                color: "white",
-                fontWeight: "600",
-                cursor: "pointer"
-              }}
-            >
-              Upgrade Account
-            </button>
-          </div>
-        </div>
-      )}
 
       <style>{`
         * { box-sizing: border-box; }
