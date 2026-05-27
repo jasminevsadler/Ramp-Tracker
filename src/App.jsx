@@ -44,35 +44,63 @@ const DISABILITY_OPTIONS = [
 const SETTING_OPTIONS = ["School", "Home", "Therapy", "Community", "Other"];
 
 const SESSION_LOCATION_OPTIONS = [
-  "at home",
-  "at specials",
-  "in the cafeteria",
-  "in the classroom",
-  "in the community",
-  "in the crisis room",
-  "in the gym",
-  "in the hallway",
-  "in the resource room",
-  "in the small group setting",
-  "in the therapy room",
-  "on the bus",
-  "on the playground",
+  "Classroom",
+  "Resource Room",
+  "Small Group",
+  "Therapy Room",
+  "Hallway",
+  "Cafeteria",
+  "Gym",
+  "Specials",
+  "Playground",
+  "Bus",
+  "Home",
+  "Community",
+  "Crisis Room",
   "Other",
 ];
 
 const COLLECTED_BY_OPTIONS = [
+  "General Education Teacher",
+  "Special Education Teacher",
   "Administrator",
-  "BCBA",
   "Behavior Specialist",
+  "Board Certified Behavior Analyst",
+  "Registered Behavior Technician",
+  "Speech-Language Pathologist",
+  "Occupational Therapist",
+  "Physical Therapist",
   "Counselor",
-  "OT",
-  "Parent/Caregiver",
   "Paraprofessional",
-  "PT",
-  "RBT",
-  "SLP",
+  "Parent",
+  "Caregiver",
   "Student",
-  "Teacher",
+  "Other",
+];
+
+const ROLE_ABBREVIATIONS = {
+  "General Education Teacher": "GET",
+  "Special Education Teacher": "SET",
+  "Board Certified Behavior Analyst": "BCBA",
+  "Registered Behavior Technician": "RBT",
+  "Speech-Language Pathologist": "SLP",
+  "Occupational Therapist": "OT",
+  "Physical Therapist": "PT",
+  "Parent/Caregiver": "Parent/Caregiver",
+  Teacher: "Teacher",
+  BCBA: "BCBA",
+  RBT: "RBT",
+  SLP: "SLP",
+  OT: "OT",
+  PT: "PT",
+};
+
+const MODELING_OPTIONS = [
+  "Adult Model",
+  "Peer Model",
+  "Video Model",
+  "Visual Example",
+  "Physical Demonstration",
   "Other",
 ];
 
@@ -2438,15 +2466,17 @@ const showDemoUnsavedMessage = () => {
 
   const getDefaultSessionForGoal = () => ({
     date: new Date().toISOString().slice(0, 10),
-    location: "in the classroom",
+    location: "",
     customLocation: "",
-    collectedBy: "Teacher",
+    collectedBy: "",
     customCollectedBy: "",
     score: "",
     promptLevel: "",
     strategiesUsed: [],
     reinforcementTypes: [],
     reinforcementOther: "",
+    modelingTypes: [],
+    modelingOther: "",
     notes: "",
     intervalType: "Whole Interval",
     sessionLength: 10,
@@ -2492,6 +2522,28 @@ const showDemoUnsavedMessage = () => {
     return selected || "staff";
   };
 
+  const stripLocationPreposition = (location) => {
+    const text = String(location || "").trim();
+    return text
+      .replace(/^in the\s+/i, "")
+      .replace(/^in\s+/i, "")
+      .replace(/^on the\s+/i, "")
+      .replace(/^on\s+/i, "")
+      .replace(/^at the\s+/i, "")
+      .replace(/^at\s+/i, "")
+      .replace(/\b\w/g, (letter) => letter.toUpperCase());
+  };
+
+  const displayLocationShort = (location) => {
+    const text = stripLocationPreposition(location);
+    return text || "-";
+  };
+
+  const displayCollectedByShort = (role) => {
+    const text = String(role || "").trim();
+    return ROLE_ABBREVIATIONS[text] || text || "-";
+  };
+
   const formatLocationForNote = (location) => {
     const text = String(location || "the session setting").trim();
     const lower = text.toLowerCase();
@@ -2519,6 +2571,13 @@ const showDemoUnsavedMessage = () => {
     if (list.length === 1) return cleanLower(list[0]);
     if (list.length === 2) return cleanLower(list[0]) + " and " + cleanLower(list[1]);
     return list.slice(0, -1).map(cleanLower).join(", ") + ", and " + cleanLower(list[list.length - 1]);
+  };
+
+  const getModelingList = (entry) => {
+    return [
+      ...(entry?.modelingTypes || []),
+      entry?.modelingOther ? entry.modelingOther : "",
+    ].filter(Boolean);
   };
 
   const buildReinforcementSentence = (entry) => {
@@ -3284,6 +3343,8 @@ const showDemoUnsavedMessage = () => {
         strategiesUsed: entry.strategiesUsed || [],
         reinforcementTypes: entry.reinforcementTypes || [],
         reinforcementOther: entry.reinforcementOther || "",
+        modelingTypes: entry.modelingTypes || [],
+        modelingOther: entry.modelingOther || "",
         notes: entry.notes || buildAutoSessionNote(selectedStudent, goal, entry),
       };
 
@@ -3324,6 +3385,8 @@ const showDemoUnsavedMessage = () => {
         strategiesUsed: entry.strategiesUsed || [],
         reinforcementTypes: entry.reinforcementTypes || [],
         reinforcementOther: entry.reinforcementOther || "",
+        modelingTypes: entry.modelingTypes || [],
+        modelingOther: entry.modelingOther || "",
         notes: entry.notes || buildAutoSessionNote(selectedStudent, goal, entry),
       };
 
@@ -3354,14 +3417,11 @@ const showDemoUnsavedMessage = () => {
       benchmarkText: benchmark?.text || "",
       benchmarkStatus: benchmark?.status || "",
       date: entry.date || "",
-      location: entry.location || "",
-      collectedBy: entry.collectedBy || "",
+      location: resolvedLocation,
+      collectedBy: resolvedCollectedBy,
       collectionMethod: "rating",
       score: entry.score || "",
-      promptLevel:
-        entry.score === "1" || (entry.strategiesUsed || []).includes("Prompting")
-          ? entry.promptLevel || ""
-          : "",
+      promptLevel: entry.score === "1" ? entry.promptLevel || "" : "",
       strategiesUsed: entry.strategiesUsed || [],
       reinforcementTypes: entry.reinforcementTypes || [],
       reinforcementOther: entry.reinforcementOther || "",
@@ -3418,13 +3478,15 @@ const showDemoUnsavedMessage = () => {
             ? `${entry.durationValue ?? "-"} ${entry.durationUnit ?? ""}`
             : `${entry.score ?? "-"}/2${entry.promptLevel ? `, ${entry.promptLevel} prompt` : ""}`;
         const reinforcements = getReinforcementList(entry).join(", ") || "-";
+        const modeling = getModelingList(entry).join(", ") || "-";
         return `
           <tr>
             <td>${escapeHtml(entry.date)}</td>
             <td>${escapeHtml(scoreText)}</td>
-            <td>${escapeHtml(entry.location || "-")}</td>
-            <td>${escapeHtml(entry.collectedBy || "-")}</td>
+            <td>${escapeHtml(displayLocationShort(entry.location))}</td>
+            <td>${escapeHtml(displayCollectedByShort(entry.collectedBy))}</td>
             <td>${escapeHtml(reinforcements)}</td>
+            <td>${escapeHtml(modeling)}</td>
             <td>${escapeHtml(entry.notes || "-")}</td>
           </tr>`;
       }).join("");
@@ -3443,8 +3505,9 @@ const showDemoUnsavedMessage = () => {
                 <th>Date</th>
                 <th>Score / Data</th>
                 <th>Location</th>
-                <th>Collected By</th>
+                <th>By</th>
                 <th>Reinforcement</th>
+                <th>Modeling</th>
                 <th>Session Note</th>
               </tr>
             </thead>
@@ -3543,6 +3606,7 @@ const showDemoUnsavedMessage = () => {
       "Prompt Level",
       "Strategy Used",
       "Reinforcement Used",
+      "Modeling Used",
       "Interval Type",
       "Session Length",
       "Interval Length",
@@ -3576,6 +3640,10 @@ const showDemoUnsavedMessage = () => {
       [
         ...(item.reinforcementTypes || []),
         item.reinforcementOther ? `Other: ${item.reinforcementOther}` : "",
+      ].filter(Boolean).join("; "),
+      [
+        ...(item.modelingTypes || []),
+        item.modelingOther ? `Other: ${item.modelingOther}` : "",
       ].filter(Boolean).join("; "),
       item.intervalType ?? "",
       item.sessionLength ?? "",
@@ -4035,13 +4103,15 @@ const showDemoUnsavedMessage = () => {
         [field]: nextArray,
       };
 
-      if (field === "strategiesUsed" && !nextArray.includes("Prompting")) {
-        updated.promptLevel = "";
-      }
 
       if (field === "strategiesUsed" && !nextArray.includes("Reinforcement")) {
         updated.reinforcementTypes = [];
         updated.reinforcementOther = "";
+      }
+
+      if (field === "strategiesUsed" && !nextArray.includes("Modeling")) {
+        updated.modelingTypes = [];
+        updated.modelingOther = "";
       }
 
       return {
@@ -4576,6 +4646,7 @@ const showDemoUnsavedMessage = () => {
                     }
                     style={styles.input}
                   >
+                    <option value="">Select location</option>
                     {SESSION_LOCATION_OPTIONS.map((location) => (
                       <option key={location} value={location}>
                         {location}
@@ -4613,6 +4684,7 @@ const showDemoUnsavedMessage = () => {
                     }
                     style={styles.input}
                   >
+                    <option value="">Select role</option>
                     {COLLECTED_BY_OPTIONS.map((person) => (
                       <option key={person} value={person}>
                         {person}
@@ -4841,6 +4913,55 @@ const showDemoUnsavedMessage = () => {
                     )}
                   </div>
                 )}
+
+                {(currentSession.strategiesUsed || []).includes("Modeling") && (
+                  <div style={{ marginBottom: "10px" }}>
+                    <div style={styles.smallText}>Select modeling used during the session.</div>
+                    <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "8px" }}>
+                      {MODELING_OPTIONS.map((item) => (
+                        <button
+                          key={item}
+                          type="button"
+                          style={styles.checkPill((currentSession.modelingTypes || []).includes(item))}
+                          onClick={() =>
+                            toggleSessionArrayValue(
+                              selectedGoal,
+                              activeTargetBenchmark,
+                              "modelingTypes",
+                              item
+                            )
+                          }
+                        >
+                          {item}
+                        </button>
+                      ))}
+                    </div>
+
+                    {(currentSession.modelingTypes || []).includes("Other") && (
+                      <div style={{ marginTop: "10px" }}>
+                        <label style={styles.label}>Other Modeling</label>
+                        <input
+                          type="text"
+                          value={currentSession.modelingOther || ""}
+                          onChange={(e) =>
+                            handleSessionChange(
+                              selectedGoal,
+                              activeTargetBenchmark,
+                              "modelingOther",
+                              e.target.value
+                            )
+                          }
+                          style={styles.input}
+                          placeholder="Describe modeling used"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {(currentSession.strategiesUsed || []).includes("Prompting") && (
+                  <div style={styles.smallText}>Prompt level is recorded in the score section when the score is 1 = With prompts.</div>
+                )}
               </div>
 
               <div style={{ marginBottom: "12px" }}>
@@ -4903,6 +5024,7 @@ const showDemoUnsavedMessage = () => {
                     }
                     style={styles.input}
                   >
+                    <option value="">Select location</option>
                     {SESSION_LOCATION_OPTIONS.map((location) => (
                       <option key={location} value={location}>
                         {location}
@@ -4940,6 +5062,7 @@ const showDemoUnsavedMessage = () => {
                     }
                     style={styles.input}
                   >
+                    <option value="">Select role</option>
                     {COLLECTED_BY_OPTIONS.map((person) => (
                       <option key={person} value={person}>
                         {person}
@@ -5042,6 +5165,100 @@ const showDemoUnsavedMessage = () => {
                     </button>
                   ))}
                 </div>
+
+                {(currentSession.strategiesUsed || []).includes("Reinforcement") && (
+                  <div style={{ marginBottom: "10px" }}>
+                    <div style={styles.smallText}>Select reinforcement used during the session.</div>
+                    <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "8px" }}>
+                      {REINFORCEMENT_OPTIONS.map((item) => (
+                        <button
+                          key={item}
+                          type="button"
+                          style={styles.checkPill((currentSession.reinforcementTypes || []).includes(item))}
+                          onClick={() =>
+                            toggleSessionArrayValue(
+                              selectedGoal,
+                              activeTargetBenchmark,
+                              "reinforcementTypes",
+                              item
+                            )
+                          }
+                        >
+                          {item}
+                        </button>
+                      ))}
+                    </div>
+
+                    {(currentSession.reinforcementTypes || []).includes("Other") && (
+                      <div style={{ marginTop: "10px" }}>
+                        <label style={styles.label}>Other Reinforcement</label>
+                        <input
+                          type="text"
+                          value={currentSession.reinforcementOther || ""}
+                          onChange={(e) =>
+                            handleSessionChange(
+                              selectedGoal,
+                              activeTargetBenchmark,
+                              "reinforcementOther",
+                              e.target.value
+                            )
+                          }
+                          style={styles.input}
+                          placeholder="Describe reinforcement used"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {(currentSession.strategiesUsed || []).includes("Modeling") && (
+                  <div style={{ marginBottom: "10px" }}>
+                    <div style={styles.smallText}>Select modeling used during the session.</div>
+                    <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "8px" }}>
+                      {MODELING_OPTIONS.map((item) => (
+                        <button
+                          key={item}
+                          type="button"
+                          style={styles.checkPill((currentSession.modelingTypes || []).includes(item))}
+                          onClick={() =>
+                            toggleSessionArrayValue(
+                              selectedGoal,
+                              activeTargetBenchmark,
+                              "modelingTypes",
+                              item
+                            )
+                          }
+                        >
+                          {item}
+                        </button>
+                      ))}
+                    </div>
+
+                    {(currentSession.modelingTypes || []).includes("Other") && (
+                      <div style={{ marginTop: "10px" }}>
+                        <label style={styles.label}>Other Modeling</label>
+                        <input
+                          type="text"
+                          value={currentSession.modelingOther || ""}
+                          onChange={(e) =>
+                            handleSessionChange(
+                              selectedGoal,
+                              activeTargetBenchmark,
+                              "modelingOther",
+                              e.target.value
+                            )
+                          }
+                          style={styles.input}
+                          placeholder="Describe modeling used"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {(currentSession.strategiesUsed || []).includes("Prompting") && (
+                  <div style={styles.smallText}>Prompt level is recorded in the score section when the score is 1 = With prompts.</div>
+                )}
               </div>
 
               <div style={{ marginBottom: "12px" }}>
@@ -5104,6 +5321,7 @@ const showDemoUnsavedMessage = () => {
                     }
                     style={styles.input}
                   >
+                    <option value="">Select location</option>
                     {SESSION_LOCATION_OPTIONS.map((location) => (
                       <option key={location} value={location}>
                         {location}
@@ -5141,6 +5359,7 @@ const showDemoUnsavedMessage = () => {
                     }
                     style={styles.input}
                   >
+                    <option value="">Select role</option>
                     {COLLECTED_BY_OPTIONS.map((person) => (
                       <option key={person} value={person}>
                         {person}
@@ -5185,7 +5404,7 @@ const showDemoUnsavedMessage = () => {
                   </select>
                 </div>
 
-                {(currentSession.score === "1" || (currentSession.strategiesUsed || []).includes("Prompting")) && (
+                {currentSession.score === "1" && (
                   <div>
                     <label style={styles.label}>Prompt Level</label>
                     <select
@@ -5276,6 +5495,55 @@ const showDemoUnsavedMessage = () => {
                       </div>
                     )}
                   </div>
+                )}
+
+                {(currentSession.strategiesUsed || []).includes("Modeling") && (
+                  <div style={{ marginBottom: "10px" }}>
+                    <div style={styles.smallText}>Select modeling used during the session.</div>
+                    <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "8px" }}>
+                      {MODELING_OPTIONS.map((item) => (
+                        <button
+                          key={item}
+                          type="button"
+                          style={styles.checkPill((currentSession.modelingTypes || []).includes(item))}
+                          onClick={() =>
+                            toggleSessionArrayValue(
+                              selectedGoal,
+                              activeTargetBenchmark,
+                              "modelingTypes",
+                              item
+                            )
+                          }
+                        >
+                          {item}
+                        </button>
+                      ))}
+                    </div>
+
+                    {(currentSession.modelingTypes || []).includes("Other") && (
+                      <div style={{ marginTop: "10px" }}>
+                        <label style={styles.label}>Other Modeling</label>
+                        <input
+                          type="text"
+                          value={currentSession.modelingOther || ""}
+                          onChange={(e) =>
+                            handleSessionChange(
+                              selectedGoal,
+                              activeTargetBenchmark,
+                              "modelingOther",
+                              e.target.value
+                            )
+                          }
+                          style={styles.input}
+                          placeholder="Describe modeling used"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {(currentSession.strategiesUsed || []).includes("Prompting") && (
+                  <div style={styles.smallText}>Prompt level is recorded in the score section when the score is 1 = With prompts.</div>
                 )}
               </div>
 
@@ -5686,8 +5954,8 @@ const showDemoUnsavedMessage = () => {
                         {section.entries.map((entry) => (
                           <tr key={entry.id}>
                             <td style={styles.td}>{entry.date}</td>
-                            <td style={styles.td}>{entry.location || "-"}</td>
-                            <td style={styles.td}>{entry.collectedBy || "-"}</td>
+                            <td style={styles.td}>{displayLocationShort(entry.location)}</td>
+                            <td style={styles.td}>{displayCollectedByShort(entry.collectedBy)}</td>
                             <td style={styles.td}>
                               {entry.collectionMethod === "interval" ? "Interval" : entry.collectionMethod === "duration" ? "Duration" : "Rating"}
                             </td>
